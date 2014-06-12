@@ -1,0 +1,23 @@
+{% include "formMacros.html" %}
+
+<div class="apos-workflow-manager apos-ui apos-modal apos-template">
+  <h3>
+    {% block title %}
+      Workflow Manager
+    {% endblock %}
+  </h3>
+  <div class="apos-modal-body">
+    <table>
+      <thead>
+        <tr>
+          <th>Page</th><th>Author</th><th>When</th>
+        </tr>
+      </thead>
+      <tbody id="data-pages">
+        <tr data-item class="apos-template">
+          <td><a href="/chemistry" target="workflow-page" data-slug>/chemistry</a></td><td data-author>Bob Smith</td><td data-date>2014-07-01 11:00:00</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

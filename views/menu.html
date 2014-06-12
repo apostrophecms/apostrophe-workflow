@@ -1,0 +1,12 @@
+<div class="apos-workflow-wrapper">
+  {# One of these will get the apos-active class via js #}
+  <a href="#" class="apos-workflow-mode" data-workflow-mode="draft">Draft</a>
+  <a href="#" class="apos-workflow-mode" data-workflow-mode="public">Public</a>
+  {# Everyone can request approval. If you have publish permissions, #}
+  {# it actually happens, otherwise the page is flagged as ready for #}
+  {# a publisher's attention. No need to know at this point which #}
+  {# one it will be, which would be tricky (it may even be mixed based #}
+  {# on content appearing in the browser at the time). This button only #}
+  {# appears when in draft mode. -Tom #}
+  <a href="#" class="apos-workflow-approve-changes" data-workflow-approve-changes>Approve Changes</a>
+</div>
