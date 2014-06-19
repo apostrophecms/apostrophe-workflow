@@ -1,6 +1,5 @@
 var async = require('async');
 var _ = require('lodash');
-var extend = require('extend');
 var async = require('async');
 
 module.exports = workflow;
@@ -38,16 +37,24 @@ workflow.Construct = function(options, callback) {
     return res.send(response);
   };
 
-  function thenDeliver(res) {
-    return function(err, result) {
-      return self.deliver(res, err, result);
-    };
-  }
-
   // Fetch the whole list to initialize the editor
 
-  self._app.get(options.loadUrl || self._action + '/load', self.permissions, function(req, res) {
-    self._apos.get(req, { submitDraft: { $exists: 1 } }, { fields: { slug: 1, submitDraft: 1, draftSubmittedBy: 1 } }).sort({ submitDraft: -1 }).toArray(thenDeliver(res));
+  self._app.get(options.loadUrl || self._action + '/load', function(req, res) {
+    return self._apos.get(req,
+      { submitDraft: { $exists: 1 } },
+      {
+        fields: { slug: 1, submitDraft: 1, draftSubmittedBy: 1 },
+        permission: 'publish-page',
+        sort: { submitDraft: -1 }
+      },
+      function(err, results) {
+        if (err) {
+          console.error(err);
+          return res.send({ status: 'error' });
+        }
+        return res.send({ status: 'ok', result: results.pages });
+      }
+    );
   });
 
   // The UI for switching between draft and public and requesting approval
@@ -57,14 +64,14 @@ workflow.Construct = function(options, callback) {
 
   self.pushAsset('script', 'editor', { when: 'user' });
   self.pushAsset('stylesheet', 'editor', { when: 'user' });
-  self.pushAsset('template', 'editor', { when: 'user' });
+  self.pushAsset('template', 'manager', { when: 'user' });
 
   self._apos.addLocal('aposWorkflowMenu', function(options) {
-    return self.partial('menu', options || {});
+    return self.render('menu', options || {});
   });
 
   self._apos.addLocal('aposWorkflowManagerMenu', function(options) {
-    return self.partial('managerMenu', options || {});
+    return self.render('managerMenu', options || {});
   });
 
   if (callback) {

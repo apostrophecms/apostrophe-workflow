@@ -54,6 +54,7 @@ function AposWorkflow() {
       return false;
     });
     function reflectMode(mode) {
+      $('[data-workflow-approve-changes]').toggle(mode === 'draft');
       $('[data-workflow-mode]').removeClass('apos-current');
       $('[data-workflow-mode="' + mode + '"]').addClass('apos-current');
     }
@@ -70,7 +71,9 @@ function AposWorkflowManager() {
 
   // Invoked when the modal is ready
   self.init = function(callback) {
+    console.log(self.$el[0]);
     self.$list = self.$el.find('[data-pages]');
+    console.log(self.$list[0]);
     self.$template = self.$list.find('[data-item].apos-template');
     self.$template.remove();
 
@@ -78,7 +81,9 @@ function AposWorkflowManager() {
   };
 
   self.addItem = function(item) {
+    console.log(self.$template[0]);
     var $newItem = apos.fromTemplate(self.$template);
+    console.log($newItem[0]);
     self.$list.append($newItem);
     $newItem.attr('data-slug', item.slug);
     $newItem.attr('data-date', item.submitDraft);
@@ -93,6 +98,9 @@ function AposWorkflowManager() {
         return callback('error');
       }
       self.$list.html('');
+      self.$el.find('[data-some]').toggle(!!response.result.length);
+      self.$el.find('[data-none]').toggle(!response.result.length);
+
       _.each(response.result, function(item) {
         self.addItem(item);
       });
@@ -109,6 +117,13 @@ function AposWorkflowManager() {
       self.modal();
       return false;
     });
+    if (!(apos.data && apos.data.aposPages.page && apos.data.aposPages.page._publish)) {
+      // When workflow is active and we don't have publish permission,
+      // we can add new subpages but that's really about it. Don't
+      // let mere editors do things for which we don't have
+      // a workflow UI
+      $('[data-new-page]').siblings().remove();
+    }
   };
 
   $(function() {
