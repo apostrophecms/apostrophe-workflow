@@ -1,28 +1,38 @@
+{% extends "baseModal.html" %}
+{% include "uiMacros.html" %}
 {% include "formMacros.html" %}
 
-<div class="apos-workflow-manager apos-ui apos-modal apos-template">
-  <h3>
-    {% block title %}
-      Workflow Manager
-    {% endblock %}
-  </h3>
-  <div class="apos-modal-body">
-    <p class="apos-workflow-help" data-none>There is currently no content awaiting your approval.</p>
-    <p class="apos-workflow-help" data-some>These pages have been submitted for approval, and you have the necessary privileges to approve them. Click to visit a page and approve content.</p>
-    <table data-some>
-      <thead>
-        <tr>
-          <th>Page</th><th>Author</th><th>When</th>
-        </tr>
-      </thead>
-      <tbody data-pages>
-        <tr data-item class="apos-template">
-          <td><a href="/chemistry" target="workflow-page" data-slug>/chemistry</a></td><td data-author>Bob Smith</td><td data-date>2014-07-01 11:00:00</td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="apos-modal-footer">
-      <a href="#" data-action="dismiss" class="apos-control apos-button apos-cancel">{{ __('Done') }}</a>
-    </div>
+{% block modalClass %}
+  apos-workflow-manager
+{% endblock %}
+
+{% block modalLabel %}
+  {{ __('Workflow Manager')}}
+{% endblock %}
+
+{% block modalControls %}
+  {{ renderProgressBtn({dataAttrs: 'data-cancel', float: 'left', label: 'Done', arrow: 'left'}) }}
+{% endblock %}
+
+{% block modalInstructions %}
+  <p data-none>There is currently no content awaiting your approval.</p>
+  <p data-some>These pages have been submitted for approval, and you have the necessary privileges to approve them. Click to visit a page and approve content.</p>
+{% endblock %}
+
+{% block modalBody %}
+  <table data-some class="apos-manage-table">
+    <thead>
+      <tr>
+        <th>Page</th><th>Author</th><th>When</th>
+      </tr>
+    </thead>
+    <tbody data-pages>
+      <tr data-item class="apos-template">
+        <td><a href="/chemistry" target="workflow-page" data-slug>/chemistry</a></td><td data-author>Bob Smith</td><td data-date>2014-07-01 11:00:00</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="apos-modal-footer">
   </div>
-</div>
+
+{% endblock %}
