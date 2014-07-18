@@ -71,9 +71,7 @@ function AposWorkflowManager() {
 
   // Invoked when the modal is ready
   self.init = function(callback) {
-    console.log(self.$el[0]);
     self.$list = self.$el.find('[data-pages]');
-    console.log(self.$list[0]);
     self.$template = self.$list.find('[data-item].apos-template');
     self.$template.remove();
 
@@ -81,13 +79,13 @@ function AposWorkflowManager() {
   };
 
   self.addItem = function(item) {
-    console.log(self.$template[0]);
     var $newItem = apos.fromTemplate(self.$template);
-    console.log($newItem[0]);
+    $newItem.find('[data-slug]').text(item.slug);
+    $newItem.find('[data-slug]').attr('href', item.slug);
+    $newItem.find('[data-date]').text(item.submitDraft);
+    $newItem.find('[data-author]').text(item.draftSubmittedBy);
     self.$list.append($newItem);
-    $newItem.attr('data-slug', item.slug);
-    $newItem.attr('data-date', item.submitDraft);
-    $newItem.attr('data-author', item.draftSubmittedBy);
+
     return $newItem;
   };
 
