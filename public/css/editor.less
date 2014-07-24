@@ -1,9 +1,35 @@
 .apos-workflow-wrapper
 {
   position: fixed;
-  bottom: 50px;
+  bottom: 14px;
   left: 100px;
   z-index: 900;
+  line-height: 33px;
+
+  .apos-pill
+  {
+    float: left;
+    margin-right: 10px;
+    margin-left: 0;
+  }
+
+  .apos-progress-btn
+  {
+    padding: 10px 11px;
+    .transition();
+    &:before
+    {
+      width: 23px;
+      height: 24px;
+      top: 4px;
+    }
+
+    &.disabled
+    {
+      opacity: 0.3;
+      cursor: default;
+    }
+  }
 }
 
 .apos-workflow-help
@@ -14,15 +40,6 @@
   background-color: #def;
 }
 
-.apos-workflow-manager
-{
-  td, th {
-    padding: 5px;
-  }
-  th {
-    font-weight: bold;
-  }
-}
 
 .apos-workflow-mode,.apos-workflow-approve-changes
 {
@@ -43,3 +60,32 @@
 {
   color: black;
 }
+
+.apos-workflow-manager-count
+{
+  .apos-bg-gradient(@apos-orange-dark, @apos-orange-light);
+  border-radius: 3px;
+  padding: 7px 8px;
+  border: 1px solid @apos-base;
+  text-shadow: .2em .1em @apos-base;
+  color: white;
+  .transition();
+
+  &.disabled
+  {
+    background: @apos-grey50;
+    border: 1px solid @apos-grey20;
+    text-shadow: .2em .1em @apos-grey20;
+    opacity: 0.5;
+  }
+}
+
+// .collapsed 
+// {
+//   .apos-workflow-manager-count
+//   {
+//     position: absolute;
+//     right: -10px;
+//     top: 5px;
+//   }
+// }

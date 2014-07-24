@@ -3,7 +3,7 @@
 {% include "formMacros.html" %}
 
 {% block modalClass %}
-  apos-workflow-manager
+  apos-workflow-manager apos-ui-modal-no-sidebar
 {% endblock %}
 
 {% block modalLabel %}
@@ -23,12 +23,22 @@
   <table data-some class="apos-manage-table">
     <thead>
       <tr>
-        <th>Page</th><th>Author</th><th>When</th>
+        <th>Page</th>
+        <th>Author</th>
+        <th>When</th>
+        <th>Review</th>
       </tr>
     </thead>
     <tbody data-pages>
       <tr data-item class="apos-template">
-        <td><a href="/chemistry" target="workflow-page" data-slug>/chemistry</a></td><td data-author>Bob Smith</td><td data-date>2014-07-01 11:00:00</td>
+        <td>
+          <span>/chemistry</span>
+        </td>
+        <td><span data-author>Bob Smith</span></td>
+        <td><span data-date>2014-07-01 11:00:00<span></td>
+        <td>
+          {{ renderProgressBtn({dataAttrs: 'data-slug', float: 'left', label: 'Review', color: 'base'}) }}
+        </td>
       </tr>
     </tbody>
   </table>

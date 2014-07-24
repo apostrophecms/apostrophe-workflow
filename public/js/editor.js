@@ -18,9 +18,17 @@ function AposWorkflow() {
         // Refresh the actual content to show draft or public version
         apos.change('workflowMode');
       });
+      $('[data-workflow-mode]').each(function() {
+        $(this).removeClass('apos-active');
+      });
+      $(this).addClass('apos-active');
       return false;
     });
     $('body').on('click', '[data-workflow-approve-changes]', function() {
+      if ($(this).hasClass('disabled')) {
+        // cancel on disabled click
+        return false;
+      }
       var $areas = $('.apos-refreshable .apos-area,.apos-refreshable .apos-singleton');
       var slugs = _.map($areas, function(area) {
         return $(area).attr('data-slug');
@@ -39,24 +47,35 @@ function AposWorkflow() {
       });
       $.jsonCall('/apos/workflow-approve-changes', { slugs: slugs }, function(data) {
         if (data.status !== 'ok') {
-          return alert('Server Error, Please Try Again');
+          apos.notification('Server Error, Please Try Again', {type: 'error'});
         }
         if (data.submitted && (!data.published)) {
-          alert('Your changes have been submitted to the moderators for approval.');
+          apos.notification('Your changes have been submitted to the moderators for approval.', {type: 'warn'});
         } else if (data.submitted) {
-          alert('Some of your changes will require approval. Others were made live.');
+          apos.notification('Some of your changes will require approval. Others were made live.', {type: 'warn'});
           apos.change('workflowApproveCahanges');
         } else if (data.published) {
-          alert('Your changes were made live.');
+          apos.notification('Your changes were made live.', {type: 'success'});
           apos.change('workflowApproveCahanges');
+        }
+      });
+      $count = $('[data-workflow-manager-count]');
+      $.getJSON('/apos-workflow/load', {}, function(response) {
+        $count.text(response.result.length);
+        if (response.result.length == 0) {
+          $count.addClass('disabled');
         }
       });
       return false;
     });
     function reflectMode(mode) {
-      $('[data-workflow-approve-changes]').toggle(mode === 'draft');
-      $('[data-workflow-mode]').removeClass('apos-current');
-      $('[data-workflow-mode="' + mode + '"]').addClass('apos-current');
+      if (mode === 'public') {
+        $('[data-workflow-approve-changes]').addClass('disabled');
+      } else {
+        $('[data-workflow-approve-changes]').removeClass('disabled');
+      }
+      $('[data-workflow-mode]').removeClass('apos-active');
+      $('[data-workflow-mode="' + mode + '"]').addClass('apos-active');
     }
   });
 }
@@ -80,7 +99,7 @@ function AposWorkflowManager() {
 
   self.addItem = function(item) {
     var $newItem = apos.fromTemplate(self.$template);
-    $newItem.find('[data-slug]').text(item.slug);
+    $newItem.find('[data-slug]').text('Review');
     $newItem.find('[data-slug]').attr('href', item.slug);
     $newItem.find('[data-date]').text(item.submitDraft);
     $newItem.find('[data-author]').text(item.draftSubmittedBy);
