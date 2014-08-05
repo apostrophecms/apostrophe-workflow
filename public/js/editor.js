@@ -59,13 +59,6 @@ function AposWorkflow() {
           apos.change('workflowApproveCahanges');
         }
       });
-      $count = $('[data-workflow-manager-count]');
-      $.getJSON('/apos-workflow/load', {}, function(response) {
-        $count.text(response.result.length);
-        if (response.result.length == 0) {
-          $count.addClass('disabled');
-        }
-      });
       return false;
     });
     function reflectMode(mode) {
@@ -76,6 +69,28 @@ function AposWorkflow() {
       }
       $('[data-workflow-mode]').removeClass('apos-active');
       $('[data-workflow-mode="' + mode + '"]').addClass('apos-active');
+    }
+
+    // Update # next to menu. Don't call this all over,
+    // it'll invoke itself every 5 seconds anyway and we
+    // don't want those loops to start piling up
+    updateManagerMenuCount();
+
+    function updateManagerMenuCount() {
+      var $el = $('[data-workflow-manager-button]');
+      if (!$el.length) {
+        return;
+      }
+      var $count = $('[data-workflow-manager-count]');
+      $.getJSON('/apos-workflow/load', {}, function(response) {
+        $count.text(response.count);
+        if (response.count === 0) {
+          $count.addClass('disabled');
+        } else {
+          $count.removeClass('disabled');
+        }
+        setTimeout(updateManagerMenuCount, 5000);
+      });
     }
   });
 }
@@ -97,30 +112,16 @@ function AposWorkflowManager() {
     return self.load(callback);
   };
 
-  self.addItem = function(item) {
-    var $newItem = apos.fromTemplate(self.$template);
-    $newItem.find('[data-slug]').text('Review');
-    $newItem.find('[data-slug]').attr('href', item.slug);
-    $newItem.find('[data-date]').text(item.submitDraft);
-    $newItem.find('[data-author]').text(item.draftSubmittedBy);
-    self.$list.append($newItem);
-
-    return $newItem;
-  };
-
   self.load = function(callback) {
     $.getJSON('/apos-workflow/load', {}, function(response) {
       if (response.status !== 'ok') {
         alert('An error occurred. Please try again.');
         return callback('error');
       }
-      self.$list.html('');
-      self.$el.find('[data-some]').toggle(!!response.result.length);
-      self.$el.find('[data-none]').toggle(!response.result.length);
+      self.$list.html(response.html);
+      self.$el.find('[data-some]').toggle(!!response.count);
+      self.$el.find('[data-none]').toggle(!response.count);
 
-      _.each(response.result, function(item) {
-        self.addItem(item);
-      });
       // Auto-refresh 5 seconds after the last successful load finished
       setTimeout(function() {
         self.load(function() {});

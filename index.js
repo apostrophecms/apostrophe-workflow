@@ -1,5 +1,6 @@
 var _ = require('lodash');
 var async = require('async');
+var moment = require('moment');
 
 module.exports = workflow;
 
@@ -51,7 +52,7 @@ workflow.Construct = function(options, callback) {
           console.error(err);
           return res.send({ status: 'error' });
         }
-        return res.send({ status: 'ok', result: results.pages });
+        return res.send({ status: 'ok', count: results.total, html: self.render('managerPages', { pages: results.pages }) });
       }
     );
   });

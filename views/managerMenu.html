@@ -5,15 +5,4 @@
       <span class="apos-workflow-manager-count" data-workflow-manager-count></span>
     </a>
   </div>
-  <script>
-    $el = $('[data-workflow-manager-button]');
-    $count = $('[data-workflow-manager-count]');
-    $.getJSON('/apos-workflow/load', {}, function(response) {
-      $count.text(response.result.length);
-      if (response.result.length == 0) {
-        $count.addClass('disabled');
-      }
-      console.log(response);
-    });
-  </script>
 {% endif %}
