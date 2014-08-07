@@ -142,6 +142,9 @@ function AposWorkflowManager() {
       // a workflow UI
       $('[data-new-page]').siblings().remove();
     }
+    if (document.location.href.match(/\?workflowEditMode/)) {
+      $('[data-workflow-mode="draft"]').click();
+    }
   };
 
   $(function() {
