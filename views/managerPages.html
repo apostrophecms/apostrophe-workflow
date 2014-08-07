@@ -6,7 +6,7 @@
     <td>
       <span>{{ page.slug }}</span>
     </td>
-    <td><span data-author>{{ page.author | e }}</span></td>
+    <td><span data-author>{{ page.draftSubmittedBy | e }}</span></td>
     <td><span data-date>{{ formatDateAndTime(page.submitDraft, true) }}</span></td>
     <td>
       {{ renderProgressBtn({ url: page.slug, dataAttrs: 'data-slug', float: 'left', label: 'Review', color: 'base'}) }}
