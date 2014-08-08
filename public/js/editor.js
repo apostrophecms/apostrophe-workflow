@@ -3,7 +3,7 @@
 function AposWorkflow() {
   var self = this;
   $(function() {
-    $('body').on('aposReady', function() {
+    apos.on('ready', function() {
       var mode = apos.data.workflow.mode;
       reflectMode(mode);
     });
