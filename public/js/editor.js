@@ -64,8 +64,10 @@ function AposWorkflow() {
     function reflectMode(mode) {
       if (mode === 'public') {
         $('[data-workflow-approve-changes]').addClass('disabled');
+        $('body').toggleClass('apos-edit', false);
       } else {
         $('[data-workflow-approve-changes]').removeClass('disabled');
+        $('body').toggleClass('apos-edit', true);
       }
       $('[data-workflow-mode]').removeClass('apos-active');
       $('[data-workflow-mode="' + mode + '"]').addClass('apos-active');
