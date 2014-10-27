@@ -16,6 +16,7 @@ function AposWorkflow() {
         apos.data.workflow.mode = mode;
         reflectMode(mode);
         // Refresh the actual content to show draft or public version
+        apos.emit('workflowSwitch');
         apos.change('workflowMode');
       });
       $('[data-workflow-mode]').each(function() {
