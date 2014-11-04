@@ -1,6 +1,6 @@
 {
   "name": "apostrophe-workflow",
-  "version": "0.5.11",
+  "version": "0.5.12",
   "description": "Provides optional approval workflow for the Apostrophe CMS. For most projects this is overkill.",
   "main": "index.js",
   "scripts": {
