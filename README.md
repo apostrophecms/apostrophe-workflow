@@ -76,4 +76,8 @@ Try checking out the `workflow` branch of the [Apostrophe sandbox](https://githu
 
 ## Limitations
 
-The workflow module does not currently address revisions to snippets. It does, however, work with [apostrophe-blog-2](https://github.com/punkave/apostrophe-blog-2), which represents articles as pages.
+The workflow module does not currently address revisions to snippets. Instead, individuals who are not admins of a snippet type will find that their snippets are always drafts until an admin publishes them.
+
+However you can set `editorsCanPublish` to `true` when configuring any snippet subclass to override this rule.
+
+Note that the workflow module *does* work well out of the box with [apostrophe-blog-2](https://github.com/punkave/apostrophe-blog-2), which represents articles as pages.
