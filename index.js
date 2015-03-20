@@ -40,8 +40,14 @@ workflow.Construct = function(options, callback) {
   // Fetch the whole list to initialize the editor
 
   self._app.get(options.loadUrl || self._action + '/load', function(req, res) {
+    var criteria = {
+      submitDraft: { $exists: 1 },
+    };
+    if (self._apos.options.workflow && self._apos.options.workflow.forPublishers) {
+      criteria.draftAuthoredById = { $ne: req.user._id };
+    }
     return self._apos.get(req,
-      { submitDraft: { $exists: 1 } },
+      criteria,
       {
         fields: { slug: 1, submitDraft: 1, draftSubmittedBy: 1 },
         permission: 'publish-page',

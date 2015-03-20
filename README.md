@@ -74,6 +74,20 @@ Once the workflow module and the `workflow` flag are *both* enabled, the followi
 
 Try checking out the `workflow` branch of the [Apostrophe sandbox](https://github.com/punkave/apostrophe-sandbox) from github.
 
+## Requiring publishers to submit their changes
+
+By default, if you can publish a page, then you can make your own draft changes live by clicking the approval button.
+
+If you wish, you can require publishers to submit their own work for approval by another publisher. **Note that this only makes sense if you reliably have a second person available to approve their work.**
+
+Instead of `workflow: true`, just enable workflow this way:
+
+```javascript
+workflow: {
+  forPublishers: true
+}
+```
+
 ## Limitations
 
 The workflow module does not currently address revisions to snippets. Instead, individuals who are not admins of a snippet type will find that their snippets are always drafts until an admin publishes them.
