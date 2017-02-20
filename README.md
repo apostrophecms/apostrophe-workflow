@@ -1,5 +1,11 @@
 # apostrophe-workflow
 
+## Not currently for new sites
+
+This module is for Apostrophe 0.5.x. It may be ported to 2.x in the future.
+
+## About the module
+
 Provides approval-based workflow for projects that need it. An optional component of the [Apostrophe](http://apostrophenow.org/) content management system.
 
 ## What is workflow?
