@@ -1,3 +1,7 @@
+## Status
+
+Work in progress, not yet functional.
+
 ## Approach
 
 For 2.x, the draft and live versions of a doc are completely separate docs as far as most of Apostrophe is concerned. A `workflowGuid` property ties them together. This greatly reduces the scope of changes required in the rest of Apostrophe and improves performance by removing the need to move content around on every page view or load content for locales you are not looking at.
