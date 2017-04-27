@@ -1,0 +1,5 @@
+<div class="apos-workflow-actions">
+  <button class="{{ apos-workflow-current if session.workflowMode == 'live' }}" data-apos-workflow-mode="live">Live</button>
+  <button class="{{ apos-workflow-current if session.workflowMode == 'draft' }}" data-apos-workflow-mode="draft">Draft</button>
+  <button data-apos-workflow-submit>Submit</button>
+</div>
