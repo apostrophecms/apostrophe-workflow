@@ -1,3 +1,9 @@
+## Approach
+
+For 2.x, the draft and live versions of a doc are completely separate docs as far as most of Apostrophe is concerned. A `workflowGuid` property ties them together. This greatly reduces the scope of changes required in the rest of Apostrophe and improves performance by removing the need to move content around on every page view or load content for locales you are not looking at.
+
+As the term locale suggests, the 2.x workflow module is also intended to provide infrastructure for the 2.x localization module, which will further extend the concept of locales while following this same approach.
+
 ## TODO
 
 * Direct attachments have to be copied, not cross-referenced, otherwise edits to them will unexpectedly be shared.
