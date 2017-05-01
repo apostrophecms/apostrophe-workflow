@@ -38,24 +38,26 @@ module.exports = {
 
   afterConstruct: function(self) {
     self.extendCursor();
-    self.addHelpers();
+    self.extendIndexes();
+    self.enableHelpers();
     self.enableAddMissingLocalesTask();
+    self.pushAssets();
+    self.enableSingleton();
+    self.addToAdminBar();
   },
 
   construct: function(self, options) {
 
     self.locales = options.locales || {
       'default': {
-        slugPrefix: ''
       },
       'default-draft': {
-        slugPrefix: ':default-draft'
       }
     };
     
     self.defaultLocale = options.defaultLocale || 'default';
-    
-    self.baseExcludeProperties = options.baseExcludeProperties || [ '_id', 'slug', 'path', 'rank', 'docPermissions' ];
+
+    self.baseExcludeProperties = options.baseExcludeProperties || [ '_id', 'slug', 'path', 'rank', 'docPermissions', 'published' ];
 
     // Localizing users and groups raises serious security questions. If they have a public representation,
     // make a new doc type and join to it
@@ -72,6 +74,18 @@ module.exports = {
     self.extendCursor = function() {
       self.apos.define('apostrophe-cursor', require('./lib/cursor.js'));
     };
+    
+    // Extend the index parameters for the unique indexes on path and slug to allow for
+    // two docs with the same slug in different locales
+
+    self.extendIndexes = function() {
+      self.apos.on('slugIndex', function(params) {
+        params.workflowLocale = 1;
+      });
+      self.apos.on('pathIndex', function(params) {
+        params.workflowLocale = 1;
+      });
+    };
 
     // Every time a doc is saved, check whether its type is included in workflow. If it is,
     // and the doc does not yet have a `workflowLocale` property, establish one and generate
@@ -87,21 +101,13 @@ module.exports = {
         return callback(null);
       }
       if (!doc.workflowLocale) {
-        doc.workflowLocale = req.locale;
+        doc.workflowLocale = req.locale || self.defaultLocale;
         doc.workflowGuid = self.apos.utils.generateId();
         doc._workflowNew = true;
-        self.adjustSlug(doc);
       }
       return callback(null);
     };
     
-    self.adjustSlug = function(doc) {
-      // It's OK if it's not there yet...
-      self.removeSlugPrefix(doc, doc.workflowLocale);
-      // But it has to be there now
-      self.addSlugPrefix(doc, doc.workflowLocale);
-    };
-
     // Every time a doc is saved, check whether its type is included in workflow. If it is,
     // check for locales in which that workflowGuid does not exist yet, and bring it into existence
     // there. If the doc has the `_workflowNew` property as set by `docBeforeSave`, we can assume
@@ -133,7 +139,6 @@ module.exports = {
       });
 
       function findMissingLocales(callback) {
-        console.log('sfml');
         if (doc._workflowNew) {
           missingLocales = _.filter(_.keys(self.locales), function(locale) {
             return locale !== doc.workflowLocale;
@@ -146,36 +151,27 @@ module.exports = {
           }
           var locales = _.pluck(docs, 'workflowLocale');
           missingLocales = _.filter(_.keys(self.locales), function(locale) {
-            return (locale !== doc.workflowLocale) && (_.contains(locales, doc.workflowLocale));
+            return (locale !== doc.workflowLocale) && (!_.contains(locales, locale));
           });
           return callback(null);
         });
       }
 
       function insertInMissingLocales(callback) {
-        console.log('siml');
         if (!missingLocales.length) {
-          console.log('none missing');
           return callback(null);
         }
         // A new doc needs to be brought into existence across all locales
-        console.log('across all...');
         return async.eachSeries(_.keys(self.locales), function(locale, callback) {
-          console.log(locale);
 
           var _doc = self.apos.utils.clonePermanent(doc);
           if (locale === doc.workflowLocale) {
-            console.log('it me');
             return setImmediate(callback);
           }
-          console.log('not me: ', locale, doc.workflowLocale);
           delete _doc._workflowNew;
           delete _doc._id;
-          self.removeSlugPrefix(_doc, _doc.workflowLocale);
           _doc.workflowLocale = locale;
           _doc._workflowPropagating = true;
-          self.addSlugPrefix(_doc, _doc.workflowLocale);
-          console.log('about to');
           return async.series([
             _.partial(self.resolveRelationships, req, _doc),
             insert
@@ -184,7 +180,6 @@ module.exports = {
           _doc.published = false;
 
           function insert(callback) {
-            console.log('inserting');
             // TODO: copy attachments so they are not directly shared resulting in cross-locale modification
             return self.apos.docs.insert(req, _doc, { permissions: false }, function(err) {
               return callback(err);
@@ -210,7 +205,6 @@ module.exports = {
       });
 
       function mapJoins(callback) {
-        console.log('mapping joins');
         // First create an array of objects with doc and field properties, so we can asynchronously
         // iterate over them
 
@@ -237,7 +231,6 @@ module.exports = {
           });
           
           function findWorkflowGuids(callback) {
-            console.log('findWorkflowGuids');
             if (join.type === 'joinByOne') {
               return self.apos.docs.db.find({ _id: { $in: join.doc[join.field.idField] } }, { workflowGuid: 1 }).toArray(function(err, docs) {
                 if (err) {
@@ -264,7 +257,6 @@ module.exports = {
           }
 
           function findSecondLocaleIds(callback) {
-            console.log('findSecondLocaleIds');
             return self.apos.docs.db.find({ workflowGuid: { $in: workflowGuids }, workflowLocale: doc.workflowLocale }, { _id: 1 }).toArray(function(err, docs) {
               if (err) {
                 return callback(err);
@@ -334,37 +326,12 @@ module.exports = {
    
     };
 
-    self.addSlugPrefix = function(doc, locale) {
-      var prefix = self.locales[locale].slugPrefix;
-      if (!prefix) {
-        return;
-      }
-      // Pagelike or piecelike?
-      var slash = doc.slug.match(/^\//) ? '/' : '';
-      doc.slug = slash + prefix + doc.slug;
-      if (slash) {
-        doc.path = '/' + prefix + doc.slug;
-      }
-    };
-
-    self.removeSlugPrefix = function(doc, locale) {
-      var prefix = self.locales[locale].slugPrefix;
-      if (!prefix) {
-        return;
-      }
-      var regexp = new RegExp('^/?' + self.apos.utils.regExpQuote(prefix || ''));
-      doc.slug = doc.slug.replace(regexp, '') + doc.slug;
-      if (typeof(doc.path) === 'string') {
-        doc.path = doc.path.replace(regexp, '') + doc.path;
-      }
-    };
-
     // Commit a doc from one locale to another. `from` and `to` should
     // be the doc as found in each of the locales.
 
     self.commit = function(req, from, to, callback) {
       
-      from.workflowSubmitted = false;
+      delete from.workflowSubmitted;
       return async.series([
         _.partial(self.copyIncludedProperties, from, to),
         _.partial(self.resolveRelationships, req, to),
@@ -404,14 +371,7 @@ module.exports = {
       
       return setImmediate(callback);
     };
-    
-    // Mark a doc as submitted for approval.
-    
-    self.submit = function(req, doc, callback) {
-      doc.workflowSubmitted = true;
-      return self.apos.docs.getManager(doc.type).update(req, doc, callback);
-    };
-    
+        
     // The callback will receive basic information about all docs editable by the
     // current user that are awaiting approval to merge from draft to live.
     //
@@ -428,13 +388,19 @@ module.exports = {
 
     self.getSubmitted = function(req, options, callback) {
       var criteria = options.criteria || {};
-      criteria = _.clone(criteria);
-      criteria.workflowSubmitted = true;
-      return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).workflowLocale(false).toArray();
+      criteria = {
+        $and: [
+          {
+            workflowSubmitted: { $exists: 1 }
+          },
+          criteria
+        ]
+      };
+      return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).sort({ $exists: 1 }).workflowLocale(false).toArray(callback);
     };
     
     // Returns the projection to be used when fetching submitted docs to generate
-    // a list of docs requiring approval.
+    // a list of docs requiring approval. Should be enough to generate permalinks.
 
     self.getSubmittedProjection = function() {
       return {
@@ -442,7 +408,8 @@ module.exports = {
         slug: 1,
         path: 1,
         rank: 1,
-        type: 1
+        type: 1,
+        tags: 1
       };
     };
     
@@ -461,45 +428,42 @@ module.exports = {
     
     // Set `req.locale` based on `req.query.locale` or `req.session.locale`.
     // If the locale is not present or is not valid, set `req.locale` to the
-    // default locale. Store the locale in `req.session.locale` to allow
-    // operation of sites that do not use a URL prefix to distinguish locales.
-    //
-    // If the locale's `slugPrefix` begins with `:`, it is only for uniqueness
-    // in the database and not for display on the front end, so prepend it to
-    // `req.url` so that its pages can be found via the normal page serving mechanism.
+    // default locale. Store the locale in `req.session.locale`. TODO: also
+    // implement subdomains and URL prefixes for locales.
 
-    self.expressMiddleware = function(req, res, next) {
-      req.locale = req.query.locale || req.session.locale;
-      if ((!req.locale) || (!_.has(self.locales, req.locale))) {
-        req.locale = self.defaultLocale;
+    self.expressMiddleware = {
+      before: 'apostrophe-global',
+      middleware: function(req, res, next) {
+        req.locale = req.query.locale || req.session.locale;
+        if ((!req.locale) || (!_.has(self.locales, req.locale))) {
+          req.locale = self.defaultLocale;
+        }
+        req.session.locale = req.locale;
+        if (req.user) {
+          if (req.session.workflowMode === 'draft') {
+            req.locale += '-draft';
+          } else {
+            // Default mode is previewing the live content, not editing
+            req.session.workflowMode = 'live';
+          }
+        }
+        var locale = self.locales[req.locale];
+        return next();
       }
-      req.session.locale = req.locale;
-      if (req.session.workflowMode === 'draft') {
-        req.locale += '-draft';
-      }
-      var locale = self.locales[req.locale];
-      if (locale.slugPrefix.match(/^:/)) {
-        // A locale that is *not* distinguished by URL. The `workflowUrl`
-        // cursor filter strips out its prefix systematically before URLs are rendered
-        // on the front end.
-        //
-        // So to locate its docs via the standard page loading route we must prepend
-        // its prefix to `req.url` at the middleware level
-        req.url = '/' + locale.slugPrefix + req.url;
-      }
-      return next();
     };
     
-    self.actions = function() {
+    self.menu = function() {
       var req = self.apos.templates.contextReq;
-      if (req.user && req.extras.page && self.apos.permissions.can('edit', req.extras.page)) {
-        return self.partial('actions', { session: req.session });
+      if (req.user && req.data.page && self.apos.permissions.can(req, 'edit', req.data.page)) {
+        return self.partial('menu', { workflowMode: req.session.workflowMode });
       }
     };
     
-    self.addHelpers({
-      actions: self.actions
-    });
+    self.enableHelpers = function() {
+      self.addHelpers({
+        menu: self.menu
+      });
+    };
     
     self.enableAddMissingLocalesTask = function() {
       self.apos.tasks.add(self.__meta.name, 'add-missing-locales',
@@ -509,47 +473,157 @@ module.exports = {
     };
 
     self.addMissingLocalesTask = function(apos, argv, callback) {
-      console.log('amlt');
       var req = self.apos.tasks.getReq();
       
       return async.series([
+        fixIndexes,
         noLocales,
         missingSomeLocales
       ], function(err) {
-        console.log('done');
-        console.log(err);
         return callback(err);
       });
       
+      function fixIndexes(callback) {
+        var old;
+        return async.series([
+          getOld,
+          // New indexes first, so we're not without a unique index if the site is up
+          ensureNewSlug,
+          ensureNewPath,
+          dropOldSlug,
+          dropOldPath
+        ], callback);
+        function getOld(callback) {
+          return self.apos.docs.db.indexes(function(err, _old) {
+            if (err) {
+              return callback(err);
+            }
+            old = _old;
+            return callback(null);
+          });
+        }
+        function ensureNewSlug(callback) {
+          return self.apos.docs.db.ensureIndex({ slug: 1, workflowLocale: 1 }, { unique: true }, callback);
+        }
+        function ensureNewPath(callback) {
+          return self.apos.docs.db.ensureIndex({ path: 1, workflowLocale: 1 }, { unique: true }, callback);
+        }
+        function dropOldSlug(callback) {
+          var existing =_.find(old, function(index) {
+            return index.slug && (!index.workflowLocale);
+          });
+          if (!existing) {
+            return callback(null);
+          }
+          return self.apos.docs.db.dropIndex(existing.name, callback);
+        }
+        function dropOldPath(callback) {
+          var existing =_.find(old, function(index) {
+            return index.path && (!index.workflowLocale);
+          });
+          if (!existing) {
+            return callback(null);
+          }
+          return self.apos.docs.db.dropIndex(existing.name, callback);
+        }
+      }
+      
       function noLocales(callback) {
-        console.log('nl');
         return self.apos.migrations.eachDoc({ workflowLocale: { $exists: 0 } }, function(doc, callback) {
           if (!self.includeType(doc)) {
             return setImmediate(callback);
           }
-          return self.apos.docs.db.update({ _id: doc._id }, {
-            $set: {
-              workflowGuid: self.apos.utils.generateId(),
-              workflowLocale: self.defaultLocale
-            }
-          }, callback);
+          doc.workflowLocale = self.defaultLocale;
+          doc.workflowGuid = self.apos.utils.generateId();
+          return self.apos.docs.getManager(doc.type).update(req, doc, callback);
         }, callback);
       }
       
       function missingSomeLocales(callback) {
-        console.log('msl');
         return self.apos.migrations.eachDoc({ workflowLocale: self.defaultLocale }, function(doc, callback) {
           if (!self.includeType(doc)) {
             return setImmediate(callback);
           }
-          console.log('calling docAfterSave');
           return self.docAfterSave(req, doc, { permissions: false }, function(err) {
-            console.log('after');
             return callback(err);
           });
         }, callback);
       }
     };
+    
+    self.route('post', 'workflow-mode', function(req, res) {
+      if (!req.user) {
+        // Confusion to the enemy
+        res.status(404).send('not found');
+      }
+      req.session.workflowMode = (req.body.mode === 'draft') ? 'draft' : 'live';
+      return res.send({ status: 'ok' });
+    });
+    
+    self.route('post', 'submit', function(req, res) {
+      if (!req.user) {
+        // Confusion to the enemy
+        res.status(404).send('not found');
+      }
+      var ids = self.apos.launder.ids(req.body.ids);
+      return async.eachSeries(ids, function(id, callback) {
+        return async.series([
+          checkPermissions,
+          submit
+        ], callback);
+        function checkPermissions(callback) {
+          return self.apos.docs.find(req, { _id: id }, { _id: 1 }).permission('edit').toObject(function(err, obj) {
+            if (err) {
+              return callback(err);
+            }
+            if (!obj) {
+              return callback('not found');
+            }
+            return callback(null);
+          });
+        }
+        function submit(callback) {
+          var submitted = {
+            username: req.user.username,
+            name: req.user.title,
+            email: req.user.email,
+            when: new Date()
+          };
+          return self.apos.docs.db.update({ _id: id }, { $set: { workflowSubmitted: submitted } }, callback);
+        }
+      }, function(err) {
+        if (err) {
+          console.error(err);
+          res.send({ status: 'error' });
+        }
+        return res.send({ status: 'ok' });
+      });
+    });
+    
+    self.route('post', 'modal', function(req, res) {
+      if (!req.user) {
+        // Confusion to the enemy
+        res.status(404).send('not found');
+      }
+      return self.getSubmitted(req, {}, function(err, submitted) {
+        return res.send(self.render(req, 'modal.html', { submitted: submitted }));
+      });
+    });
 
+    self.enableSingleton = function() {
+      // The default options will include self.action, which is what self.api needs in browserland
+      self.pushCreateSingleton();
+    };
+
+    self.pushAssets = function() {
+      self.pushAsset('script', 'user', { when: 'user' });
+      self.pushAsset('script', 'modal', { when: 'user' });
+      self.pushAsset('stylesheet', 'user', { when: 'user' });
+    };
+
+    self.addToAdminBar = function() {
+      self.apos.adminBar.add(self.__meta.name, 'Workflow');
+    };
+        
   }
 };

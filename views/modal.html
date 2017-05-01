@@ -1,0 +1,35 @@
+{%- extends "apostrophe-modal:base.html" -%}
+{%- import "apostrophe-modal:macros.html" as modals -%}
+{%- import "apostrophe-ui:components/buttons.html" as buttons with context -%}
+
+{%- block modalClass -%}
+  {{ 'apos-workflow-modal' | css }} apos-ui-modal-no-sidebar
+{%- endblock -%}
+
+{%- block controls -%}
+  {{ buttons.minor('Done', { action: 'cancel' }) }}
+{%- endblock -%}
+
+{%- block label -%}
+  {{ __('Submitted For Your Approval') }}
+{%- endblock -%}
+
+{% block instructions %}
+  <p>
+    {{ __('Click on any document to view it. Once there you can edit or commit it.') }}
+  </p>
+{% endblock %}
+
+{%- block body -%}
+  <div class="apos-workflow-list" data-apos-workflow-list>
+    {% for doc in data.submitted %}
+      {% if apos.utils.beginsWith(doc.slug, '/') %}
+        <h4><a href="{{ doc._url }}">{{ doc.title }}</a></h4>
+      {% else %}
+        <h4><a href="#" data-apos-edit-{{ doc.type }}="{{ doc._id }}">{{ doc.title }}</a></h4>
+      {% endif %}
+    {% endfor %}
+  </div>
+{%- endblock -%}
+
+{%- block footerContainer -%}{%- endblock -%}
