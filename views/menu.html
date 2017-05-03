@@ -1,5 +1,8 @@
 <div class="apos-workflow-menu" data-apos-workflow-menu>
   <button class="{{ 'apos-workflow-current' if data.workflowMode == 'live' }}" data-apos-workflow-mode="live">Live</button>
   <button class="{{ 'apos-workflow-current' if data.workflowMode == 'draft' }}" data-apos-workflow-mode="draft">Draft</button>
-  <button data-apos-workflow-submit>Submit</button>
+  {% if data.workflowMode == 'draft' %}
+    <button data-apos-workflow-submit>Submit</button>
+    <button data-apos-workflow-commit>Commit</button>
+  {% endif %}
 </div>

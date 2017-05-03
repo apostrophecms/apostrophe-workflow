@@ -3,7 +3,7 @@
 {%- import "apostrophe-ui:components/buttons.html" as buttons with context -%}
 
 {%- block modalClass -%}
-  {{ 'apos-workflow-modal' | css }} apos-ui-modal-no-sidebar
+  {{ 'apos-workflow-submit-modal' | css }} apos-ui-modal-no-sidebar
 {%- endblock -%}
 
 {%- block controls -%}
@@ -11,7 +11,7 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Submitted For Your Approval') }}
+  {{ __('Submitted') }}
 {%- endblock -%}
 
 {% block instructions %}

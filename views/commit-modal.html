@@ -1,0 +1,30 @@
+{%- extends "apostrophe-modal:base.html" -%}
+{%- import "apostrophe-modal:macros.html" as modals -%}
+{%- import "apostrophe-ui:components/buttons.html" as buttons with context -%}
+
+{%- block modalClass -%}
+  {{ 'apos-workflow-commit-modal' | css }} apos-ui-modal-no-sidebar
+{%- endblock -%}
+
+{%- block controls -%}
+  {{ buttons.minor('Cancel', { action: 'cancel' }) }}
+  {{ buttons.major('Commit', { action: 'save' }) }}
+{%- endblock -%}
+
+{%- block label -%}
+  {{ __('Committing %s', data.doc.title) }}
+{%- endblock -%}
+
+{% block instructions %}
+  <p>
+    {{ __('Click Commit to make these changes live.') }}
+  </p>
+{% endblock %}
+
+{%- block body -%}
+  <div class="apos-workflow-preview">
+    <iframe class="apos-workflow-preview" src="{{ data.doc._url | build({ workflowPreview: data.doc._id }) }}"></iframe>
+  </div>
+{%- endblock -%}
+
+{%- block footerContainer -%}{%- endblock -%}

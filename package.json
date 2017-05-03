@@ -4,8 +4,9 @@
   "description": "Workflow for Apostrophe 2.x, based on the idea of several documents that represent different versions of the same document",
   "main": "index.js",
   "dependencies": {
-    "lodash": "^3.0.0",
-    "async": "^1.0.0"
+    "async": "^1.0.0",
+    "jsondiffpatch": "^0.2.4",
+    "lodash": "^3.0.0"
   },
   "devDependencies": {},
   "scripts": {

@@ -1,12 +1,10 @@
 // A modal for reviewing workflow submissions.
 
-console.log('hello');
-
-apos.define('apostrophe-workflow-modal', {
+apos.define('apostrophe-workflow-manage-modal', {
 
   extend: 'apostrophe-modal',
 
-  source: 'modal',
+  source: 'manage-modal',
 
   construct: function(self, options) {
     self.manager = options.manager;

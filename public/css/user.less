@@ -9,3 +9,52 @@
     }
   }
 }
+
+.apos-workflow-preview
+{
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  overflow: scroll;
+  transform: scale(0.8);
+}
+
+.apos-workflow-preview-page
+{
+  .apos-ui {
+    display: none;
+  }
+}
+
+.apos-workflow-widget-moved::before
+{
+  content: '↑↓';
+  position: static;
+  z-index: 1000;
+  color: blue;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.apos-workflow-widget-deleted::before
+{
+  content: 'ⓧ';
+  position: static;
+  z-index: 1000;
+  color: red;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.apos-workflow-widget-changed::before
+{
+  content: '!';
+  position: static;
+  z-index: 1000;
+  color: orange;
+  font-weight: bold;
+  font-size: 24px;
+}
