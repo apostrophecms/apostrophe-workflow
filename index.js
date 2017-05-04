@@ -771,8 +771,9 @@ module.exports = {
 
       return async.series([
         getDraftAndLive,
-        // Resolve the joins in the draft to point to the new locale's docs, so we don't get false
-        // positives for changes in the diff
+        // Resolve the joins in the live doc to point to the draft's docs, so we don't get false
+        // positives for changes in the diff. THIS IS RIGHT FOR VISUAL DIFF, WOULD BE VERY WRONG
+        // FOR APPLYING DIFF, for that we go in the opposite direction
         resolveRelationships
       ], function(err) {
 
@@ -818,7 +819,8 @@ module.exports = {
       }
       
       function resolveRelationships(callback) {
-        return self.resolveRelationships(req, draft, live.workflowLocale, callback);
+        // We're going in this direction for visual diff ONLY
+        return self.resolveRelationships(req, live, draft.workflowLocale, callback);
       }
 
     });
@@ -840,7 +842,12 @@ module.exports = {
     };
     
     self.pageBeforeSend = function(req) {
+      if (req.user && (req.session.workflowMode === 'live')) {
+        console.log('disableEditing');
+        req.disableEditing = true;
+      }
       if (req.user && req.query.workflowPreview) {
+        req.disableEditing = true;
         var id = self.apos.launder.id(req.query.workflowPreview);
         self.apos.templates.addBodyClass(req, 'apos-workflow-preview-page');
         req.browserCall('apos.modules["apostrophe-workflow"].enablePreviewIframe(?)', id);
@@ -857,6 +864,9 @@ module.exports = {
       }
       return self.partial('menu', { workflowMode: req.session.workflowMode });
     };
+    
+    // Don't allow editing in live mode; this disables the autosaving of areas
+    // behind the scenes
         
   }
 };

@@ -33,10 +33,13 @@ apos.define('apostrophe-workflow', {
         });
       });
     };
-    
+
+    // Get the ids of the docs related to the areas in the rendered HTML that are editable, or would be
+    // if we were not in live mode.
+
     self.getEditableDocIds = function() {
       var ids = [];
-      $('[data-apos-area][data-apos-area-edit]').each(function() {
+      $('[data-apos-area][data-apos-area-edit],[data-apos-area][data-apos-area-disabled-editing]').each(function() {
         var $area = $(this);
         var id = $area.attr('data-doc-id');
         if (id) {
@@ -125,11 +128,47 @@ apos.define('apostrophe-workflow', {
                   console.log(id, getWidget(id).length);
                   getWidget(id).addClass('apos-workflow-widget-moved');
                 } else if (widget[2] === 0) {
+                  var data = widget[0];
                   console.log('deleted');
-                  var id = widget[0]._id;
-                  var offset = matches[1];
-                  // TODO render this widget dynamically and insert it, then...
-                  // getWidget(id).addClass('apos-workflow-widget-deleted');
+                  
+                  // TODO: more of what follows ought to be shared by
+                  // the area editor and this module, probably by factoring
+                  // it into a method of the areas module that is easy to call
+                  // without being the area editor
+                  //
+                  // TODO: this would generate a lot of API requests if a lot
+                  // of things were deleted, might be worth serializing them
+                  // in an orderly fashion
+
+                  var areaOptions = JSON.parse($area.attr('data-options'));
+                  console.log('RENDERING');
+                  return $.jsonCall(apos.areas.options.action + '/render-widget',
+                    {
+                      dataType: 'html'
+                    },
+                    {
+                      data: data,
+                      options: areaOptions.widgets[data.type] || {},
+                      type: data.type
+                    }, function(html) {
+                      console.log('** RENDERED');
+                      console.log(html);
+                      // This rather intense code works around
+                      // various situations in which jquery is
+                      // picky about HTML
+                      var $newWidget = $($.parseHTML($.trim(html), null, true));
+                      var offset = matches[1];
+                      var $before = $area.findSafe('[data-apos-widget-wrapper]', '[data-apos-area]').eq(offset);
+                      if ($before.length) {
+                        $before.before($newWidget);
+                      } else {
+                        $area.append($newWidget);
+                      }
+                      $newWidget.addClass('apos-workflow-widget-deleted');
+                      console.log('emitting enhance event');
+                      apos.emit('enhance', $newWidget);
+                    }
+                  );
                 } else if (widget.length === 1) {
                   console.log('new');
                   // Insert
