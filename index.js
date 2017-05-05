@@ -20,11 +20,13 @@ module.exports = {
   // 
   // `includeTypes: [ 'my-blog-post', 'my-event' ]`
   // 
-  // Apply workflow only to docs of the specified types.
+  // Apply workflow only to docs of the specified types. IF WORKFLOW IS ENABLED FOR ANY PAGE TYPE,
+  // AS OPPOSED TO A PIECE, IT MUST BE ENABLED FOR *ALL* PAGE TYPES.
   // 
   // `excludeTypes: [ 'my-personal-profile' ]`
   // 
-  // Apply workflow to everything EXCEPT the specified types.
+  // Apply workflow to everything EXCEPT the specified types. IF WORKFLOW IS ENABLED FOR ANY PAGE TYPE,
+  // AS OPPOSED TO A PIECE, IT MUST BE ENABLED FOR *ALL* PAGE TYPES.
   // 
   // If both options are present, a type must appear in `includeTypes`
   // and NOT appear in `excludeTypes`.
@@ -60,7 +62,6 @@ module.exports = {
   },
 
   construct: function(self, options) {
-
     self.locales = options.locales || {
       'default': {
       },
@@ -616,7 +617,8 @@ module.exports = {
           ensureNewSlug,
           ensureNewPath,
           dropOldSlug,
-          dropOldPath
+          dropOldPath,
+          ensureWorkflowGuid
         ], callback);
         function getOld(callback) {
           return self.apos.docs.db.indexes(function(err, _old) {
@@ -653,6 +655,9 @@ module.exports = {
             return callback(null);
           }
           return self.apos.docs.db.dropIndex(existing.name, callback);
+        }
+        function ensureWorkflowGuid(callback) {
+          return self.apos.docs.db.ensureIndex({ workflowGuid: 1 });
         }
       }
       
@@ -793,11 +798,6 @@ module.exports = {
           }
         });
 
-        console.log('<<');
-        console.log(JSON.stringify(live, null, '  '));
-        console.log(JSON.stringify(draft, null, '  '));
-        console.log('>>');
-
         return res.send({
           status: 'ok',
           diff: diff.diff(
@@ -843,7 +843,6 @@ module.exports = {
     
     self.pageBeforeSend = function(req) {
       if (req.user && (req.session.workflowMode === 'live')) {
-        console.log('disableEditing');
         req.disableEditing = true;
       }
       if (req.user && req.query.workflowPreview) {
@@ -865,8 +864,119 @@ module.exports = {
       return self.partial('menu', { workflowMode: req.session.workflowMode });
     };
     
-    // Don't allow editing in live mode; this disables the autosaving of areas
-    // behind the scenes
-        
+    // "Based on `req`, `moved`, `data.oldParent` and `data.parent`, decide whether
+    // this move should be permitted. If it should not be, report an error." The `apostrophe-pages`
+    // module did this already, but we must consider the impact on all locales. 
+
+    self.pageMovePermissions = function(req, moved, data, options, callback) {
+      if (!moved.workflowGuid) {
+        // No localization for pages. That's unusual but allowed
+        return callback(null);
+      }
+      // Grab the pages of interest across all locales other than the original (already checked)
+      return self.apos.docs.find(req, {
+        workflowGuid: { $in: [ moved.workflowGuid, data.oldParent.workflowGuid, data.parent.workflowGuid ] },
+        workflowLocale: { $ne: moved.workflowLocale }
+      }).joins(false).areas(false).workflowLocale(false).permission(false).published(null).trash(null).toArray(function(err, pages) {
+        if (err) {
+          return callback(err);
+        }
+        var error = null;
+        var locales = {};
+        _.each(pages, function(page) {
+          if (!locales[page.workflowLocale]) {
+            locales[page.workflowLocale] = {};
+          }
+          if (page.workflowGuid === moved.workflowGuid) {
+            locales[page.workflowLocale].moved = page;
+          }
+          // Parent does not always change, else statement is not appropriate here
+          if (page.workflowGuid === data.parent.workflowGuid) {
+            locales[page.workflowLocale].parent = page;
+          }
+          if (page.workflowGuid === data.oldParent.workflowGuid) {
+            locales[page.workflowLocale].oldParent = page;
+          }
+        });
+        _.each(locales, function(locale, name) {
+          // Repeat the permissions check for every locale
+          if (!locale.moved._publish) {
+            error = new Error('forbidden');
+            return false;
+          }
+          // You can always move a page into the trash. You can
+          // also change the order of subpages if you can
+          // edit the subpage you're moving. Otherwise you
+          // must have edit permissions for the new parent page.
+          if ((locale.oldParent._id !== locale.parent._id) && (locale.parent.type !== 'trash') && (!locale.parent._edit)) {
+            error = new Error('forbidden');
+            return false;
+          }
+        });
+        return callback(error);
+      });
+    };
+    
+    // On the initial invocation of `apos.pages.move`, modify the criteria and filters
+    // to ensure only the relevant locale is in play
+    self.pageBeforeMove = function(req, moved, target, position, options) {
+      if (options.workflowRecursing) {
+        return;
+      }
+      if (moved.workflowLocale) {
+        options.criteria = _.assign({}, options.criteria || {}, { workflowLocale: moved.workflowLocale });
+        options.filters = _.assign({}, options.filters || {}, { workflowLocale: moved.workflowLocale });
+      }
+    };
+
+    // After a page is moved in one locale, with all of the ripple effects that go with it,
+    // make the same move in all other locales. Note that we already verified we have permissions
+    // across all locales.
+
+    self.pageAfterMove = function(req, moved, info, callback) {
+      if (info.options.workflowRecursing) {
+        return callback(null);
+      }
+      var ids = _.pluck(info.changed || [], '_id');
+      if (!moved.workflowGuid) {
+        return callback(null);
+      }
+      var locales = {};
+      return async.series([
+        get,
+        invoke
+      ], function(err) {
+        return callback(err);
+      });
+      function get(callback) {
+        // Locate the doc moved and the doc it is moved relative to (target) in all locales other than
+        // the original one
+        return self.apos.docs.db.find({ workflowGuid: { $in: [ moved.workflowGuid, info.target.workflowGuid ] }, workflowLocale: { $ne: moved.workflowLocale } }, { workflowGuid: 1, _id: 1, workflowLocale: 1 }).toArray(function(err, docs) {
+          if (err) {
+            return callback(err);
+          }
+          _.each(docs, function(doc) {
+            locales[doc.workflowLocale] = locales[doc.workflowLocale] || {};
+            if (doc.workflowGuid === moved.workflowGuid) {
+              locales[doc.workflowLocale].movedId = doc._id;
+            }
+            if (doc.workflowGuid === info.target.workflowGuid) {
+              locales[doc.workflowLocale].targetId = doc._id;
+            }
+          });
+          return callback(null);
+        });
+      }
+      function invoke(callback) {
+        // Reinvoke apos.pages.move 
+        return async.eachSeries(_.keys(locales), function(locale, callback) {
+          var _options = _.clone(info.options);
+          _options.criteria = _.assign({}, info.options.criteria || {}, { workflowLocale: locale });
+          _options.filters = _.assign({}, info.options.filters || {}, { workflowLocale: locale });
+          _options.workflowRecursing = true;
+          return self.apos.pages.move(req, locales[locale].movedId, locales[locale].targetId, info.position, _options, callback);
+        }, callback);
+      }
+    };
   }
 };

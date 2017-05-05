@@ -1,6 +1,6 @@
 ## Status
 
-Work in progress, not yet functional.
+Work in progress, not yet fully functional, there may be serious omissions at this stage.
 
 ## Approach
 
@@ -14,7 +14,22 @@ As the term locale suggests, the 2.x workflow module is also intended to provide
 * "Reorganize" operations must be attended to, in particular the impact on path and rank must be propagated as part of the commit process.
 * The trash must be refactored so that pages don't lose their context in the tree while they are considered trash in some locales. Trash is just one more toggle-able flag that might get propagated as part of the commit process.
 * Make sure any contextual save operations have a chance to complete before the preview iframe is requested.
+* Move method implementation:
+  * Implement pageMovePermissions
+  * Implement pageAfterMove
+    * We need to fix the slug (if appropriate) and path of the doc itself in other locales.
+    * We need to fix the slug (if appropriate) of descendants of the doc itself in other locales.
+      * apostrophe has already updated the path of descendants in all locales.
+      * But we could add a hook so that apostrophe doesn't touch other locales at all in updateDescendants.
+      * And we could factor out the update of the slug and path of the doc itself.
+      * Then we can invoke the slug/path updater on each localized version of `moved`, and if they
+        change, invoke `updateDescendants` for each localized verison of `moved`, leveraging the same
+        hook as before to restrict that code to one locale.
 
+"What about nudged peers?" It's being done at the mongo level, so it will already cut across locales.
+
+"What about trash/no trash status for peers?" Ditto.
+  
 ## Diff preview case notes
 
 Documentation of how the diff deltas work:
