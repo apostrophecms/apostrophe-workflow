@@ -611,14 +611,14 @@ module.exports = {
       
       function fixIndexes(callback) {
         var old;
+        console.log('fix indexes');
         return async.series([
           getOld,
           // New indexes first, so we're not without a unique index if the site is up
           ensureNewSlug,
           ensureNewPath,
           dropOldSlug,
-          dropOldPath,
-          ensureWorkflowGuid
+          dropOldPath
         ], callback);
         function getOld(callback) {
           return self.apos.docs.db.indexes(function(err, _old) {
@@ -655,9 +655,6 @@ module.exports = {
             return callback(null);
           }
           return self.apos.docs.db.dropIndex(existing.name, callback);
-        }
-        function ensureWorkflowGuid(callback) {
-          return self.apos.docs.db.ensureIndex({ workflowGuid: 1 });
         }
       }
       
@@ -978,5 +975,14 @@ module.exports = {
         }, callback);
       }
     };
+
+    self.modulesReady = function(callback) {
+      return self.ensureIndexes(callback);
+    };
+    
+    self.ensureIndexes = function(callback) {
+      return self.apos.docs.db.ensureIndex({ workflowGuid: 1 }, {}, callback);
+    };
+
   }
 };

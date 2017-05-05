@@ -101,18 +101,35 @@ describe('Workflow', function() {
   //////
 
   it('should make sure all of the expected indexes are configured', function(done){
-    var expectedIndexes = ['path'];
-    var actualIndexes = []
 
-    apos.docs.db.indexInformation(function(err, info){
+    apos.docs.db.indexInformation(function(err, info) {
       assert(!err);
-      console.log(info);
-      assert(true);
+      var needed = [
+        [ 'slug', 'workflowLocale' ],
+        [ 'path', 'workflowLocaleForPathIndex' ],
+        [ 'workflowGuid' ]
+      ];
+      var met = {};
+      _.each(info, function(val, key) {
+        var props = _.map(val, function(param) {
+          return param[0];
+        });
+        _.each(needed, function(_props, i) {
+          var missing = _.find(_props, function(prop) {
+            return !_.contains(props, prop);
+          });
+          // None missing, no extras
+          if ((!missing) && (_props.length === props.length)) {
+            met[i] = true;
+          }
+        });
+      });
+      assert.equal(_.keys(met).length, needed.length);
       done();
     });
   });
 
-  it('parked homepage exists', function(done) {
+  it('parked homepage exists in default-draft locale', function(done) {
     return apos.pages.find(t.req.anon(apos), { slug: '/' }).toObject(function(err, home) {
       assert(!err);
       assert(home);
@@ -121,6 +138,21 @@ describe('Workflow', function() {
       assert(home.type === 'home');
       assert(home.parked);
       assert(home.published);
+      assert(home.workflowLocale === 'default-draft');
+      done();
+    });
+  });
+
+  it('parked homepage exists in default locale', function(done) {
+    return apos.pages.find(t.req.anon(apos), { slug: '/' }).workflowLocale('default').toObject(function(err, home) {
+      assert(!err);
+      assert(home);
+      assert(home.slug === '/');
+      assert(home.path === '/');
+      assert(home.type === 'home');
+      assert(home.parked);
+      assert(home.published);
+      assert(home.workflowLocale === 'default');
       done();
     });
   });
@@ -205,8 +237,6 @@ describe('Workflow', function() {
     apos.docs.db.insert(testItems, function(err){
       if (err) {
         console.error(err);
-        console.error(testItems);
-        process.exit(1);
       }
       assert(!err);
       done();
@@ -339,6 +369,17 @@ describe('Workflow', function() {
 
     cursor.toObject(function(err, page){
       assert.equal(page.rank, 2);
+      assert(page.workflowLocale === 'default-draft');
+      done();
+    });
+  });
+
+  it('is able to insert a new page in the correct order in both locales', function(done) {
+    var cursor = apos.pages.find(t.req.anon(apos), { slug: '/new-page' }).workflowLocale('default');
+
+    cursor.toObject(function(err, page){
+      assert.equal(page.rank, 2);
+      assert(page.workflowLocale === 'default');
       done();
     });
   });
@@ -353,7 +394,6 @@ describe('Workflow', function() {
     apos.pages.move(t.req.admin(apos), '4312', '1234', 'after', function(err) {
       if (err) {
         console.log(err);
-        process.exit(1);
       }
       assert(!err);
       var cursor = apos.pages.find(t.req.anon(apos), {_id: '4312'});
@@ -370,6 +410,24 @@ describe('Workflow', function() {
       });
     });
 
+  });
+
+  it('newly moved page is also in the right place in the other locale', function(done) {
+    // 'Cousin' _id === 4312
+    // 'Parent' _id === 1234
+    apos.pages.find(t.req.admin(apos), { path: '/cousin' }).workflowLocale('default').toObject(function(err, page){
+      if (err) {
+        console.log(err);
+      }
+      assert(!err);
+      //Is the new path correct?
+      assert.equal(page.path, '/cousin');
+      //Is the rank correct?
+      assert.equal(page.rank, 1);
+      // Is the locale filter working?
+      assert.equal(page.workflowLocale, 'default');
+      return done();
+    });
   });
 
   it('is able to move root/cousin before root/parent/child', function(done) {
@@ -438,6 +496,20 @@ describe('Workflow', function() {
       });
     });
 
+  });
+
+  it('moving /parent into /another-parent should also move /parent/sibling in the other locale', function(done) {
+    var cursor = apos.pages.find(t.req.anon(apos), { path: '/another-parent/parent/sibling' }).workflowLocale('default');
+    cursor.toObject(function(err, page){
+      if (err) {
+        console.log(err);
+      }
+      assert(!err);
+      //Is the grandchild's path correct?
+      assert.equal(page.path, '/another-parent/parent/sibling');
+      assert.equal(page.workflowLocale, 'default');
+      return done();
+    });
   });
 
   it('should detect that the home page is an ancestor of any page except itself', function() {
