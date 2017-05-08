@@ -53,26 +53,37 @@ apos.define('apostrophe-workflow', {
     self.enableSubmit = function() {
       $('body').on('click', '[data-apos-workflow-submit]', function() {
         var ids = self.getEditableDocIds();
-        self.api('submit', { ids: ids }, function(result) {
-          if (result.status !== 'ok') {
-            alert('An error occurred.');
-          } else {
-            alert('Your submission will be reviewed.');
-          }
-        }, function() {
-          alert('An error occurred.');
-        });
+        self.submit(ids);
         return false;
       });
     };
 
     self.enableCommit = function() {
       $('body').on('click', '[data-apos-workflow-commit]', function() {
-        return async.eachSeries(self.getEditableDocIds(), function(id, callback) {
-          return self.launchCommitModal(id, callback);
-        }, function() {
-        });
+        self.commit(self.getEditableDocIds());
         return false;
+      });
+    };
+
+    // Submit the docs with the specified ids for approval and notify the user
+    self.submit = function(ids) {
+      self.api('submit', { ids: ids }, function(result) {
+        if (result.status !== 'ok') {
+          alert('An error occurred.');
+        } else {
+          alert('Your submission will be reviewed.');
+        }
+      }, function() {
+        alert('An error occurred.');
+      });
+    }
+    
+    // Present commit modals for all ids in the array, one after another
+    self.commit = function(ids) {
+      return async.eachSeries(ids, function(id, callback) {
+        return self.launchCommitModal(id, callback);
+      }, function() {
+        // These individually present UI including any needed error messages
       });
     };
     
@@ -205,6 +216,6 @@ apos.define('apostrophe-workflow', {
         alert('An error occurred displaying the difference between the documents.');
       }
     };
-
+    
   }
 });

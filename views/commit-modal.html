@@ -2,8 +2,9 @@
 {%- import "apostrophe-modal:macros.html" as modals -%}
 {%- import "apostrophe-ui:components/buttons.html" as buttons with context -%}
 
+{{ apos.log(data.doc) }}
 {%- block modalClass -%}
-  {{ 'apos-workflow-commit-modal' | css }} apos-ui-modal-no-sidebar
+  apos-workflow-commit-modal apos-ui-modal-no-sidebar
 {%- endblock -%}
 
 {%- block controls -%}
@@ -23,7 +24,11 @@
 
 {%- block body -%}
   <div class="apos-workflow-preview">
-    <iframe class="apos-workflow-preview" src="{{ data.doc._url | build({ workflowPreview: data.doc._id }) }}"></iframe>
+    {% if data.doc._url %}
+      <iframe class="apos-workflow-preview" src="{{ data.doc._url | build({ workflowPreview: data.doc._id }) }}"></iframe>
+    {% else %}
+      <p>No preview available.</p>
+    {% endif %}
   </div>
 {%- endblock -%}
 

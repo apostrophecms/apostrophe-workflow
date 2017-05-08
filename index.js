@@ -58,6 +58,7 @@ module.exports = {
     self.pushAssets();
     self.enableSingleton();
     self.addToAdminBar();
+    self.extendPieces();
     self.apos.pages.addAfterContextMenu(self.menu);
   },
 
@@ -115,6 +116,55 @@ module.exports = {
         params.workflowLocaleForPathIndex = 1;
       });
     };
+    
+    // When editing pieces, we should always get the draft version of
+    // the content unless otherwise specified
+
+    self.extendPieces = function() {
+      self.apos.on('piecesFindForEditing', function(type, cursor) {
+        if (!self.includeType(type)) {
+          return;
+        }
+        var req = cursor.get('req');
+        if (!req.locale.match(/\-draft$/)) {
+          var locale = cursor.get('workflowLocale');
+          if (locale === undefined) {
+            cursor.workflowLocale(req.locale + '-draft');
+          }
+        }
+      });
+      self.apos.on('piecesEditControls', function(info) {
+        upgradeControls(info);
+      });
+      self.apos.on('piecesCreateControls', function(info) {
+        upgradeControls(info);
+      });
+      function upgradeControls(info) {
+        if (!self.includeType(info.type)) {
+          // Not subject to workflow
+          return;
+        }
+        // TODO use info.req, check whether committing is a thing they can do
+        // per Stuart's notes on permissions design.
+        //
+        // Also Submit operation.
+        var save = _.find(info.controls, { action: 'save' });
+        if (save) {
+          save.label = 'Save Draft';
+        }
+        info.controls.push({
+          type: 'major',
+          label: 'Submit',
+          action: 'submit'
+        });
+        // TODO: if and only if they are admin of this piece type in corresponding non-draft locale
+        info.controls.push({
+          type: 'major',
+          label: 'Commit',
+          action: 'commit'
+        });
+      }
+    };
 
     // Every time a doc is saved, check whether its type is included in workflow. If it is,
     // and the doc does not yet have a `workflowLocale` property, establish one and generate
@@ -131,6 +181,12 @@ module.exports = {
       }
       if (!doc.workflowLocale) {
         doc.workflowLocale = req.locale || self.defaultLocale;
+        if (!doc.workflowLocale.match(/\-draft$/)) {
+          // Always create the draft first, so we can then find it by id successfully
+          // via code that is overridden to look for drafts. All the locales get created
+          // but we want to return the draft's _id
+          doc.workflowLocale += '-draft';
+        }
         doc.workflowGuid = self.apos.utils.generateId();
         doc._workflowNew = true;
         self.ensureWorkflowLocaleForPathIndex(doc);
@@ -404,7 +460,7 @@ module.exports = {
         return callback(null, draft, live);
       });
       function getDraft(callback) {
-        var locale;
+        var locale = req.locale;
         if (!req.locale.match(/\-draft$/)) {
           locale += '-draft';
         }
@@ -438,10 +494,7 @@ module.exports = {
     self.route('post', 'commit', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
-        res.status(404).send('not found');
-      }
-      if (!req.locale.match(/\-draft$/)) {
-        res.status(404).send('not found');
+        return res.status(404).send('not found');
       }
       var id = self.apos.launder.id(req.body.id);
       var draft, live;
@@ -451,7 +504,7 @@ module.exports = {
       }, function(err) {
         if (err) {
           console.error(err);
-          res.send({ status: 'error' });
+          return res.send({ status: 'error' });
         }
         return res.send({ status: 'ok' });
       });
@@ -590,7 +643,7 @@ module.exports = {
         return next();
       }
     };
-            
+                
     self.enableAddMissingLocalesTask = function() {
       self.apos.tasks.add(self.__meta.name, 'add-missing-locales',
         'Run this task after adding new locales or setting up the module for the first time.',
@@ -611,7 +664,6 @@ module.exports = {
       
       function fixIndexes(callback) {
         var old;
-        console.log('fix indexes');
         return async.series([
           getOld,
           // New indexes first, so we're not without a unique index if the site is up
@@ -690,7 +742,7 @@ module.exports = {
       req.session.workflowMode = (req.body.mode === 'draft') ? 'draft' : 'live';
       return res.send({ status: 'ok' });
     });
-    
+        
     self.route('post', 'submit', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
@@ -703,7 +755,7 @@ module.exports = {
           submit
         ], callback);
         function checkPermissions(callback) {
-          return self.apos.docs.find(req, { _id: id }, { _id: 1 }).permission('edit').toObject(function(err, obj) {
+          return self.apos.docs.find(req, { _id: id }, { _id: 1 }).workflowLocale(self.draftify(req.locale)).permission('edit').toObject(function(err, obj) {
             if (err) {
               return callback(err);
             }
@@ -744,10 +796,7 @@ module.exports = {
     self.route('post', 'commit-modal', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
-        res.status(404).send('not found');
-      }
-      if (!req.locale.match(/\-draft$/)) {
-        res.status(404).send('not found');
+        return res.status(404).send('not found');
       }
       var id = self.apos.launder.id(req.body.id);
       // We get both the same way the commit route does, for the sake of the permissions check,
@@ -821,6 +870,14 @@ module.exports = {
       }
 
     });
+    
+    self.draftify = function(locale) {
+      if (locale.match(/\-draft$/)) {
+        return locale;
+      } else {
+        return locale + '-draft';
+      }
+    };
 
     self.enableSingleton = function() {
       // The default options will include self.action, which is what self.api needs in browserland
@@ -831,6 +888,7 @@ module.exports = {
       self.pushAsset('script', 'user', { when: 'user' });
       self.pushAsset('script', 'manage-modal', { when: 'user' });
       self.pushAsset('script', 'commit-modal', { when: 'user' });
+      self.pushAsset('script', 'pieces-editor-modal', { when: 'user' });
       self.pushAsset('stylesheet', 'user', { when: 'user' });
     };
 
