@@ -9,7 +9,7 @@ apos.define('apostrophe-pieces-editor-modal', {
           if (err) {
             return;
           }
-          return apos.modules['apostrophe-workflow'].submit([ self.savedPiece._id ], callback);
+          return apos.modules['apostrophe-workflow'].submit([ self.savedPiece._id ]);
         });
       });
       self.link('apos-commit', function() {
@@ -17,7 +17,7 @@ apos.define('apostrophe-pieces-editor-modal', {
           if (err) {
             return;
           }
-          return apos.modules['apostrophe-workflow'].commit([ self.savedPiece._id ], callback);
+          return apos.modules['apostrophe-workflow'].commit([ self.savedPiece._id ]);
         });
       });
       return superBeforeShow(callback);

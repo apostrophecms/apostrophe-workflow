@@ -76,3 +76,15 @@
   font-weight: bold;
   color: black;
 }
+
+.apos-ui .apos-field.apos-workflow-field-changed
+{
+  border: 1px solid purple;
+}
+
+.apos-workflow-live-page {
+  // Everything except the live/draft toggle should be unavailable in live mode
+  .apos-ui .apos-context-menu-container .apos-context-menu {
+    display: none;
+  }
+}

@@ -139,6 +139,9 @@ module.exports = {
       self.apos.on('piecesCreateControls', function(info) {
         upgradeControls(info);
       });
+      self.apos.on('pagesEditControls', function(info) {
+        upgradeControls(info);
+      });
       function upgradeControls(info) {
         if (!self.includeType(info.type)) {
           // Not subject to workflow
@@ -917,6 +920,7 @@ module.exports = {
       self.pushAsset('script', 'manage-modal', { when: 'user' });
       self.pushAsset('script', 'commit-modal', { when: 'user' });
       self.pushAsset('script', 'pieces-editor-modal', { when: 'user' });
+      self.pushAsset('script', 'pages-editor-modal', { when: 'user' });
       self.pushAsset('script', 'schemas', { when: 'user' });
       self.pushAsset('stylesheet', 'user', { when: 'user' });
     };
@@ -928,6 +932,7 @@ module.exports = {
     self.pageBeforeSend = function(req) {
       if (req.user && (req.session.workflowMode === 'live')) {
         req.disableEditing = true;
+        self.apos.templates.addBodyClass(req, 'apos-workflow-live-page');
       }
       if (req.user && req.query.workflowPreview) {
         req.disableEditing = true;

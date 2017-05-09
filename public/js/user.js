@@ -65,25 +65,28 @@ apos.define('apostrophe-workflow', {
       });
     };
 
-    // Submit the docs with the specified ids for approval and notify the user
-    self.submit = function(ids) {
+    // Submit the docs with the specified ids for approval and notify the user.
+    self.submit = function(ids, callback) {
       self.api('submit', { ids: ids }, function(result) {
         if (result.status !== 'ok') {
-          alert('An error occurred.');
+          alert('An error occurred submitting the document for approval.');
+          return callback && callback('error');
         } else {
           alert('Your submission will be reviewed.');
+          return callback && callback(null);
         }
       }, function() {
         alert('An error occurred.');
+        return callback && callback('error');
       });
     }
     
     // Present commit modals for all ids in the array, one after another
-    self.commit = function(ids) {
+    self.commit = function(ids, callback) {
       return async.eachSeries(ids, function(id, callback) {
         return self.launchCommitModal(id, callback);
-      }, function() {
-        // These individually present UI including any needed error messages
+      }, function(err) {
+        return callback && callback(err);
       });
     };
     
