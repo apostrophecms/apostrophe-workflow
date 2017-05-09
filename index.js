@@ -522,7 +522,35 @@ module.exports = {
         return self.commit(req, draft, live, callback);
       }
     });
-    
+
+    // Given a workflowGuid and a draft workflowLocale, return the doc for the corresponding live locale
+
+    self.route('post', 'get-live', function(req, res) {
+
+      if (!req.user) {
+        // Confusion to the enemy
+        return res.status(404).send('not found');
+      }
+      var guid = self.apos.launder.string(req.body.workflowGuid);
+      var locale = self.apos.launder.string(req.body.workflowLocale);
+      locale = locale.replace(/\-draft$/, '');
+      return self.apos.docs.find(req, { workflowGuid: guid, workflowLocale: locale }).published(null).workflowLocale(locale).toObject(function(err, live) {
+        if (err) {
+          return fail(err);
+        }
+        if (!live) {
+          return fail('not found');
+        }
+        return res.send({ status: 'ok', doc: live });
+      });
+      
+      function fail(err) {
+        console.error(err);
+        return res.send({ status: 'error' });
+      }
+
+    });
+        
     // Copy properties that are included in workflow from the doc `from`
     // to the doc `to`. TODO: this method does not yet address copying
     // modified attachments to make sure an edit to one locale does not alter
@@ -889,6 +917,7 @@ module.exports = {
       self.pushAsset('script', 'manage-modal', { when: 'user' });
       self.pushAsset('script', 'commit-modal', { when: 'user' });
       self.pushAsset('script', 'pieces-editor-modal', { when: 'user' });
+      self.pushAsset('script', 'schemas', { when: 'user' });
       self.pushAsset('stylesheet', 'user', { when: 'user' });
     };
 
