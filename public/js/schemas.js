@@ -5,7 +5,7 @@ apos.define('apostrophe-schemas', {
       if (!object.workflowLocale) {
         return next();
       }
-      if (schema.length && schema[0].workflowRecursing) {
+      if (schema.length && schema[0].hints && schema[0].hints.workflowRecursing) {
         return next();
       }
       return apos.modules['apostrophe-workflow'].api('get-live',
@@ -29,6 +29,7 @@ apos.define('apostrophe-schemas', {
           // Nest the twin in an apos-field so that findFieldset for the original schema doesn't mistakenly descend into it
           var $wrapper = $('<div class="apos-field apos-workflow-live-field" data-apos-workflow-live-field data-name="workflow-live-' + field.name + '"></div>');
           $wrapper.append($live);
+          $wrapper.append($('<div class="apos-workflow-live-field-mask"></div>'));
           $draft.after($wrapper);
           if (!_.isEqual(object[field.name], data.doc[field.name])) {
             $draft.addClass('apos-workflow-field-changed');
@@ -79,8 +80,10 @@ apos.define('apostrophe-schemas', {
           });
 
           // Populate it via a schema of just that one field, so we don't reinvent any wheels but it still
-          // fits into its separate place in the DOM
-          return apos.schemas.populate($wrapper, [ _.assign({ workflowRecursing: true }, field) ], data.doc, callback);
+          // fits into its separate place in the DOM. Use a hint property to avoid infinite recursion on this.
+          // We use hints because the blessing mechanism on the server side ignores them.
+
+          return apos.schemas.populate($wrapper, [ _.merge({ hints: { workflowRecursing: true } }, field) ], data.doc, callback);
 
         }, function(err) {
           if (err) {

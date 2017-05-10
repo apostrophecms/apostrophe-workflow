@@ -66,6 +66,18 @@
 
 .apos-workflow-live-field
 {
+  position: relative;
+  .apos-workflow-live-field-mask
+  {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: @apos-black;
+    opacity: 0.05;
+  }
   // There is also jQuery to prevent keyboard events.
   pointer-events: none;
   label:first-child {
