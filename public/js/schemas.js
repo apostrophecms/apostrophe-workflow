@@ -9,7 +9,7 @@ apos.define('apostrophe-schemas', {
         return next();
       }
       return apos.modules['apostrophe-workflow'].api('get-live',
-        _.pick(object, 'workflowGuid', 'workflowLocale'),
+        _.assign(_.pick(object, 'workflowGuid', 'workflowLocale'), { resolveRelationshipsToDraft: true }),
         function(data) {
         if (data.status !== 'ok') {
           return fail();

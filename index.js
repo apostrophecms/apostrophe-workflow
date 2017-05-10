@@ -322,6 +322,7 @@ module.exports = {
 
         var workflowGuids;
         var secondLocaleIds;
+        var originalIds;
 
         return async.eachSeries(joins, function(join, callback) {
           return async.series([
@@ -349,6 +350,7 @@ module.exports = {
               });
             } else {
               return self.apos.docs.db.find({ _id: { $in: join.doc[join.field.idsField] } }, { workflowGuid: 1 }).toArray(function(err, docs) {
+                originalIds = join.doc[join.field.idsField];
                 if (err) {
                   return callback(err);
                 }
@@ -362,7 +364,7 @@ module.exports = {
           }
 
           function findSecondLocaleIds(callback) {
-            return self.apos.docs.db.find({ workflowGuid: { $in: workflowGuids }, workflowLocale: toLocale }, { _id: 1 }).toArray(function(err, docs) {
+            return self.apos.docs.db.find({ workflowGuid: { $in: workflowGuids }, workflowLocale: toLocale }, { _id: 1, workflowGuid: 1 }).toArray(function(err, docs) {
               if (err) {
                 return callback(err);
               }
@@ -380,7 +382,6 @@ module.exports = {
             if (join.type === 'joinByOne') {
               join.doc[join.field.idField] = secondLocaleIds[0];
             } else {
-              join.doc[join.field.idsField] = secondLocaleIds;
               if (join.field.relationship) {
                 var relationships = join.doc[join.field.relationshipsField];
                 var newRelationships = {};
@@ -391,6 +392,11 @@ module.exports = {
                 });
                 join.doc[join.field.relationshipsField] = newRelationships;
               }
+              // Rebuild the original order properly
+              secondLocaleIds = _.map(originalIds, function(id) {
+                return oldIdToNewId[id];
+              });
+              join.doc[join.field.idsField] = secondLocaleIds;
             }
           }
 
@@ -537,7 +543,12 @@ module.exports = {
       var guid = self.apos.launder.string(req.body.workflowGuid);
       var locale = self.apos.launder.string(req.body.workflowLocale);
       locale = locale.replace(/\-draft$/, '');
-      return self.apos.docs.find(req, { workflowGuid: guid, workflowLocale: locale }).published(null).workflowLocale(locale).toObject(function(err, live) {
+      var live;
+
+      return async.series([
+        get,
+        ids
+      ], function(err) {
         if (err) {
           return fail(err);
         }
@@ -546,6 +557,20 @@ module.exports = {
         }
         return res.send({ status: 'ok', doc: live });
       });
+      
+      function get(callback) {
+        return self.apos.docs.find(req, { workflowGuid: guid, workflowLocale: locale }).published(null).workflowLocale(locale).toObject(function(err, _live) {
+          live = _live;
+          return callback(err);
+        });
+      }
+      
+      function ids(callback) {
+        if (!req.body.resolveRelationshipsToDraft) {
+          return callback(null);
+        }
+        return self.resolveRelationships(req, live, locale + '-draft', callback);
+      }
       
       function fail(err) {
         console.error(err);
