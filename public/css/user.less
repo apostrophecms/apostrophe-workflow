@@ -66,6 +66,12 @@
 
 .apos-workflow-live-field
 {
+  // There is also jQuery to prevent keyboard events.
+  pointer-events: none;
+  label:first-child {
+    // Allow clicks on the live/draft toggle
+    pointer-events: auto;
+  }
   .apos-field:first-child {
     display: none;
   }
