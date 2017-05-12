@@ -7,6 +7,7 @@ apos.define('apostrophe-workflow', {
     self.enableSubmit();
     self.enableCommit();
     self.enableManageModal();
+    self.addPermissionsFieldType();
   },
 
   construct: function(self, options) {
@@ -113,7 +114,6 @@ apos.define('apostrophe-workflow', {
         if (result.status !== 'ok') {
           return fail();
         }
-        console.log(result.diff);
         var keys = _.keys(result.diff);
         // https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
         _.each(keys, function(key) {
@@ -124,26 +124,19 @@ apos.define('apostrophe-workflow', {
           $area.addClass('apos-workflow-area-changed');
           var items = result.diff[key].items;
           if (items._t !== 'a') {
-            console.log(key + ' is not an array patch');
             $area.find('[data-widget]').addClass('apos-workflow-widget-new');
             return;
           }
           _.each(items, function(widget, offset) {
-            console.log(widget, offset);
             var matches = offset.match(/^_(\d+)$/);
             if (matches) {
-              console.log('matches');
               // Moves and deletions are done with a reference to the old offset
               if (Array.isArray(widget)) {
-                console.log('widget is array');
                 if (widget[2] === 3) {
-                  console.log('moved');
                   var id = widget[0]._id;
-                  console.log(id, getWidget(id).length);
                   getWidget(id).addClass('apos-workflow-widget-moved');
                 } else if (widget[2] === 0) {
                   var data = widget[0];
-                  console.log('deleted');
                   
                   // TODO: more of what follows ought to be shared by
                   // the area editor and this module, probably by factoring
@@ -155,7 +148,6 @@ apos.define('apostrophe-workflow', {
                   // in an orderly fashion
 
                   var areaOptions = JSON.parse($area.attr('data-options'));
-                  console.log('RENDERING');
                   return $.jsonCall(apos.areas.options.action + '/render-widget',
                     {
                       dataType: 'html'
@@ -165,8 +157,6 @@ apos.define('apostrophe-workflow', {
                       options: areaOptions.widgets[data.type] || {},
                       type: data.type
                     }, function(html) {
-                      console.log('** RENDERED');
-                      console.log(html);
                       // This rather intense code works around
                       // various situations in which jquery is
                       // picky about HTML
@@ -179,30 +169,23 @@ apos.define('apostrophe-workflow', {
                         $area.append($newWidget);
                       }
                       $newWidget.addClass('apos-workflow-widget-deleted');
-                      console.log('emitting enhance event');
                       apos.emit('enhance', $newWidget);
                     }
                   );
                 } else if (widget.length === 1) {
-                  console.log('new');
                   // Insert
                   getWidget(id).addClass('apos-workflow-widget-new');
                 }
               }
             } else if (offset.match(/^\d+$/)) {
-              console.log('numeric offset');
               if (Array.isArray(widget)) {
-                console.log('widget is array');
                 if (widget.length === 1) {
                   // Insert
                   var id = widget[0]._id;
-                  console.log('new 2');
                   getWidget(id).addClass('apos-workflow-widget-new');
                 }
               } else if (typeof(widget) === 'object') {
                 // Just a modification
-                console.log('changed');
-                console.log(widget);
                 var id = widget._id;
                 $area.findSafe('[data-apos-widget-id]', '[data-apos-area]').eq(parseInt(offset)).addClass('apos-workflow-widget-changed');
               }
@@ -219,6 +202,70 @@ apos.define('apostrophe-workflow', {
         alert('An error occurred displaying the difference between the documents.');
       }
     };
+    
+    self.addPermissionsFieldType = function() {
+      apos.schemas.addFieldType({
+        name: 'apostrophe-workflow-permissions',
+        populate: self.permissionsPopulate,
+        convert: self.permissionsConvert
+      });
+    };
+    
+    self.findPermissionsCheckbox = function($fieldset, name, val) {
+      return $fieldset.find('input[name="' + name + '"][value="' + val + '"]');
+    };
+    
+    self.findPermissionsLocaleCheckbox = function($fieldset, name, val, locale) {
+      return $fieldset.find('input[name="' + name + 'Locales[' + val + '][' + locale + ']"]');
+    };
+
+    self.permissionsPopulate = function(object, name, $field, $el, field, callback) {
+      var $fieldset = apos.schemas.findFieldset($el, name);
+      _.each(object[name] || [], function(val) {
+        self.findPermissionsCheckbox($fieldset, name, val).prop('checked', true);
+      });
+      _.each(object[name + 'Locales'] || {}, function(locales, permission) {
+        _.each(locales, function(locale, localeName) {
+          self.findPermissionsLocaleCheckbox($fieldset, name, permission, localeName).prop('checked', true);
+        });
+      });
+      reflect();
+      $fieldset.on('change', 'input[type="checkbox"]', function() {
+        reflect();
+      });
+      function reflect() {
+        _.each(field.choices, function(choice) {
+          var $choice = $fieldset.find('[data-apos-permission="' + choice.value + '"]');
+          var $tree = $choice.find('.apos-workflow-permissions-tree');
+          if ($choice.find('[value="' + choice.value + '"]:checked').length) {
+            $tree.show();
+          } else {
+            $tree.hide();
+          }
+        });
+      }
+      return setImmediate(callback);
+    };
+
+    self.permissionsConvert = function(data, name, $field, $el, field, callback) {
+      var $fieldset = apos.schemas.findFieldset($el, name);
+      data[name] = [];
+      data[name + 'Locales'] = {};
+      _.each(field.choices, function(choice) {
+        if (self.findPermissionsCheckbox($fieldset, name, choice.value).prop('checked')) {
+          data[name].push(choice.value);
+          if (!data[name + 'Locales'][choice.value]) {
+            data[name + 'Locales'][choice.value] = {};
+          }
+          _.each(field.locales, function(locale, localeName) {
+            if (self.findPermissionsLocaleCheckbox($fieldset, name, choice.value, localeName).prop('checked')) {
+              data[name + 'Locales'][choice.value][localeName] = true;
+            }
+          });
+        }
+      });
+      return setImmediate(callback);
+    };      
     
   }
 });

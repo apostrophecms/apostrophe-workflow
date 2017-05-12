@@ -1,0 +1,31 @@
+{%- import "apostrophe-schemas:macros.html" as schemas -%}
+
+{%- macro localeTree(choice, nestedLocales) -%}
+  <ul class="apos-workflow-permissions-tree">
+    {%- for locale in nestedLocales -%}
+      <li>
+        <input class="apos-workflow-permissions-locale-input" type="checkbox" name="{{ field.name }}Locales[{{ choice.value }}][{{ locale.name }}]" value="1" />
+        <span class="apos-workflow-permissions-locale-checkbox-indicator"></span>
+        <span class="apos-workflow-permissions-locale-label">{{ locale.label or locale.name }}</span>
+        {%- if locale.subLocales -%}
+          {{ localeTree(locale.subLocales) }}
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+{%- endmacro -%}
+
+{%- macro body(field) -%}
+  {%- for choice in field.choices -%}
+    <div class="apos-workflow-permissions">
+      <label class="apos-workflow-permissions-label apos-text-small" data-apos-permission="{{ choice.value }}">
+        <input class="apos-workflow-permissions-input" type="checkbox" name="{{ field.name }}" value="{{ choice.value }}" />
+        <span class="apos-workflow-permissions--checkbox-indicator"></span>
+        <span class="apos-workflow-permissions-label">{{ __(choice.label | d('')) }}</span>
+        {{ localeTree(choice, field.nestedLocales) }}
+      </label>
+    </div>
+  {%- endfor -%}
+{%- endmacro -%}
+
+{{ schemas.fieldset(data, body) }}

@@ -28,16 +28,12 @@ apos.define('apostrophe-pages-editor', {
     };
     var superAfterSave = self.afterSave;
     self.afterSave = function(callback) {
-      console.log('in afterSave');
       if (self.submitting) {
-        console.log('submit');
         return apos.modules['apostrophe-workflow'].submit([ self.savedPage._id ], callback);
       }
       if (self.committing) {
-        console.log('commit');
         return apos.modules['apostrophe-workflow'].commit([ self.savedPage._id ], callback);
       }
-      console.log('finished');
       return setImmediate(callback);
     };
   }

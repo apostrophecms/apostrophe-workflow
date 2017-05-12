@@ -39,7 +39,8 @@ module.exports = {
   // 
   // `excludeProperties: [ 'hitCounter' ]`
   // 
-  // A list of properties that should not be subject to workflow. These are typically properties
+  // A list of properties that should not be subject to workflow, but rather should be allowed to
+  // vary for each locale and never be copied. These are typically properties
   // that don't make sense to edit as a "draft" and then submit as the new live version. For
   // instance, you wouldn't want to overwrite a page view counter field.
   // 
@@ -59,6 +60,8 @@ module.exports = {
     self.enableSingleton();
     self.addToAdminBar();
     self.extendPieces();
+    self.extendPermissionsField();
+    self.extendPermissions();
     self.apos.pages.addAfterContextMenu(self.menu);
   },
 
@@ -86,6 +89,11 @@ module.exports = {
       'highSearchWords',
       'searchSummary'
     ];
+    
+    // Attachment fields themselves are not directly localized (they are not docs)
+    self.excludeActions = (self.options.excludeActions || []).concat(self.options.baseExcludeActions || [ 'edit-attachment' ]);
+    
+    self.includeVerbs = (self.options.includeVerbs || []).concat(self.options.baseIncludeVerbs  || [ 'admin', 'edit' ]);
 
     // Localizing users and groups raises serious security questions. If they have a public representation,
     // make a new doc type and join to it
@@ -102,6 +110,8 @@ module.exports = {
     self.extendCursor = function() {
       self.apos.define('apostrophe-cursor', require('./lib/cursor.js'));
     };
+
+    require('./lib/permissions-schema-field.js')(self, options);
     
     // Extend the index parameters for the unique indexes on path and slug to allow for
     // two docs with the same slug in different locales
@@ -115,6 +125,68 @@ module.exports = {
         // path exists. This allows the sparse index to work properly
         params.workflowLocaleForPathIndex = 1;
       });
+    };
+    
+    self.extendPermissions = function() {
+      self.apos.on('can', _.partial(self.onPermissions, 'can'));
+      self.apos.on('criteria', _.partial(self.onPermissions, 'criteria'));
+    };
+    
+    self.onPermissions = function(event, req, action, object, info) {
+      if (_.contains(self.excludeActions, action)) {
+        return;
+      }
+      if (!info.type) {
+        return;
+      }
+      if (!self.apos.docs.getManager(info.type)) {
+        return;
+      }
+      if (!self.includeType(info.type)) {
+        return;
+      }
+      var verb = info.verb;
+      // publish is not a separate verb in workflow since we already control whether you can edit
+      // in draft vs. live locales
+      if (verb === 'publish') {
+        verb = 'edit';
+      }
+      if (!_.contains(self.includeVerbs, verb)) {
+        return;
+      }
+      if (req.user && req.user._permissions.admin) {
+        // Sitewide admins aren't restricted by locale because they can edit
+        // groups, which would allow them to defeat that anyway
+        return;
+      }
+
+      // OK, now we know this is something we're entitled to an opinion about
+
+      // Rebuild the action string using the effective verb and type name
+      action = info.verb + '-' + info.type;
+
+      if (!(req.user && req.user._permissionsLocales && req.user._permissionsLocales[action])) {
+        info.response = info._false;
+        return;
+      }
+
+      var permissionsLocales = req.user._permissionsLocales[action];
+
+      if (_.isEmpty(permissionsLocales)) {
+        info.response = info._false;
+        return;
+      }
+
+      if (event === 'criteria') {
+        info.response = { $and: [ info.response, { workflowLocale: { $in: _.keys(permissionsLocales) } } ] };
+      } else {
+        var object = info.object || info.newObject;
+        if (!permissionsLocales[object ? object.workflowLocale : req.locale ]) {
+          info.response = info._false;
+          return;
+        }
+      }
+
     };
     
     // When editing pieces, we should always get the draft version of
@@ -228,7 +300,8 @@ module.exports = {
 
       return async.series([
         findMissingLocales,
-        insertInMissingLocales
+        insertInMissingLocales,
+        permissionsAcrossLocales
       ], function(err) {
         if (err) {
           console.error(err);
@@ -285,6 +358,24 @@ module.exports = {
             });
           }
 
+        }, callback);
+      }
+      
+      function permissionsAcrossLocales(callback) {
+        // If I can edit a specific page in ch-fr, I can also edit that same page in gb-en,
+        // PROVIDED THAT I can edit pages in gb-en at all (we have locale-specific
+        // permission checks). This eliminates complexities in the permissions interface.
+        if (!doc.docPermissions) {
+          return callback(null);
+        }
+        return self.apos.docs.db.update({
+          workflowGuid: doc.workflowGuid
+        }, {
+          $set: {
+            docPermissions: doc.docPermissions
+          }
+        }, {
+          multi: true
         }, callback);
       }
     };
@@ -706,6 +797,29 @@ module.exports = {
         self.addMissingLocalesTask
       );
     };
+    
+    // self.addWorkflowPermissionsTask = function(req, argv, callback) {
+    //   var req = self.apos.tasks.getReq();
+    //   return self.apos.migrations.eachDoc({ type: 'apostrophe-group' }, function(group, callback) {
+    //     if (group.permissionsLocales) {
+    //       return setImmediate(callback);
+    //     }
+    //     var permissionsLocales = {};
+    //     _.each(group.permissions, function(permission) {
+    //       permissionsLocales[permission] = {};
+    //       _.each(self.locales, function(val, name) {
+    //         permissionsLocales[permission][name] = true;
+    //       });
+    //     });
+    //     return self.apos.docs.db.update({
+    //       _id: user._id
+    //     }, {
+    //       $set: {
+    //         permissionsLocales: permissionsLocales
+    //       }
+    //     }, callback);
+    //   });
+    // };
 
     self.addMissingLocalesTask = function(apos, argv, callback) {
       var req = self.apos.tasks.getReq();
@@ -1099,6 +1213,13 @@ module.exports = {
     
     self.ensureIndexes = function(callback) {
       return self.apos.docs.db.ensureIndex({ workflowGuid: 1 }, {}, callback);
+    };
+    
+    self.loginDeserialize = function(user) {
+      user._permissionsLocales = {};
+      _.each(user._groups, function(group) {
+        _.merge(user._permissionsLocales, group.permissionsLocales || {});
+      });
     };
 
   }
