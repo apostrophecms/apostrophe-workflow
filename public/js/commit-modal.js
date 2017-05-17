@@ -8,6 +8,9 @@ apos.define('apostrophe-workflow-commit-modal', {
 
   construct: function(self, options) {
     self.manager = options.manager;
+    self.beforeShow = function(callback) {
+      return apos.areas.saveAllIfNeeded(callback);
+    };
     self.saveContent = function(callback) {
       return self.api('commit', { id: options.body.id }, function(result) {
         if (result.status !== 'ok') {
