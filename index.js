@@ -372,7 +372,11 @@ module.exports = {
           delete _doc._id;
           _doc.workflowLocale = locale;
           _doc._workflowPropagating = true;
-          _doc.published = false;
+          if (!locale.match(/\-draft$/)) {
+            // Otherwise you can make something happen in public just by creating a new doc
+            // that is published as a draft and watching it propagate
+            _doc.published = false;
+          }
           self.ensureWorkflowLocaleForPathIndex(_doc);
           return async.series([
             _.partial(self.resolveRelationships, req, _doc, _doc.workflowLocale),
@@ -721,7 +725,7 @@ module.exports = {
           var draft;
           return async.series([ getDraft, resolveToSource, applyPatch, resolveToDestination, update ], callback);
           function getDraft(callback) {
-            return self.apos.docs.find(req, { workflowGuid: commit.workflowGuid }).workflowLocale(locale).permission('edit').toObject(function(err, _draft) {
+            return self.apos.docs.find(req, { workflowGuid: commit.workflowGuid }).published(null).workflowLocale(locale).permission('edit').toObject(function(err, _draft) {
               if (err) {
                 return callback(err);
               }
@@ -881,7 +885,7 @@ module.exports = {
           criteria
         ]
       };
-      return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).sort({ $exists: 1 }).workflowLocale(false).toArray(callback);
+      return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).sort({ $exists: 1 }).published(null).workflowLocale(false).toArray(callback);
     };
     
     // Returns the projection to be used when fetching submitted docs to generate
@@ -1051,6 +1055,7 @@ module.exports = {
         req.locale = req.locale.replace(/\-draft$/, '');
       }
       return self.apos.docs.find(req, { workflowGuid: self.apos.launder.id(req.body.workflowGuid) })
+        .published(null)
         .workflowLocale(req.locale)
         .toObject(function(err, doc) {
           if (err) {
@@ -1298,7 +1303,7 @@ module.exports = {
       } else {
         criteria.workflowLocale = { $not: /\-draft$/ };
       }
-      return self.apos.docs.find(req, criteria, self.getContextProjection()).workflowLocale(false).toArray(function(err, docs) {
+      return self.apos.docs.find(req, criteria, self.getContextProjection()).workflowLocale(false).published(null).toArray(function(err, docs) {
         if (err) {
           return callback(err);
         }

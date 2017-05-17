@@ -34,7 +34,7 @@ In `app.js`, configure your module with the rest. We'll configure a single "loca
 
 Behind the scenes, Apostrophe will automatically create a second "locale," `en-draft`, used for draft copies of each doc. This "draft" locale is not publicly accessible.
 
-*If you don't configure `locale` and `defaultLocale`, a locale named `default` is created. However, this doesn't give you the best upgrade path if you add localization to your project later. We recommend a locale name that reflects the language of the site.*
+*If you don't configure `locale` and `defaultLocale`, a locale named `default` is created.* However, this doesn't give you the best upgrade path if you add localization to your project later and don't wish to have a top-level "default" locale that is never public. So we recommend a locale name that reflects the language of the site, unless you plan on a nested tree of locales with a "default" at the top (see below for examples).
 
 ## Reset your database or run the appropriate task
 

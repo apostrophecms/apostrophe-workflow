@@ -7,7 +7,6 @@ apos.define('apostrophe-workflow-export-modal', {
   source: 'export-modal',
 
   construct: function(self, options) {
-    console.log('export modal awake');
     self.manager = options.manager;
     self.saveContent = function(callback) {
       var locales = [];
