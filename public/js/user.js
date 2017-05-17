@@ -25,7 +25,7 @@ apos.define('apostrophe-workflow', {
         return;
       }
 
-      $('body').find('[data-apos-workflow-menu]').show();
+      $('body').find('[data-apos-workflow-menu]').css({'display': 'inline-block'});
 
       $('body').on('click', '[data-apos-workflow-mode]', function() {
         

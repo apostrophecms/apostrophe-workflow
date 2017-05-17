@@ -1,9 +1,12 @@
+{%- import 'apostrophe-ui:components/buttons.html' as buttons -%}
+
 <div class="apos-workflow-menu" data-apos-workflow-menu>
-  <button data-apos-admin-bar-item="apostrophe-workflow-locale-picker-modal" class="{{ apos-workflow-locale-button }}">{{ data.workflow.locale }}</button>
-  <button class="{{ 'apos-workflow-current' if data.workflowMode == 'live' }}" data-apos-workflow-mode="live">Live</button>
-  <button class="{{ 'apos-workflow-current' if data.workflowMode == 'draft' }}" data-apos-workflow-mode="draft">Draft</button>
+	{{ buttons.normal(data.workflow.locale, { action: 'admin-bar-item', value: 'apostrophe-workflow-locale-picker-modal' }, 'apos-workflow-locale-button' ) }}
+	<a class="apos-button{{ ' apos-button--disabled' if data.workflowMode == 'live' }}" data-apos-workflow-mode="live"><span class="apos-button-label">Live</span></a>
+  <a class="apos-button{{ ' apos-button--disabled' if data.workflowMode == 'draft' }}" data-apos-workflow-mode="draft"><span class="apos-button-label">Draft</span></a>
+
   {% if data.workflowMode == 'draft' %}
-    <button data-apos-workflow-submit>Submit</button>
-    <button data-apos-workflow-commit>Commit</button>
+    {{ buttons.normal('Submit', { action: 'workflow-submit' }) }}
+    {{ buttons.normal('Commit', { action: 'workflow-commit' }) }}
   {% endif %}
 </div>
