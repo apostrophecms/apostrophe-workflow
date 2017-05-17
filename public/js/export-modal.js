@@ -8,6 +8,13 @@ apos.define('apostrophe-workflow-export-modal', {
 
   construct: function(self, options) {
     self.manager = options.manager;
+    self.beforeShow = function(callback) {
+      self.$el.on('change', 'input[type="checkbox"]', function() {
+        var checked = $(this).prop('checked');
+        $(this).closest('li').find('input[type="checkbox"]').prop('checked', checked);
+      });
+      return callback(null);
+    };
     self.saveContent = function(callback) {
       var locales = [];
       var $checkboxes = self.$el.find('input[type="checkbox"]:checked');
