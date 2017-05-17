@@ -62,6 +62,14 @@ node app apostrophe-workflow:add-missing-locales
 
 **You should not have to do this more than once,** except when adding new locales (see "localization" below).
 
+If you have not added an admin user yet, do it in the usual way:
+
+```
+node app apostrophe-users:add admin admin
+```
+
+*Workflow permissions for less privileged users are a work in progress.*
+
 ## Using Workflow
 
 This basic configuration provides you with a live/draft toggle on the page (lower left corner). Editing is not possible in the live mode.
