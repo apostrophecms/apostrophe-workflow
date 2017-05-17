@@ -49,6 +49,16 @@
   font-size: 24px;
 }
 
+.apos-workflow-widget-new::before
+{
+  content: '+';
+  position: static;
+  z-index: 1000;
+  color: orange;
+  font-weight: bold;
+  font-size: 24px;
+}
+
 .apos-workflow-widget-changed::before
 {
   content: '!';
@@ -107,11 +117,35 @@
   }
 }
 
-.apos-ui .apos-workflow-permissions-tree {
-  display: none;
+.apos-ui .apos-workflow-locale-tree {
   margin-left: 1em;
+  li {
+    margin-top: 4px;
+  }
 }
 
-.apos-ui .apos-workflow-permission--checked .apos-workflow-permissions-tree {
-  display: block;  
+.apos-ui .apos-workflow-locale-label {
+  margin-right: 12px;
+}
+
+.apos-ui .apos-workflow-locale-checkbox {
+  font-size: 80%;
+}
+
+.apos-ui .apos-workflow-locale-checkbox-label {
+  font-size: 80%;
+}
+
+.apos-ui .apos-workflow-permissions {
+  margin-bottom: 12px;
+  .apos-workflow-permissions-label {
+    margin-top: 12px;
+  }
+  .apos-workflow-locale-tree {
+    display: none;
+  }
+}
+
+.apos-ui .apos-workflow-locale-picker {
+  margin-left: 1em;
 }

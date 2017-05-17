@@ -8,9 +8,12 @@ apos.define('apostrophe-workflow', {
     self.enableCommit();
     self.enableManageModal();
     self.addPermissionsFieldType();
+    self.enableLocalePickerModal();
   },
 
   construct: function(self, options) {
+
+    self.locales = options.locales;
 
     self.enableWorkflowMode = function() {
 
@@ -27,9 +30,9 @@ apos.define('apostrophe-workflow', {
       $('body').on('click', '[data-apos-workflow-mode]', function() {
         
         var mode = $(this).attr('data-apos-workflow-mode');
-        self.api('workflow-mode', { mode: mode }, function(result) {
+        self.api('workflow-mode', { workflowGuid: self.options.contextGuid, mode: mode }, function(result) {
           if (result.status === 'ok') {
-            window.location.reload(true);
+            window.location.href = result.url;
           }
         });
       });
@@ -92,7 +95,7 @@ apos.define('apostrophe-workflow', {
     };
     
     self.enableManageModal = function() {
-      apos.adminBar.link(self.__meta.name, function() {
+      apos.adminBar.link(self.__meta.name + '-manage-modal', function() {
         self.launchManageModal();
       });
     };
@@ -109,6 +112,13 @@ apos.define('apostrophe-workflow', {
       }, options));
     };
     
+    self.launchLocalePickerModal = function() {
+      return apos.create(self.__meta.name + '-locale-picker', _.assign({
+        manager: self,
+        body: { url: window.location.href }
+      }));
+    };
+    
     self.enablePreviewIframe = function(id) {
       self.api('diff', { id: id }, function(result) {
         if (result.status !== 'ok') {
@@ -122,9 +132,14 @@ apos.define('apostrophe-workflow', {
             return;
           }
           $area.addClass('apos-workflow-area-changed');
+          if (_.isArray(result.diff[key])) {
+            // The entire area is new
+            $area.find('[data-apos-widget]').addClass('apos-workflow-widget-new');
+            return;
+          }
           var items = result.diff[key].items;
           if (items._t !== 'a') {
-            $area.find('[data-widget]').addClass('apos-workflow-widget-new');
+            $area.find('[data-apos-widget]').addClass('apos-workflow-widget-new');
             return;
           }
           _.each(items, function(widget, offset) {
@@ -236,7 +251,7 @@ apos.define('apostrophe-workflow', {
       function reflect() {
         _.each(field.choices, function(choice) {
           var $choice = $fieldset.find('[data-apos-permission="' + choice.value + '"]');
-          var $tree = $choice.find('.apos-workflow-permissions-tree');
+          var $tree = $choice.find('.apos-workflow-locale-tree');
           if ($choice.find('[value="' + choice.value + '"]:checked').length) {
             $tree.show();
           } else {
@@ -266,6 +281,18 @@ apos.define('apostrophe-workflow', {
       });
       return setImmediate(callback);
     };      
+
+    self.enableLocalePickerModal = function() {
+      apos.adminBar.link(self.__meta.name + '-locale-picker-modal', function() {
+        self.launchLocalePickerModal();
+      });
+    };
+
+    self.launchLocalePickerModal = function() {
+      return apos.create(self.__meta.name + '-locale-picker-modal',
+        _.assign({ manager: self, body: { workflowGuid: options.contextGuid } }, options)
+      );
+    };
     
   }
 });

@@ -1,51 +1,157 @@
 ## Status
 
-Work in progress, not yet fully functional, there may be serious omissions at this stage.
+Functional, but very much a work in progress.
 
-## Approach
+## Installation
+
+### Packages
+
+For now, add the 2.x branch as a git dependency in `package.json`. You currently must also add the relevant branch of Apostrophe:
+
+```
+  "apostrophe": "punkave/apostrophe#workflow-accommodations-1",
+  "apostrophe-workflow": "punkave/apostrophe-workflow#2.x"
+```
+
+This is very temporary; these branches will be merged to master and published to npm as the APIs stabilize.
+
+Run `npm install` after adding the dependencies.
+
+### app.js
+
+In `app.js`, configure your module with the rest:
+
+```
+'apostrophe-workflow': {}
+```
+
+## Using Workflow
+
+This basic configuration provides you with a live/draft toggle on the page (lower left corner). Editing is not possible in the live mode.
+
+In the draft mode editing works normally. Click "submit" to submit your work for review by someone else, or "commit" to commit it to the live version of the page yourself. 
+
+If work is submitted that you have permission to edit, you can view a list of those pages and pieces via the "Workflow" admin bar menu.
+
+## Using Localization
+
+To enable localization, configure more than one locale in `app.js`:
+
+```
+'apostrophe-workflow': {
+  locales: [
+    {
+      name: 'en'
+    },
+    {
+      name: 'fr'
+    }
+  ]
+}
+```
+
+You can now click the locale code, also in the lower left corner, to switch to the other locale. Each locale has live and draft modes. Every doc automatically exists in all locales, however it may or may not be published in any given locale. [TODO: see ]
+
+Note that a single document may have a different slug in different locales. They may also be the same.
+
+## Switching locales on the front end
+
+You may build locale-switching UI by adding a `workflowLocale` query parameter to any URL. However, since slugs can diverge for the ame document, you will want the rest of the URL to already be correct for the target locale. You can currently obtain this information via this method:
+
+```
+return apos.modules['apostrophe-workflow'].getLocalizations(
+  req, (req.data.piece || req.data.piece).workflowGuid, callback) { ... }
+);
+```
+
+Your callback will receive `(null, localizations)`, where `localizations` is an object like this:
+
+```
+{
+  en: {
+    title: 'Welcome',
+    _url: '/'
+  },
+  fr: {
+    title: 'Bienvenue',
+    _url: '/'
+  }
+}
+```
+
+You can use these properties to build a locale switcher on the front end.
+
+TODO: [this is too hard, we should do it for you. See #26 for status of an easier way.](https://github.com/punkave/apostrophe-workflow/issues/26)
+
+## Exporting between locales
+
+After committing a change, you will be invited to export that change to other locales. If you do so, it is applied as a "patch" to the other locale's draft (it is not made live right away).
+
+This allows for editors fluent in the other locale to complete any necessary translation tasks before finally committing the changes for that locale.
+
+### Not all patches can be applied
+
+If the page has been altered greatly in structure, for example if the rich text widget on a page has been removed and replaced, making it effectively a separate widget altogether, then an edit to that widget will not take effect as a patch. It is a best practice to initially create all content in a "default" locale and then export it to others.
+
+## Nested locales
+
+Locales can be nested, creating a convenient tree from which to select them or navigate among them. Here is a more complex configuration with many child locales:
+
+```
+'apostrophe-workflow': {
+  locales: [
+    {
+      name: 'default',
+      children: [
+        {
+          name: 'eu',
+          children: [
+            {
+              name: 'fr'
+            },
+            {
+              name: 'ch',
+              children: [
+                {
+                  name: 'ch-fr'
+                },
+                {
+                  name: 'ch-it'
+                },
+                {
+                  name: 'ch-de'
+                },
+              ]
+            }
+          ]
+        },
+        {
+          name: 'na',
+          children: [
+            {
+              name: 'us'
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+**In the final implementation, only locales without children will ever be publicly visible.** Higher nodes in the tree should be used to create draft content with a consistent structure and push it downwards toward the leaf nodes for localization and review. [See #25 for status of implementation.](https://github.com/punkave/apostrophe-workflow/issues/25)
+
+Content may also be pushed upwards via the export feature if you have permission to edit drafts for the higher locales in the tree, however bear in mind that the risk of divergence that makes patching difficult is decreased when working from the top down.
+
+## Technical approach
 
 For 2.x, the draft and live versions of a doc are completely separate docs as far as most of Apostrophe is concerned. A `workflowGuid` property ties them together. This greatly reduces the scope of changes required in the rest of Apostrophe and improves performance by removing the need to move content around on every page view or load content for locales you are not looking at.
 
-As the term locale suggests, the 2.x workflow module is also intended to provide infrastructure for the 2.x localization module, which will further extend the concept of locales while following this same approach.
-
-## TODO
-
-* Direct attachments have to be copied, not cross-referenced, otherwise edits to them will unexpectedly be shared.
-* "Reorganize" operations must be attended to, in particular the impact on path and rank must be propagated as part of the commit process.
-* The trash must be refactored so that pages don't lose their context in the tree while they are considered trash in some locales. Trash is just one more toggle-able flag that might get propagated as part of the commit process.
-* Make sure any contextual save operations have a chance to complete before the preview iframe is requested.
-* Move method implementation:
-  * Implement pageMovePermissions
-  * Implement pageAfterMove
-    * We need to fix the slug (if appropriate) and path of the doc itself in other locales.
-    * We need to fix the slug (if appropriate) of descendants of the doc itself in other locales.
-      * apostrophe has already updated the path of descendants in all locales.
-      * But we could add a hook so that apostrophe doesn't touch other locales at all in updateDescendants.
-      * And we could factor out the update of the slug and path of the doc itself.
-      * Then we can invoke the slug/path updater on each localized version of `moved`, and if they
-        change, invoke `updateDescendants` for each localized verison of `moved`, leveraging the same
-        hook as before to restrict that code to one locale.
-
-"What about nudged peers?" It's being done at the mongo level, so it will already cut across locales.
-
-"What about trash/no trash status for peers?" Ditto.
+As the term locale suggests, the 2.x workflow module also implements localization of content.
   
-## Diff preview case notes
+### Use of jsondiffpatch
 
-Documentation of how the diff deltas work:
+This module relies on `jsondiffpatch` to calculate diffs between commits and offer a patch to be applied to the drafts of other locales. `jsondiffpatch` is also used to visualize differences in the commit modal.
 
-https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
-
-Cases:
-
-1. NEW AREA: If the area itself is an array property, that means the entire area is being set, i.e. it's new. Just
-mark it all as new.
-
-2. NEW WIDGET: If a widget in the items array (which is represented as an object with string keys) is itself an array property with just one element, that means the widget is new. Mark that one widget as new. It has an _id and you're looking at the draft, so find it that way, don't worry about the index.
-
-3. UPDATED WIDGET: if a widget in the items array is an object property, that means the widget has been updated. "items" will have "_t: a". The index of the widget will be a plain number, relative to the draft, so you can use that index to flag the correct widget as updated.
-
-4. MOVED WIDGET: items._1 (note the _) indicates that the item that used to be [1] moved. items._1 is an array, however we can just look at items_1[0]._id to quickly identify the widget to be highlighted.
-
-5. DELETED WIDGET: items._t is present and set to "a", "_n" exists where n is the old index, and the value is an array: [ oldvalue, 0, 0 ]. Feed oldvalue to the widget renderer, display it at the appropriate index, and highlight it as deleted.
+Here is [documentation of how the diff deltas work](https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md). Our code taps into this diff output format to visualize differences.
 

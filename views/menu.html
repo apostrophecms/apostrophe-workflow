@@ -1,4 +1,5 @@
 <div class="apos-workflow-menu" data-apos-workflow-menu>
+  <button data-apos-admin-bar-item="apostrophe-workflow-locale-picker-modal" class="{{ apos-workflow-locale-button }}">{{ data.workflow.locale }}</button>
   <button class="{{ 'apos-workflow-current' if data.workflowMode == 'live' }}" data-apos-workflow-mode="live">Live</button>
   <button class="{{ 'apos-workflow-current' if data.workflowMode == 'draft' }}" data-apos-workflow-mode="draft">Draft</button>
   {% if data.workflowMode == 'draft' %}

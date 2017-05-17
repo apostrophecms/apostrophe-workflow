@@ -1,0 +1,43 @@
+{%- macro picker(localizations, nestedLocales) -%}
+  <ul class="apos-workflow-locale-picker">
+    {%- for locale in nestedLocales -%}
+      {%- set localization = localizations[locale.name] or localizations[locale.name + '-draft'] -%}
+      {%- if localization -%}
+        <li>
+          <a href="{{ localization._url | build({ workflowLocale: locale.name }) }}">{{ locale.label or locale.name }}</a>
+          {%- if locale.children -%}
+            {{ picker(localizations, locale.children) }}
+          {%- endif -%}
+        </li>
+      {%- endif -%}
+    {%- endfor -%}
+  </ul>
+{%- endmacro -%}
+
+{%- extends "apostrophe-modal:base.html" -%}
+{%- import "apostrophe-modal:macros.html" as modals -%}
+{%- import "apostrophe-ui:components/buttons.html" as buttons with context -%}
+
+{%- block modalClass -%}
+  apos-workflow-locale-picker-modal apos-ui-modal-no-sidebar
+{%- endblock -%}
+
+{%- block controls -%}
+  {{ buttons.minor('Cancel', { action: 'cancel' }) }}
+{%- endblock -%}
+
+{%- block label -%}
+  {{ __('Switching locale') }}
+{%- endblock -%}
+
+{% block instructions %}
+  <p>
+    {{ __('Click on any locale to switch to viewing it.') }}
+  </p>
+{% endblock %}
+
+{%- block body -%}
+{{ picker(data.localizations, data.nestedLocales) }}
+{%- endblock -%}
+
+{%- block footerContainer -%}{%- endblock -%}

@@ -7,6 +7,11 @@ var diff = require('jsondiffpatch').create({
     // out distinguishing content change from being an entirely new thing
     return obj._id || obj.id || JSON.stringify(obj);
   },
+  textDiff: {
+    // Don't try to diff text — replace it. Otherwise
+    // patches are never applicable across locales
+    minLength: 1000000000
+  },
   arrays: {
     detectMove: true,
     // We don't actually copy the old value, however it is useful for the visual diff
@@ -52,26 +57,50 @@ module.exports = {
   // Like `baseExcludeTypes`, this overrides a short list of properties that must not be modified
   // by workflow. You don't want to change this.
 
-  afterConstruct: function(self) {
+  afterConstruct: function(self, callback) {
     self.extendCursor();
     self.extendIndexes();
     self.enableAddMissingLocalesTask();
     self.pushAssets();
-    self.enableSingleton();
     self.addToAdminBar();
     self.extendPieces();
     self.extendPermissionsField();
     self.extendPermissions();
     self.apos.pages.addAfterContextMenu(self.menu);
+    return self.enableCollection(callback);
   },
 
   construct: function(self, options) {
-    self.locales = options.locales || {
-      'default': {
-      },
-      'default-draft': {
+    self.nestedLocales = options.locales || [
+      {
+        name: 'default'
       }
-    };
+    ];
+    
+    self.locales = {};
+    flattenLocales(self.nestedLocales);
+    addDraftLocales();
+    
+    function flattenLocales(locales) {
+      _.each(locales, function(locale) {
+        self.locales[locale.name] = locale;
+        if (locale.children) {
+          flattenLocales(locale.children);
+        }
+      });
+    }
+    
+    function addDraftLocales() {
+      var newLocales = {};
+      _.each(self.locales, function(locale, name) {
+        newLocales[name] = locale;
+        var draftLocale = _.cloneDeep(locale);
+        draftLocale.name += '-draft';
+        delete draftLocale.children;
+        newLocales[draftLocale.name] = draftLocale;
+      });
+      self.locales = newLocales;
+    }
     
     self.defaultLocale = options.defaultLocale || 'default';
 
@@ -91,7 +120,7 @@ module.exports = {
     ];
     
     // Attachment fields themselves are not directly localized (they are not docs)
-    self.excludeActions = (self.options.excludeActions || []).concat(self.options.baseExcludeActions || [ 'edit-attachment' ]);
+    self.excludeActions = (self.options.excludeActions || []).concat(self.options.baseExcludeActions || [ 'admin', 'edit-attachment' ]);
     
     self.includeVerbs = (self.options.includeVerbs || []).concat(self.options.baseIncludeVerbs  || [ 'admin', 'edit' ]);
 
@@ -429,7 +458,7 @@ module.exports = {
           
           function findWorkflowGuids(callback) {
             if (join.type === 'joinByOne') {
-              return self.apos.docs.db.find({ _id: { $in: join.doc[join.field.idField] } }, { workflowGuid: 1 }).toArray(function(err, docs) {
+              return self.apos.docs.db.find({ _id: { $in: [ join.doc[join.field.idField] ] } }, { workflowGuid: 1 }).toArray(function(err, docs) {
                 if (err) {
                   return callback(err);
                 }
@@ -440,7 +469,7 @@ module.exports = {
                 return callback(null);
               });
             } else {
-              return self.apos.docs.db.find({ _id: { $in: join.doc[join.field.idsField] } }, { workflowGuid: 1 }).toArray(function(err, docs) {
+              return self.apos.docs.db.find({ _id: { $in: join.doc[join.field.idsField] || [] } }, { workflowGuid: 1 }).toArray(function(err, docs) {
                 originalIds = join.doc[join.field.idsField];
                 if (err) {
                   return callback(err);
@@ -529,16 +558,35 @@ module.exports = {
     };
 
     // Commit a doc from one locale to another. `from` and `to` should
-    // be the doc as found in each of the locales.
+    // be the doc as found in each of the locales. The callback receives
+    // `(null, commitId)` where `commitId` is a unique identifier for
+    // this specific commit.
 
     self.commit = function(req, from, to, callback) {
       delete from.workflowSubmitted;
+      var commitId;
+      // For storage in the commits collection
+      var originalTo = self.apos.utils.clonePermanent(to);
       return async.series([
+        // Resolve the relationships for originalTo as well so we can straightforwardly
+        // call diff() later
+        _.partial(self.resolveRelationships, req, originalTo, to.workflowLocale),
         _.partial(self.copyIncludedProperties, req, from, to),
         _.partial(self.resolveRelationships, req, to, to.workflowLocale),
+        insertCommit,
         _.partial(self.apos.docs.update, req, to)
-      ], callback);
-
+      ], function(err) {
+        return callback(err, commitId);
+      });
+      function insertCommit(callback) {
+        return self.insertCommit(req, from, originalTo, function(err, _commitId) {
+          if (err) {
+            return callback(err);
+          }
+          commitId = _commitId;
+          return callback(null);
+        });
+      }
     };
     
     // Fetch the draft version of a doc, whose id is `id`, and also the live version of the same
@@ -597,7 +645,7 @@ module.exports = {
         return res.status(404).send('not found');
       }
       var id = self.apos.launder.id(req.body.id);
-      var draft, live;
+      var draft, live, commitId;
       return async.series({
         getDraftAndLive,
         commit
@@ -606,7 +654,7 @@ module.exports = {
           console.error(err);
           return res.send({ status: 'error' });
         }
-        return res.send({ status: 'ok' });
+        return res.send({ status: 'ok', commitId: commitId });
       });
       function getDraftAndLive(callback) {
         return self.getDraftAndLive(req, id, function(err, _draft, _live) {
@@ -619,10 +667,109 @@ module.exports = {
         });
       }
       function commit(callback) {
-        return self.commit(req, draft, live, callback);
+        return self.commit(req, draft, live, function(err, _commitId) {
+          commitId = _commitId;
+          return callback(err);
+        });
       }
     });
 
+    self.route('post', 'export', function(req, res) {
+      if (!req.user) {
+        // Confusion to the enemy
+        return res.status(404).send('not found');
+      }
+      var id = self.apos.launder.id(req.body.id);
+      var locales = [];
+      var errors = [];
+      var drafts;
+      if (Array.isArray(req.body.locales)) {
+        locales = _.filter(req.body.locales, function(locale) {
+          return ((typeof(locale) === 'string') && (_.has(self.locales, locale)));
+        });
+      }
+      locales = _.map(locales, function(locale) {
+        return locale + '-draft';
+      });
+      var commit;
+      return async.series({
+        getCommit,
+        applyPatches
+      }, function(err) {
+        if (err) {
+          console.error(err);
+          return res.send({ status: 'error' });
+        }
+        // Here the `errors` object has locales as keys and strings as values; these can be
+        // displayed or, since they are technical, just flagged as locales to which the patch
+        // could not be successfully applied
+        return res.send({ status: 'ok', errors: errors });
+      });
+      function getCommit(callback) {
+        return self.db.findOne({ _id: id }, function(err, _commit) {
+          if (err) {
+            return callback(err);
+          }
+          commit = _commit;
+          if (!commit) {
+            return callback('notfound');
+          }
+          return callback(null);
+        });
+      }
+      function applyPatches(callback) {
+        return async.eachSeries(locales, function(locale, callback) {
+          var draft;
+          return async.series([ getDraft, resolveToSource, applyPatch, resolveToDestination, update ], callback);
+          function getDraft(callback) {
+            return self.apos.docs.find(req, { workflowGuid: commit.workflowGuid }).workflowLocale(locale).permission('edit').toObject(function(err, _draft) {
+              if (err) {
+                return callback(err);
+              }
+              draft = _draft;
+              return callback(null);
+            });
+          }
+          // Resolve relationship ids to point to the locale the patch is coming from,
+          // so that the diff applies properly
+          function resolveToSource(callback) {
+            return self.resolveRelationships(req, draft, commit.to.workflowLocale, callback);
+          }
+          function applyPatch(callback) {
+            if (!draft) {
+              errors[locale] = 'not found';
+              return callback(null);
+            }
+            self.deleteExcludedProperties(commit.from);
+            self.deleteExcludedProperties(commit.to);
+            var patch = diff.diff(commit.to, commit.from);
+            try {
+              diff.patch(draft, patch);
+            } catch (e) {
+              errors[locale] = e.toString();
+              console.error(e);
+            }
+            return callback(null);
+          }
+          // Resolve relationship ids back to the locale the draft is coming from
+          function resolveToDestination(callback) {
+            return self.resolveRelationships(req, draft, draft.workflowLocale, callback);
+          }
+          function update(callback) {
+            return self.apos.docs.update(req, draft, callback); 
+          }
+        }, callback);
+      }
+    });
+    
+    self.deleteExcludedProperties = function(doc) {
+      _.each(doc, function(val, key) {
+        if (!self.includeProperty(key)) {
+          delete doc[key];
+        }
+      });
+    };
+    
     // Given a workflowGuid and a draft workflowLocale, return the doc for the corresponding live locale
 
     self.route('post', 'get-live', function(req, res) {
@@ -761,8 +908,10 @@ module.exports = {
         }
       }
       if (self.excludeTypes) {
-        return !_.contains(self.excludeTypes, type);
+        var result = !_.contains(self.excludeTypes, type);
+        return result;
       }
+      return true;
     };
     
     // Set `req.locale` based on `req.query.locale` or `req.session.locale`.
@@ -773,6 +922,14 @@ module.exports = {
     self.expressMiddleware = {
       before: 'apostrophe-global',
       middleware: function(req, res, next) {
+        if (req.query.workflowLocale) {
+          // Switch locale choice in session via query string, then redirect
+          var locale = self.apos.launder.string(req.query.workflowLocale);
+          if (_.has(self.locales, locale)) {
+            req.session.locale = locale;
+          }
+          return res.redirect(req.url.replace(/\??workflowLocale=[^&]+&?/, ''));
+        }
         req.locale = req.query.locale || req.session.locale;
         if ((!req.locale) || (!_.has(self.locales, req.locale))) {
           req.locale = self.defaultLocale;
@@ -797,29 +954,6 @@ module.exports = {
         self.addMissingLocalesTask
       );
     };
-    
-    // self.addWorkflowPermissionsTask = function(req, argv, callback) {
-    //   var req = self.apos.tasks.getReq();
-    //   return self.apos.migrations.eachDoc({ type: 'apostrophe-group' }, function(group, callback) {
-    //     if (group.permissionsLocales) {
-    //       return setImmediate(callback);
-    //     }
-    //     var permissionsLocales = {};
-    //     _.each(group.permissions, function(permission) {
-    //       permissionsLocales[permission] = {};
-    //       _.each(self.locales, function(val, name) {
-    //         permissionsLocales[permission][name] = true;
-    //       });
-    //     });
-    //     return self.apos.docs.db.update({
-    //       _id: user._id
-    //     }, {
-    //       $set: {
-    //         permissionsLocales: permissionsLocales
-    //       }
-    //     }, callback);
-    //   });
-    // };
 
     self.addMissingLocalesTask = function(apos, argv, callback) {
       var req = self.apos.tasks.getReq();
@@ -882,19 +1016,19 @@ module.exports = {
       
       function noLocales(callback) {
         return self.apos.migrations.eachDoc({ workflowLocale: { $exists: 0 } }, function(doc, callback) {
-          if (!self.includeType(doc)) {
+          if (!self.includeType(doc.type)) {
             return setImmediate(callback);
           }
           doc.workflowLocale = self.defaultLocale;
           self.ensureWorkflowLocaleForPathIndex(doc);
           doc.workflowGuid = self.apos.utils.generateId();
-          return self.apos.docs.getManager(doc.type).update(req, doc, callback);
+          return self.apos.docs.update(req, doc, callback);
         }, callback);
       }
       
       function missingSomeLocales(callback) {
         return self.apos.migrations.eachDoc({ workflowLocale: self.defaultLocale }, function(doc, callback) {
-          if (!self.includeType(doc)) {
+          if (!self.includeType(doc.type)) {
             return setImmediate(callback);
           }
           return self.docAfterSave(req, doc, { permissions: false }, function(err) {
@@ -907,16 +1041,34 @@ module.exports = {
     self.route('post', 'workflow-mode', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
-        res.status(404).send('not found');
+        return res.status(404).send('not found');
       }
       req.session.workflowMode = (req.body.mode === 'draft') ? 'draft' : 'live';
-      return res.send({ status: 'ok' });
+      if (req.body.mode === 'draft') {
+        if (!req.locale.match(/\-draft$/)) {
+          req.locale += '-draft';
+        }
+      } else {
+        req.locale = req.locale.replace(/\-draft$/, '');
+      }
+      return self.apos.docs.find(req, { workflowGuid: self.apos.launder.id(req.body.workflowGuid) })
+        .workflowLocale(req.locale)
+        .toObject(function(err, doc) {
+          if (err) {
+            return res.status(500).send('error');
+          }
+          if ((!doc) || (!doc._url)) {
+            return res.send({ status: 'ok', url: '/' });
+          }
+          return res.send({ status: 'ok', url: doc._url });
+        }
+      );
     });
         
     self.route('post', 'submit', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
-        res.status(404).send('not found');
+        return res.status(404).send('not found');
       }
       var ids = self.apos.launder.ids(req.body.ids);
       return async.eachSeries(ids, function(id, callback) {
@@ -956,10 +1108,25 @@ module.exports = {
     self.route('post', 'manage-modal', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
-        res.status(404).send('not found');
+        return res.status(404).send('not found');
       }
       return self.getSubmitted(req, {}, function(err, submitted) {
         return res.send(self.render(req, 'manage-modal.html', { submitted: submitted }));
+      });
+    });
+
+    self.route('post', 'locale-picker-modal', function(req, res) {
+      if (!req.user) {
+        // Confusion to the enemy
+        return res.status(404).send('not found');
+      }
+      var workflowGuid = self.apos.launder.id(req.body.workflowGuid);
+      return self.getLocalizations(req, workflowGuid, function(err, localizations) {
+        if (err) {
+          console.error(err);
+          res.status(500).send('error');
+        }
+        return res.send(self.render(req, 'locale-picker-modal.html', { localizations: localizations, nestedLocales: self.nestedLocales }));
       });
     });
 
@@ -979,12 +1146,32 @@ module.exports = {
         return res.send(self.render(req, 'commit-modal.html', { doc: draft }));
       });
     });
+
+    self.route('post', 'export-modal', function(req, res) {
+      if (!req.user) {
+        // Confusion to the enemy
+        return res.status(404).send('not found');
+      }
+      var id = self.apos.launder.id(req.body.id);
+      // We get both the same way the commit route does, for the sake of the permissions check,
+      // so it doesn't initially appear that someone can be sneaky (although they can't really)
+      return self.db.findOne({ _id: id }, function(err, commit) {
+        if (err) {
+          console.error(err);
+          return res.status(500).send('error');
+        }
+        if (!commit) {
+          return res.send({ status: 'notfound' });
+        }
+        return res.send(self.render(req, 'export-modal.html', { commit: commit, nestedLocales: self.nestedLocales }));
+      });
+    });
     
     self.route('post', 'diff', function(req, res) {
 
       if (!req.user) {
         // Confusion to the enemy
-        res.status(404).send('not found');
+        return res.status(404).send('not found');
       }
 
       var id = self.apos.launder.id(req.body.id);
@@ -1003,16 +1190,8 @@ module.exports = {
           return res.send({ status: 'error' });
         }
 
-        _.each(live, function(val, key) {
-          if (!self.includeProperty(key)) {
-            delete live[key];
-          }
-        });
-        _.each(draft, function(val, key) {
-          if (!self.includeProperty(key)) {
-            delete draft[key];
-          }
-        });
+        self.deleteExcludedProperties(live);
+        self.deleteExcludedProperties(draft);
 
         return res.send({
           status: 'ok',
@@ -1049,15 +1228,21 @@ module.exports = {
       }
     };
 
-    self.enableSingleton = function() {
-      // The default options will include self.action, which is what self.api needs in browserland
-      self.pushCreateSingleton();
+    self.getCreateSingletonOptions = function(req) {
+      return {
+        action: self.action,
+        contextGuid: req.data.workflow.context && req.data.workflow.context.workflowGuid,
+        locales: self.locales,
+        nestedLocales: self.nestedLocales
+      };
     };
 
     self.pushAssets = function() {
       self.pushAsset('script', 'user', { when: 'user' });
       self.pushAsset('script', 'manage-modal', { when: 'user' });
       self.pushAsset('script', 'commit-modal', { when: 'user' });
+      self.pushAsset('script', 'export-modal', { when: 'user' });
+      self.pushAsset('script', 'locale-picker-modal', { when: 'user' });
       self.pushAsset('script', 'pieces-editor-modal', { when: 'user' });
       self.pushAsset('script', 'pages-editor-modal', { when: 'user' });
       self.pushAsset('script', 'schemas', { when: 'user' });
@@ -1065,7 +1250,12 @@ module.exports = {
     };
 
     self.addToAdminBar = function() {
-      self.apos.adminBar.add(self.__meta.name, 'Workflow');
+      self.apos.adminBar.add(self.__meta.name + '-locale-picker-modal', 'Locales');
+      self.apos.adminBar.add(self.__meta.name + '-manage-modal', 'Submissions');
+      self.apos.adminBar.group({
+        label: 'Workflow',
+        items: [ self.__meta.name + '-locale-picker-modal', self.__meta.name + '-manage-modal' ]
+      });
     };
     
     self.pageBeforeSend = function(req) {
@@ -1073,12 +1263,66 @@ module.exports = {
         req.disableEditing = true;
         self.apos.templates.addBodyClass(req, 'apos-workflow-live-page');
       }
-      if (req.user && req.query.workflowPreview) {
-        req.disableEditing = true;
-        var id = self.apos.launder.id(req.query.workflowPreview);
-        self.apos.templates.addBodyClass(req, 'apos-workflow-preview-page');
-        req.browserCall('apos.modules["apostrophe-workflow"].enablePreviewIframe(?)', id);
+
+      req.data.workflow = req.data.workflow || {};
+      _.assign(req.data.workflow, _.pick(self, 'locale', 'nestedLocales'));
+      var context = self.getContext(req);
+      if (context && context.workflowGuid) {
+        req.data.workflow.context = context;
       }
+      req.data.workflow.locale = req.locale.replace(/\-draft$/, '');
+
+      // Invoke pushCreateSingleton after we have all this groovy information,
+      // so we get options.localizations on the browser side to power the
+      // locale picker modal
+      if (req.user) {
+        self.pushCreateSingleton(req);
+        if (req.query.workflowPreview) {
+          req.disableEditing = true;
+          var id = self.apos.launder.id(req.query.workflowPreview);
+          self.apos.templates.addBodyClass(req, 'apos-workflow-preview-page');
+          req.browserCall('apos.modules["apostrophe-workflow"].enablePreviewIframe(?)', id);
+        }
+      }
+
+    };
+    
+    self.getLocalizations = function(req, workflowGuid, callback) {
+      // Get the URLs of the context doc across locales for the locale switcher,
+      // using a conservative projection for speed
+      var criteria = {
+        workflowGuid: workflowGuid
+      };
+      // Are we interested in other draft locales, or other live locales?
+      if (req.locale.match(/\-draft$/)) {
+        criteria.workflowLocale = /\-draft$/;
+      } else {
+        criteria.workflowLocale = { $not: /\-draft$/ };
+      }
+      return self.apos.docs.find(req, criteria, self.getContextProjection()).workflowLocale(false).toArray(function(err, docs) {
+        if (err) {
+          return callback(err);
+        }
+        var localizations = {};
+        _.each(docs, function(doc) {
+          localizations[doc.workflowLocale] = doc;
+        });
+        return callback(null, localizations);
+      });
+    };
+    
+    self.getContext = function(req) {
+      return req.data.piece || req.data.page;      
+    };
+    
+    self.getContextProjection = function() {
+      return {
+        title: 1,
+        slug: 1,
+        path: 1,
+        workflowLocale: 1,
+        tags: 1
+      };
     };
 
     // Render the contextual action buttons — draft/live, submit and commit.
@@ -1220,6 +1464,60 @@ module.exports = {
       _.each(user._groups, function(group) {
         _.merge(user._permissionsLocales, group.permissionsLocales || {});
       });
+    };
+    
+    // Record the commit permanently in a MongoDB collection for later
+    // examination or application as a patch to more locales. Include enough
+    // information to make this useful even if the original documents
+    // are gone/modified/etc.
+    //
+    // On success the callback receives `(null, _id)` where `_id` is
+    // the unique identifier for this specific commit in the collection.
+    
+    self.insertCommit = function(req, from, to, callback) {
+      var _id = self.apos.utils.generateId();
+      return self.db.insert({
+        _id: _id,
+        locale: to.workflowLocale,
+        workflowGuid: to.workflowGuid,
+        fromId: from._id,
+        toId: to._id,
+        from: self.apos.utils.clonePermanent(from),
+        to: self.apos.utils.clonePermanent(to),
+        user: _.pick(req.user || {}, 'username', 'title', '_id'),
+        createdAt: new Date()
+      }, function(err) {
+        if (err) {
+          return callback(err);
+        }
+        return callback(null, _id);
+      });
+    };
+    
+    // Create mongodb collection in which to permanently record each commit.
+    // This is distinct from the versions collection, which becomes more sparse
+    // as you move back through time and doesn't always give access to the
+    // version that originally preceded a given version.
+    
+    self.enableCollection = function(callback) {
+      self.db = self.apos.db.collection('aposWorkflowCommits');
+      var indexes = [
+        {
+          createdAt: -1
+        },
+        {
+          fromId: 1
+        },
+        {
+          toId: 1
+        },
+        {
+          workflowGuid: 1
+        }
+      ];
+      return async.eachSeries(indexes, function(index, callback) {
+        return self.db.ensureIndex(index, callback);
+      }, callback);
     };
 
   }
