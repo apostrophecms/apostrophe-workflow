@@ -4,6 +4,16 @@ Functional, but very much a work in progress.
 
 ## Installation
 
+First, try starting with this branch of our sandbox project:
+
+```
+git clone -b workflow-2 https://github.com/punkave/apostrophe-sandbox
+```
+
+This will give you a test project with correctly configured dependencies and settings for various locales immediately.
+
+Read on for instructions that should suffice when starting from an existing or new project.
+
 ### Packages
 
 For now, add the 2.x branch as a git dependency in `package.json`. You currently must also add the relevant branch of Apostrophe:
