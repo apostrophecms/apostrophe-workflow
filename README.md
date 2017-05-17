@@ -19,11 +19,38 @@ Run `npm install` after adding the dependencies.
 
 ### app.js
 
-In `app.js`, configure your module with the rest:
+In `app.js`, configure your module with the rest. We'll configure a single "locale" for our English-language site:
 
 ```
-'apostrophe-workflow': {}
+'apostrophe-workflow': {
+  locales: [
+    {
+      name: 'en'
+    }
+  ],
+  defaultLocale: 'en'
+}
 ```
+
+Behind the scenes, Apostrophe will automatically create a second "locale," `en-draft`, used for draft copies of each doc. This "draft" locale is not publicly accessible.
+
+*If you don't configure `locale` and `defaultLocale`, a locale named `default` is created. However, this doesn't give you the best upgrade path if you add localization to your project later. We recommend a locale name that reflects the language of the site.*
+
+## Reset your database or run the appropriate task
+
+If you are starting from scratch but may have accidentally typed `node app` before enabling workflow, you might want to erase your database and start over (DO NOT DO THIS IN PRODUCTION EVER):
+
+```
+node app apostrophe-db:reset
+```
+
+Or, to add workflow support to an existing project database:
+
+```
+node app apostrophe-workflow:add-missing-locales
+```
+
+**You should not have to do this more than once,** except when adding new locales (see "localization" below).
 
 ## Using Workflow
 
@@ -46,8 +73,15 @@ To enable localization, configure more than one locale in `app.js`:
     {
       name: 'fr'
     }
-  ]
+  ],
+  defaultLocale: 'en'
 }
+```
+
+Now ask Apostrophe to add the new locales to all existing docs in the database:
+
+```
+node app apostrophe-workflow:add-missing-locales
 ```
 
 You can now click the locale code, also in the lower left corner, to switch to the other locale. Each locale has live and draft modes. Every doc automatically exists in all locales, however it may or may not be published in any given locale. [TODO: see ]
@@ -135,13 +169,18 @@ Locales can be nested, creating a convenient tree from which to select them or n
         }
       ]
     }
-  ]
+  ],
+  defaultLocale: 'default'
 }
 ```
 
 **In the final implementation, only locales without children will ever be publicly visible.** Higher nodes in the tree should be used to create draft content with a consistent structure and push it downwards toward the leaf nodes for localization and review. [See #25 for status of implementation.](https://github.com/punkave/apostrophe-workflow/issues/25)
 
 Content may also be pushed upwards via the export feature if you have permission to edit drafts for the higher locales in the tree, however bear in mind that the risk of divergence that makes patching difficult is decreased when working from the top down.
+
+## Automatically switching locales via URL prefixes and subdomains
+
+TODO: it is our intention to support both of these scenarios. [See issue #28 for status.](https://github.com/punkave/apostrophe-workflow/issues/28)
 
 ## Technical approach
 

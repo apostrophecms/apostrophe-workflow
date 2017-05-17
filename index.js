@@ -109,8 +109,8 @@ module.exports = {
       'slug',
       'path',
       'rank',
+      'level',
       'docPermissions',
-      'published',
       'createdAt',
       'updatedAt',
       'lowSearchText',
@@ -372,14 +372,13 @@ module.exports = {
           delete _doc._id;
           _doc.workflowLocale = locale;
           _doc._workflowPropagating = true;
+          _doc.published = false;
           self.ensureWorkflowLocaleForPathIndex(_doc);
           return async.series([
             _.partial(self.resolveRelationships, req, _doc, _doc.workflowLocale),
             insert
           ], callback);
-
-          _doc.published = false;
-
+          
           function insert(callback) {
             // TODO: copy attachments so they are not directly shared resulting in cross-locale modification
             return self.apos.docs.insert(req, _doc, { permissions: false }, function(err) {
