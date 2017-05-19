@@ -8,6 +8,7 @@
 
 {%- block controls -%}
   {{ buttons.minor('Cancel', { action: 'cancel' }) }}
+  {{ buttons.major('History', { action: 'workflow-history', value: data.doc._id }) }}
   {{ buttons.major('Commit', { action: 'save' }) }}
 {%- endblock -%}
 

@@ -46,7 +46,7 @@ apos.define('apostrophe-workflow-export-modal', {
     // Let the manager know we're done, so the manager can step through these modals
     // for several docs in series if needed
     self.afterHide = function() {
-      return options.after();
+      return options.after && options.after();
     };
   }
 });

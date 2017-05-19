@@ -106,7 +106,6 @@ module.exports = {
 
     self.baseExcludeProperties = options.baseExcludeProperties || [
       '_id',
-      'slug',
       'path',
       'rank',
       'level',
@@ -740,16 +739,30 @@ module.exports = {
           }
           function applyPatch(callback) {
             if (!draft) {
-              errors[locale] = 'not found';
+              errors.push(locale.replace(/\-draft$/, '') + ': not found, run task');
               return callback(null);
             }
             self.deleteExcludedProperties(commit.from);
             self.deleteExcludedProperties(commit.to);
             var patch = diff.diff(commit.to, commit.from);
+            // If a patch edits a widget in an area that doesn't exist at all yet
+            // in the receiving locale, create the area
+            _.each(patch, function(value, key) {
+              if (!draft[key]) {
+                if (commit.from[key] && (commit.from[key].type === 'area')) {
+                  draft[key] = {
+                    type: 'area',
+                    items: []
+                  };
+                }
+              }
+            });
             try {
+              console.log('patch is: ', JSON.stringify(patch, null, '  '));
+              console.log('draft is: ', JSON.stringify(draft, null, '  '));
               diff.patch(draft, patch);
             } catch (e) {
-              errors[locale] = e.toString();
+              errors.push(locale.replace(/\-draft$/, ''));
               console.error(e);
             }
             return callback(null);
@@ -887,7 +900,7 @@ module.exports = {
       };
       return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).sort({ $exists: 1 }).published(null).workflowLocale(false).toArray(callback);
     };
-    
+        
     // Returns the projection to be used when fetching submitted docs to generate
     // a list of docs requiring approval. Should be enough to generate permalinks.
 
@@ -900,6 +913,24 @@ module.exports = {
         type: 1,
         tags: 1
       };
+    };
+    
+    self.getDocAndCommits = function(req, id, callback) {
+      // We fetch the doc first, and if we can't get it with edit permissions we bail
+      return self.apos.docs.find(req, { _id: id }).permission('edit').published(null).workflowLocale(null).areas(false).joins(false).toObject(function(err, doc) {
+        if (err) {
+          return callback(err);
+        }
+        if (!doc) {
+          return callback('notfound');
+        }
+        return self.db.find({ fromId: id }).sort({ createdAt: -1 }).toArray(function(err, commits) {
+          if (err) {
+            return callback(err);
+          }
+          return callback(null, doc, commits);
+        });
+      });
     };
     
     // Decide whether a doc type is subject to workflow as documented for the module options.
@@ -1119,6 +1150,22 @@ module.exports = {
       });
     });
 
+    self.route('post', 'history-modal', function(req, res) {
+      if (!req.user) {
+        // Confusion to the enemy
+        return res.status(404).send('not found');
+      }
+      var id = self.apos.launder.id(req.body.id);
+      return self.getDocAndCommits(req, id, function(err, doc, commits) {
+        if (err) {
+          console.error(err);
+          return res.status(500).send('error');
+        }
+        console.log(commits);
+        return res.send(self.render(req, 'history-modal.html', { commits: commits, doc: doc }));
+      });
+    });
+
     self.route('post', 'locale-picker-modal', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
@@ -1246,6 +1293,7 @@ module.exports = {
       self.pushAsset('script', 'manage-modal', { when: 'user' });
       self.pushAsset('script', 'commit-modal', { when: 'user' });
       self.pushAsset('script', 'export-modal', { when: 'user' });
+      self.pushAsset('script', 'history-modal', { when: 'user' });
       self.pushAsset('script', 'locale-picker-modal', { when: 'user' });
       self.pushAsset('script', 'pieces-editor-modal', { when: 'user' });
       self.pushAsset('script', 'pages-editor-modal', { when: 'user' });
@@ -1303,7 +1351,7 @@ module.exports = {
       } else {
         criteria.workflowLocale = { $not: /\-draft$/ };
       }
-      return self.apos.docs.find(req, criteria, self.getContextProjection()).workflowLocale(false).published(null).toArray(function(err, docs) {
+      return self.apos.docs.find(req, criteria, self.getContextProjection()).workflowLocale(null).published(null).toArray(function(err, docs) {
         if (err) {
           return callback(err);
         }
@@ -1353,7 +1401,7 @@ module.exports = {
       return self.apos.docs.find(req, {
         workflowGuid: { $in: [ moved.workflowGuid, data.oldParent.workflowGuid, data.parent.workflowGuid ] },
         workflowLocale: { $ne: moved.workflowLocale }
-      }).joins(false).areas(false).workflowLocale(false).permission(false).published(null).trash(null).toArray(function(err, pages) {
+      }).joins(false).areas(false).workflowLocale(null).permission(false).published(null).trash(null).toArray(function(err, pages) {
         if (err) {
           return callback(err);
         }

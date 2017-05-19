@@ -1,0 +1,59 @@
+{%- extends "apostrophe-modal:base.html" -%}
+{%- import "apostrophe-modal:macros.html" as modals -%}
+{%- import "apostrophe-ui:components/buttons.html" as buttons with context -%}
+
+{%- block modalClass -%}
+  apos-workflow-history-modal apos-ui-modal-no-sidebar
+{%- endblock -%}
+
+{%- block controls -%}
+  {{ buttons.major('Done', { action: 'cancel' }) }}
+{%- endblock -%}
+
+{%- block label -%}
+  {{ __('Commit history of %s', data.doc.title) }}
+{%- endblock -%}
+
+{% block instructions %}
+  <p>
+    {{ __('Click on a past commit to review it and export it to more locales.') }}
+  </p>
+{% endblock %}
+
+{%- block body -%}
+
+  {# Markup follows the pattern of the manage modal markup #}
+  <div class="apos-manage-view" data-apos-manage-view="">
+    <div class="apos-table">
+      {# May need to add pagination here at some point
+        <div class="apos-manage-showing" data-result-label="">
+          <div class="apos-manage-result-label">__('Showing %s - %s of %s results', from, to, total)</div>
+        </div>
+      #}
+      <table data-items class="apos-manage-table">
+        <thead data-headings>
+          <tr>
+            <th class="apos-manage-column apos-workflow-history-created-at">Date</th><th class="apos-manage-column">Author</th><th class="apos-manage-column">Actions</th>
+          </tr>
+        </thead>
+        <tbody data-list>
+          {% for commit in data.commits %}
+            <tr data-id="{{ commit._id }}">
+              <td>{{ commit.createdAt | date(__('MM/DD/YY[ at ]h:mma')) }}</td>
+              <td>{{ commit.user.title }}</td>
+              <td>
+                {# These came out really huge
+                  {{ buttons.major('Review', { action: 'apos-workflow-review', id: commit._id }) }}
+                  {{ buttons.major('Export', { action: 'apos-workflow-export', id: commit._id }) }}
+                #}
+                <a href="#" data-apos-workflow-review="{{ commit._id }}">Review</a>
+                <a href="#" data-apos-workflow-export="{{ commit._id }}">Export</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{%- endblock -%}

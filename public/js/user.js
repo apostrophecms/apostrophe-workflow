@@ -6,6 +6,8 @@ apos.define('apostrophe-workflow', {
     self.enableWorkflowMode();
     self.enableSubmit();
     self.enableCommit();
+    self.enableHistory();
+    self.enableExport();
     self.enableManageModal();
     self.addPermissionsFieldType();
     self.enableLocalePickerModal();
@@ -66,6 +68,28 @@ apos.define('apostrophe-workflow', {
       $('body').on('click', '[data-apos-workflow-commit]', function() {
         self.commit(self.getEditableDocIds());
         return false;
+      });
+    };
+    
+    self.enableHistory = function() {
+      apos.ui.link('apos-workflow-history', null, function($el, id) {
+        return apos.create('apostrophe-workflow-history-modal', 
+          _.assign({
+            manager: self,
+            body: { id: id }
+          }, options)
+        );
+      });
+    };
+    
+    self.enableExport = function() {
+      apos.ui.link('apos-workflow-export', null, function($el, id) {
+        return apos.create('apostrophe-workflow-export-modal', 
+          _.assign({
+            manager: self,
+            body: { id: id }
+          }, options)
+        );
       });
     };
 
