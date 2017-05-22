@@ -142,14 +142,32 @@
   }
 }
 
-.apos-ui .apos-workflow-locale-picker {
-  margin-left: 1em;
+.apos-ui .apos-workflow-locale-picker,
+.apos-ui .apos-workflow-export-locales {
+  height: 100%;
+  max-width: 740px;
+  margin-left: 220px;
+  padding-top: @apos-padding-2;
+  background-color: @apos-white;
+}
+
+.apos-ui .apos-workflow-locale-picker-items,
+.apos-ui .apos-workflow-locale-tree {
+  padding-left: 1em;
+  margin-left: 7px; 
+
+  a { color: #000; }
+
+  ul {
+    border-left: 2px dashed @apos-primary;    
+  }
 }
 
 .apos-ui.apos-workflow-history-modal {
   .apos-workflow-history-created-at {
     width: 200px;
   }
+  
   .apos-table td a {
     display: inline;
     padding-right: 24px;

@@ -3,12 +3,12 @@
     {%- for locale in nestedLocales -%}
       <li>
         {# TODO visibility toggle box working with this label #}
-        <span class="apos-workflow-locale-label">{{ locale.label or locale.name }}</span>
         {% for checkbox in checkboxes %}
           <input class="apos-workflow-locale-input" type="checkbox" id="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" name="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" value="1" />
           <span class="apos-workflow-locale-checkbox-indicator"></span>
           <label for="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" class="apos-workflow-locale-checkbox-label">{{ checkbox.label }}</label>
         {% endfor %}
+        <span class="apos-workflow-locale-label">{{ locale.label or locale.name }}</span>
         {%- if locale.children -%}
           {{ tree(prefix, checkboxes, locale.children) }}
         {%- endif -%}
