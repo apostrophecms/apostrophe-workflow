@@ -13,7 +13,7 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Exporting changes to %s to other locales', data.commit.to.title) }}
+  {{ __('Exporting changes from %s (%s)', data.commit.to.title, data.commit.locale) }}
 {%- endblock -%}
 
 {% block instructions %}
@@ -23,15 +23,17 @@
 {% endblock %}
 
 {%- block body -%}
-{{ localeTree.tree(
-  'locales',
-  [
-    {
-      name: 'locale'
-    }
-  ],
-  data.nestedLocales)
-}}
+<div class="apos-workflow-export-locales">
+  {{ localeTree.tree(
+    'locales',
+    [
+      {
+        name: 'locale'
+      }
+    ],
+    data.nestedLocales)
+  }}
+</div>
 {%- endblock -%}
 
 {%- block footerContainer -%}{%- endblock -%}

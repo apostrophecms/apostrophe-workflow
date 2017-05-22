@@ -1,5 +1,5 @@
 {%- macro picker(localizations, nestedLocales) -%}
-  <ul class="apos-workflow-locale-picker">
+  <ul class="apos-workflow-locale-picker-items">
     {%- for locale in nestedLocales -%}
       {%- set localization = localizations[locale.name] or localizations[locale.name + '-draft'] -%}
       {%- if localization -%}
@@ -27,7 +27,7 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Switching locale') }}
+  {{ __('Switch Locales') }}
 {%- endblock -%}
 
 {% block instructions %}
@@ -37,7 +37,9 @@
 {% endblock %}
 
 {%- block body -%}
-{{ picker(data.localizations, data.nestedLocales) }}
+<div class="apos-workflow-locale-picker">
+  {{ picker(data.localizations, data.nestedLocales) }}
+</div>
 {%- endblock -%}
 
 {%- block footerContainer -%}{%- endblock -%}
