@@ -42,12 +42,7 @@
               <td>{{ commit.createdAt | date(__('MM/DD/YY[ at ]h:mma')) }}</td>
               <td>{{ commit.user.title }}</td>
               <td>
-                {# These came out really huge
-                  {{ buttons.major('Review', { action: 'apos-workflow-review', id: commit._id }) }}
-                  {{ buttons.major('Export', { action: 'apos-workflow-export', id: commit._id }) }}
-                #}
-                <a href="#" data-apos-workflow-review="{{ commit._id }}">Review</a>
-                <a href="#" data-apos-workflow-export="{{ commit._id }}">Export</a>
+                <a href="#" data-apos-workflow-review="{{ commit._id }}">Review and Export</a>
               </td>
             </tr>
           {% endfor %}

@@ -8,6 +8,7 @@ apos.define('apostrophe-workflow', {
     self.enableCommit();
     self.enableHistory();
     self.enableExport();
+    self.enableReview();
     self.enableManageModal();
     self.addPermissionsFieldType();
     self.enableLocalePickerModal();
@@ -93,6 +94,17 @@ apos.define('apostrophe-workflow', {
       });
     };
 
+    self.enableReview = function() {
+      apos.ui.link('apos-workflow-review', null, function($el, id) {
+        return apos.create('apostrophe-workflow-review-modal', 
+          _.assign({
+            manager: self,
+            body: { id: id }
+          }, options)
+        );
+      });
+    };
+
     // Submit the docs with the specified ids for approval and notify the user.
     self.submit = function(ids, callback) {
       self.api('submit', { ids: ids }, function(result) {
@@ -143,12 +155,13 @@ apos.define('apostrophe-workflow', {
       }));
     };
     
-    self.enablePreviewIframe = function(id) {
-      self.api('diff', { id: id }, function(result) {
+    self.enablePreviewIframe = function(options) {
+      self.api('diff', options, function(result) {
         if (result.status !== 'ok') {
           return fail();
         }
         var keys = _.keys(result.diff);
+        var id = result.id;
         // https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
         _.each(keys, function(key) {
           var $area = $('[data-doc-id="' + id + '"][data-dot-path="' + key + '"]');

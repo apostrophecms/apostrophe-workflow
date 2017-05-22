@@ -708,7 +708,7 @@ module.exports = {
         return res.send({ status: 'ok', errors: errors });
       });
       function getCommit(callback) {
-        return self.db.findOne({ _id: id }, function(err, _commit) {
+        return self.findDocAndCommit(req, id, function(err, doc, _commit) {
           if (err) {
             return callback(err);
           }
@@ -915,16 +915,27 @@ module.exports = {
       };
     };
     
-    self.getDocAndCommits = function(req, id, callback) {
-      // We fetch the doc first, and if we can't get it with edit permissions we bail
-      return self.apos.docs.find(req, { _id: id }).permission('edit').published(null).workflowLocale(null).areas(false).joins(false).toObject(function(err, doc) {
+    self.findDocForEditing = function(req, docId, callback) {
+      self.apos.docs.find(req, { _id: docId }).permission('edit').published(null).workflowLocale(null).areas(false).joins(false).toObject(callback);
+    };
+    
+    // Fetch a draft doc along with all of the past commits in which it is the source ("fromId").
+    //
+    // On success, invokes callback with `(null, doc, commits)` where `commits` is an array.
+    //
+    // If the doc cannot be fetched for editing by this req, a `notfound` error is reported.
+
+    self.findDocAndCommits = function(req, docId, callback) {
+      return self.findDocForEditing(req, docId, function(err, doc) {
         if (err) {
           return callback(err);
         }
         if (!doc) {
           return callback('notfound');
         }
-        return self.db.find({ fromId: id }).sort({ createdAt: -1 }).toArray(function(err, commits) {
+        var criteria = { fromId: docId };
+        var cursor = self.db.find(criteria).sort({ createdAt: -1 });
+        return cursor.toArray(function(err, commits) {
           if (err) {
             return callback(err);
           }
@@ -932,7 +943,54 @@ module.exports = {
         });
       });
     };
-    
+
+    // Fetch a commit, along with the draft doc that was the source of it. On success, invokes callback with
+    // `(null, commit, doc)`. If the doc cannot be fetched for editing by this req,
+    // or no commit is found, a `notfound` error is reported.
+    //
+    // Here we take a `commitId` rather than a `docId` because a doc may have many
+    // commits and we want just one.
+    //
+    // Hint: any time you want to fetch a commit, but also want to check permissions, use this method
+    // rather than just pulling the commit from the collection directly.
+
+    self.findDocAndCommit = function(req, commitId, callback) {
+      var commit, doc;
+      return async.series([
+        getCommit,
+        getDoc
+      ], function(err) {
+        return callback(err, doc, commit);
+      });
+
+      function getCommit(callback) {
+        return self.db.findOne({ _id: commitId }, function(err, _commit) {
+          if (err) {
+            return callback(err);
+          }
+          commit = _commit;
+          if (!commit) {
+            return callback('notfound');
+          }
+          return callback(null);
+        });
+      }
+      
+      function getDoc(callback) {
+        return self.findDocForEditing(req, commit.fromId, function(err, _doc) {
+          if (err) {
+            return callback(err);
+          }
+          doc = _doc;
+          if (!doc) {
+            return callback('notfound');
+          }
+          return callback(null);
+        });
+      }
+
+    };
+        
     // Decide whether a doc type is subject to workflow as documented for the module options.
 
     self.includeType = function(type) {
@@ -1156,12 +1214,11 @@ module.exports = {
         return res.status(404).send('not found');
       }
       var id = self.apos.launder.id(req.body.id);
-      return self.getDocAndCommits(req, id, function(err, doc, commits) {
+      return self.findDocAndCommits(req, id, function(err, doc, commits) {
         if (err) {
           console.error(err);
           return res.status(500).send('error');
         }
-        console.log(commits);
         return res.send(self.render(req, 'history-modal.html', { commits: commits, doc: doc }));
       });
     });
@@ -1198,15 +1255,53 @@ module.exports = {
       });
     });
 
+    self.route('post', 'review-modal', function(req, res) {
+
+      if (!req.user) {
+        // Confusion to the enemy
+        return res.status(404).send('not found');
+      }
+
+      var id = self.apos.launder.id(req.body.id);
+      var doc;
+      var commit;
+
+      return async.series([
+        find, after
+      ], function(err) {
+        if (err) {
+          console.error(err);
+          return res.status(500).send('error');
+        }
+        return res.send(self.render(req, 'review-modal.html', { commit: commit, doc: commit.to }));
+      });
+      
+      function find(callback) {
+        return self.findDocAndCommit(req, id, function(err, doc, _commit) {
+          if (err) {
+            return callback(err);
+          }
+          if (!_commit) {
+            return callback('notfound');
+          }
+          commit = _commit;
+          return callback(null);
+        });
+      }
+      
+      function after(callback) {
+        return self.after(req, commit.to, callback);
+      }
+
+    });
+
     self.route('post', 'export-modal', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
         return res.status(404).send('not found');
       }
       var id = self.apos.launder.id(req.body.id);
-      // We get both the same way the commit route does, for the sake of the permissions check,
-      // so it doesn't initially appear that someone can be sneaky (although they can't really)
-      return self.db.findOne({ _id: id }, function(err, commit) {
+      return self.findDocAndCommit(req, id, function(err, doc, commit) {
         if (err) {
           console.error(err);
           return res.status(500).send('error');
@@ -1226,10 +1321,11 @@ module.exports = {
       }
 
       var id = self.apos.launder.id(req.body.id);
+      var commitId = self.apos.launder.id(req.body.commitId);
       var draft, live;
 
       return async.series([
-        getDraftAndLive,
+        getContent,
         // Resolve the joins in the live doc to point to the draft's docs, so we don't get false
         // positives for changes in the diff. THIS IS RIGHT FOR VISUAL DIFF, WOULD BE VERY WRONG
         // FOR APPLYING DIFF, for that we go in the opposite direction
@@ -1243,15 +1339,41 @@ module.exports = {
 
         self.deleteExcludedProperties(live);
         self.deleteExcludedProperties(draft);
+        
+        // console.log(JSON.stringify(live, null, '  '), JSON.stringify(draft, null, '  '));
 
         return res.send({
           status: 'ok',
           diff: diff.diff(
             live, draft
-          )
+          ),
+          id: id
         });
         
       });
+      
+      function getContent(callback) {
+        if (commitId) {
+          return getCommit(callback);
+        } else {
+          return getDraftAndLive(callback);
+        }
+      }
+      
+      function getCommit(callback) {
+        return self.findDocAndCommit(req, commitId, function(err, doc, commit) {
+          if (err) {
+            return callback(err);
+          }
+          if (!commit) {
+            return callback('notfound');
+          }
+          id = doc._id;
+          live = self.apos.utils.clonePermanent(commit.to);
+          draft = self.apos.utils.clonePermanent(commit.from);
+          return callback(null);
+        });
+      }
 
       function getDraftAndLive(callback) {
         return self.getDraftAndLive(req, id, function(err, _draft, _live) {
@@ -1265,8 +1387,19 @@ module.exports = {
       }
       
       function resolveRelationships(callback) {
+        var resolve = [];
+        // You'd think it would be obvious which of these has a -draft locale suffix,
+        // but let's be flexible to allow for different scenarios
+        if (!draft.workflowLocale.match(/\-draft$/)) {
+          resolve.push(draft);
+        }
+        if (!live.workflowLocale.match(/\-draft$/)) {
+          resolve.push(live);
+        }
         // We're going in this direction for visual diff ONLY
-        return self.resolveRelationships(req, live, draft.workflowLocale, callback);
+        return async.eachSeries(resolve, function(version, callback) {
+          return self.resolveRelationships(req, version, self.draftify(version.workflowLocale), callback);
+        }, callback);
       }
 
     });
@@ -1293,6 +1426,7 @@ module.exports = {
       self.pushAsset('script', 'manage-modal', { when: 'user' });
       self.pushAsset('script', 'commit-modal', { when: 'user' });
       self.pushAsset('script', 'export-modal', { when: 'user' });
+      self.pushAsset('script', 'review-modal', { when: 'user' });
       self.pushAsset('script', 'history-modal', { when: 'user' });
       self.pushAsset('script', 'locale-picker-modal', { when: 'user' });
       self.pushAsset('script', 'pieces-editor-modal', { when: 'user' });
@@ -1310,7 +1444,7 @@ module.exports = {
       });
     };
     
-    self.pageBeforeSend = function(req) {
+    self.pageBeforeSend = function(req, callback) {
       if (req.user && (req.session.workflowMode === 'live')) {
         req.disableEditing = true;
         self.apos.templates.addBodyClass(req, 'apos-workflow-live-page');
@@ -1324,19 +1458,80 @@ module.exports = {
       }
       req.data.workflow.locale = req.locale.replace(/\-draft$/, '');
 
+      if (!req.user) {
+        return callback(null);
+      }
+
       // Invoke pushCreateSingleton after we have all this groovy information,
       // so we get options.localizations on the browser side to power the
       // locale picker modal
-      if (req.user) {
-        self.pushCreateSingleton(req);
-        if (req.query.workflowPreview) {
-          req.disableEditing = true;
-          var id = self.apos.launder.id(req.query.workflowPreview);
-          self.apos.templates.addBodyClass(req, 'apos-workflow-preview-page');
-          req.browserCall('apos.modules["apostrophe-workflow"].enablePreviewIframe(?)', id);
-        }
+      self.pushCreateSingleton(req);
+      if (req.query.workflowPreview) {
+        req.disableEditing = true;
+        var id = self.apos.launder.id(req.query.workflowPreview);
+        self.apos.templates.addBodyClass(req, 'apos-workflow-preview-page');
+        req.browserCall('apos.modules["apostrophe-workflow"].enablePreviewIframe({ id: ? })', id);
       }
 
+      if (!req.query.workflowReview) {
+        return callback(null);
+      }
+      
+      req.disableEditing = true;
+      // A commit id, not a doc id
+      var id = self.apos.launder.id(req.query.workflowReview);
+      self.apos.templates.addBodyClass(req, 'apos-workflow-preview-page');
+
+      var commit;
+
+      return async.series([
+        findDocAndCommit,
+        after        
+      ], function(err) {
+        if (err) {
+          return callback(err);
+        }
+        // Walk recursively through req.data looking for instances of the doc of interest.
+        // Working in place, modify them to be copies of commit.from, which will be
+        // an older version of the doc
+        self.apos.docs.walk(req.data, function(o, k, v, dotPath) {
+          if (v && (typeof(v) === 'object')) {
+            if (v._id === commit.fromId) {
+              _.each(_.keys(v), function(key) {
+                delete v[key];
+              });
+              _.assign(v, commit.from);
+            }
+          }
+        });
+        req.browserCall('apos.modules["apostrophe-workflow"].enablePreviewIframe({ commitId: ? })', id);
+        return callback(null);
+      });
+
+      function findDocAndCommit(callback) {
+        return self.findDocAndCommit(req, id, function(err, _doc, _commit) {
+          if (err) {
+            return callback(err);
+          }
+          commit = _commit;
+          return callback(null);
+        });
+      }
+      
+      function after(callback) {
+        return self.after(req, commit.from, callback);
+      }
+    };
+
+    // Fetch joins, load areas, etc. on a doc object that came out of the
+    // commits collection. Used for previewing
+
+    self.after = function(req, doc, callback) {
+      var manager = self.apos.docs.getManager(doc.type);
+      if (!manager) {
+        return callback('no manager');
+      }
+      return manager.find(req).after([ doc ], callback);      
     };
     
     self.getLocalizations = function(req, workflowGuid, callback) {
