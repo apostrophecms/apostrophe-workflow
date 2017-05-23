@@ -1,5 +1,6 @@
 var async = require('async');
 var _ = require('lodash');
+var deep = require('deep-get-set');
 
 var diff = require('jsondiffpatch').create({
   objectHash: function(obj, index) {
@@ -745,6 +746,7 @@ module.exports = {
             self.deleteExcludedProperties(commit.from);
             self.deleteExcludedProperties(commit.to);
             var patch = diff.diff(commit.to, commit.from);
+
             // If a patch edits a widget in an area that doesn't exist at all yet
             // in the receiving locale, create the area
             _.each(patch, function(value, key) {
@@ -757,6 +759,102 @@ module.exports = {
                 }
               }
             });
+            
+            // Step 1: find all the sub-objects with an _id property that are
+            // present in the docs and sort them in descending order by
+            // depth. These will be schema array items and widgets
+
+            var draftObjects = getObjects(draft);
+            var fromObjects = getObjects(from);
+            var toObjects = getObjects(to);
+            
+            function getObjects(doc) {
+              var objects = [];
+              var dotPaths = {};
+              var dots = {};
+              self.apos.docs.walk(draft, function(doc, key, value, dotPath, ancestors) {
+                if (value && (typeof(value) === 'object') && value._id) {
+                  objects.push(value);
+                  dotPaths[value._id] = dotPath;
+                  dots[value._id] = 0;
+                  for (var i = 0; (i < dotPath.length); i++) {
+                    if (dotPath.charAt(i) === '.') {
+                      dots[value._id]++;
+                    }
+                  }
+                }
+              });
+                         
+              objects.sort(function(a, b) {
+                if (dots[a._id] > dots[b._id]) {
+                  return -1;
+                } else if (dots[a._id] > dots[b._id]) {
+                  return 1;
+                } else {
+                  return 0;
+                }
+              });
+
+              return {
+                objects: objects,
+                dotPaths: dotPaths,
+                dots: dots,
+                byId: _.indexBy(objects, '_id')
+              };
+
+            }
+            
+            // Step 2: iterate over those objects, patching directly as appropriate
+            
+            _.each(toObjects.objects, function(value) {
+              // Deleted
+              if (!_.has(fromObjects.dotPaths[value._id])) {
+                if (draftObjects.dotPaths[value._id]) {
+                  deleteObject(draft, draftObjects, value._id);
+                }
+                return;
+              }
+            });
+            _.each(fromObjects.objects, function(value) {
+              // Modified. Could also be moved, so don't return
+              if (!_.isEqual(value, fromObjects.byId[value._id])) {
+                updateObject(draft, draftObjects, value._id);
+              }
+              // Moved. Look at neighbor ids, not indexes, to account for
+              // existing divergences
+              var toDotPath = toObjects.dotPaths[value._id];
+              var fromDotPath = fromObjects.dotPaths[value._id];
+              if (toDotPath !== fromDotPath) {
+                var fromIndex = parseInt(_.last(fromDotPath.split('.')));
+                var afterId;
+                if (fromIndex > 0) {
+                  for (var i = fromIndex - 1; (i >= 0); i++) {
+                    var subPath = fromDotPath.split('.');
+                    subPath.pop();
+                    subPath.concat(i);
+                    var obj = getObject(from, fromObjects, subPath.join('.'));
+                    if (obj) {
+                      var afterId = obj._id;
+                      if (_.has(draftObjects.byId, afterId)) {
+                        deleteObject(draft, draftObjects, value);
+                        insertObjectAfter(draft, draftObjects, afterId, value);
+                        return;
+                      }
+                    }
+                  }  
+                }
+                deleteObject(draft, draftObjects, value);
+                appendObject(draft, draftObjects, fromDotPath.replace(/\.\d$/, ''), value);
+              }
+            });
+
+            // Step 3: remove all of these objects so jsondiffpatch doesn't consider them
+            purgeObjects(draft, draftObjects);
+            purgeObjects(commit.from, fromObjects);
+            purgeObjects(commit.to, toObjects);
+            
+            // Step 4: patch as normal for everything that doesn't have an _id
+            
             try {
               console.log('patch is: ', JSON.stringify(patch, null, '  '));
               console.log('draft is: ', JSON.stringify(draft, null, '  '));
@@ -766,6 +864,33 @@ module.exports = {
               console.error(e);
             }
             return callback(null);
+            
+            function getObject(context, objects, dotPath) {
+              return deep(context, dotPath);
+            }
+            
+            function deleteObject(context, objects, value) {
+              var dotPath = objects.dotPaths[value._id];
+              if (!dotPath) {
+                return;
+              }
+              deep.set(context, dotPath, undefined);
+            }
+            
+            function appendObject(context, objects, path, object) {
+              var array = deep.get(context, path);
+              if (!Array.isArray(array)) {
+                return;
+              }
+              array.push(object);
+            }
+            
+            function purgeObjects(context, objects) {
+              _.each(objects, function(object) {
+                deleteObject(context, objects, object);
+              });
+            }
+            
           }
           // Resolve relationship ids back to the locale the draft is coming from
           function resolveToDestination(callback) {
