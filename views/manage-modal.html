@@ -21,14 +21,31 @@
 {% endblock %}
 
 {%- block body -%}
-  <div class="apos-workflow-list" data-apos-workflow-list>
-    {% for doc in data.submitted %}
-      {% if apos.utils.beginsWith(doc.slug, '/') %}
-        <h4><a href="{{ doc._url }}">{{ doc.title }}</a></h4>
-      {% else %}
-        <h4><a href="#" data-apos-edit-{{ doc.type }}="{{ doc._id }}">{{ doc.title }}</a></h4>
-      {% endif %}
-    {% endfor %}
+  <div class="apos-manage-view" data-apos-manage-view="" data-apos-workflow-list>
+    <div class="apos-table">
+      <table data-items class="apos-manage-table">
+        <thead data-headings>
+          <tr>
+            <th class="apos-manage-column apos-workflow-history-created-at">Page</th>
+            <th class="apos-manage-column">Last Submitted By</th>
+            <th class="apos-manage-column">Last Submitted At</th>
+          </tr>
+        </thead>
+        <tbody data-list>
+          {% for doc in data.submitted %}
+            <tr data-id="{{ commit._id }}">
+              {% if apos.utils.beginsWith(doc.slug, '/') %}
+                <td><a href="{{ doc._url }}">{{ doc.title }}</a></td>
+              {% else %}
+                <td><a href="#" data-apos-edit-{{ doc.type }}="{{ doc._id }}">{{ doc.title }}</a></td>
+              {% endif %}
+              <td>{{ doc.workflowSubmitted.name }}</td>
+              <td>{{ doc.workflowSubmitted.when }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 {%- endblock -%}
 
