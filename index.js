@@ -898,7 +898,7 @@ module.exports = {
           criteria
         ]
       };
-      return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).sort({ $exists: 1 }).published(null).workflowLocale(false).toArray(callback);
+      return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).sort({ $exists: 1 }).published(null).toArray(callback);
     };
         
     // Returns the projection to be used when fetching submitted docs to generate
