@@ -745,6 +745,77 @@ module.exports = {
             }
             self.deleteExcludedProperties(commit.from);
             self.deleteExcludedProperties(commit.to);
+            
+            // Step 1: find all the sub-objects with an _id property that are
+            // present in the docs and sort them in descending order by
+            // depth. These will be schema array items and widgets
+
+            var fromObjects = getObjects(commit.from);
+            var toObjects = getObjects(commit.to);
+            var draftObjects = getObjects(draft);
+            
+            console.log('from', fromObjects);
+            console.log('draft', draftObjects);
+            
+            // Step 2: iterate over those objects, patching directly as appropriate
+            
+            // "to" is the old version, PRIOR to the commit. Anything present there and
+            // absent in "from" was therefore removed DURING the commit
+            _.each(toObjects.objects, function(value) {
+              // Deleted
+              if (!_.has(fromObjects.dotPaths, value._id)) {
+                if (_.has(draftObjects.dotPaths, value._id)) {
+                  console.log('deleted');
+                  deleteObject(draft, draftObjects, value._id);
+                }
+                return;
+              }
+            });
+            _.each(fromObjects.objects, function(value) {
+              // Modified. Could also be moved, so don't return
+              if (JSON.stringify(value) !== JSON.stringify(toObjects.byId[value._id])) {
+                updateObject(draft, draftObjects, value);
+              }
+              // Moved. Look at neighbor ids, not indexes, to account for
+              // existing divergences
+              var toDotPath = toObjects.dotPaths[value._id];
+              var fromDotPath = fromObjects.dotPaths[value._id];
+              if (toDotPath !== fromDotPath) {
+                var fromIndex = parseInt(_.last(fromDotPath.split('.')));
+                var afterId;
+                if (fromIndex > 0) {
+                  for (var i = fromIndex - 1; (i >= 0); i++) {
+                    var subPath = fromDotPath.split('.');
+                    subPath.pop();
+                    subPath.concat(i);
+                    var obj = getObject(from, fromObjects, subPath.join('.'));
+                    if (obj) {
+                      var afterId = obj._id;
+                      if (_.has(draftObjects.byId, afterId)) {
+                        console.log('moved');
+                        deleteObject(draft, draftObjects, value);
+                        insertObjectAfter(draft, draftObjects, afterId, value);
+                        return;
+                      }
+                    }
+                  }  
+                }
+                deleteObject(draft, draftObjects, value);
+                appendObject(draft, draftObjects, fromDotPath.replace(/\.\d$/, ''), value);
+              }
+            });
+
+            // Step 3: remove all of these objects so jsondiffpatch doesn't consider them
+            purgeObjects(draft, draftObjects);
+            purgeObjects(commit.from, fromObjects);
+            purgeObjects(commit.to, toObjects);
+            // Eliminate gaps in arrays
+            draft = JSON.parse(JSON.stringify(draft));
+            commit.from = JSON.parse(JSON.stringify(commit.from));
+            commit.to = JSON.parse(JSON.stringify(commit.to));
+
+            // Step 4: patch as normal for everything that doesn't have an _id
+
             var patch = diff.diff(commit.to, commit.from);
 
             // If a patch edits a widget in an area that doesn't exist at all yet
@@ -760,14 +831,18 @@ module.exports = {
               }
             });
             
-            // Step 1: find all the sub-objects with an _id property that are
-            // present in the docs and sort them in descending order by
-            // depth. These will be schema array items and widgets
+            try {
+              console.log('patch is: ', JSON.stringify(patch, null, '  '));
+              console.log('draft is: ', JSON.stringify(draft, null, '  '));
+              // TODO turn this back on
+              return callback(null);
+              diff.patch(draft, patch);
+            } catch (e) {
+              errors.push(locale.replace(/\-draft$/, ''));
+              console.error(e);
+            }
+            return callback(null);
 
-            var draftObjects = getObjects(draft);
-            var fromObjects = getObjects(from);
-            var toObjects = getObjects(to);
-            
             function getObjects(doc) {
               var objects = [];
               var dotPaths = {};
@@ -803,81 +878,22 @@ module.exports = {
               };
 
             }
-            
-            // Step 2: iterate over those objects, patching directly as appropriate
-            
-            _.each(toObjects.objects, function(value) {
-              // Deleted
-              if (!_.has(fromObjects.dotPaths[value._id])) {
-                if (draftObjects.dotPaths[value._id]) {
-                  deleteObject(draft, draftObjects, value._id);
-                }
-                return;
-              }
-            });
-            _.each(fromObjects.objects, function(value) {
-              // Modified. Could also be moved, so don't return
-              if (!_.isEqual(value, fromObjects.byId[value._id])) {
-                updateObject(draft, draftObjects, value._id);
-              }
-              // Moved. Look at neighbor ids, not indexes, to account for
-              // existing divergences
-              var toDotPath = toObjects.dotPaths[value._id];
-              var fromDotPath = fromObjects.dotPaths[value._id];
-              if (toDotPath !== fromDotPath) {
-                var fromIndex = parseInt(_.last(fromDotPath.split('.')));
-                var afterId;
-                if (fromIndex > 0) {
-                  for (var i = fromIndex - 1; (i >= 0); i++) {
-                    var subPath = fromDotPath.split('.');
-                    subPath.pop();
-                    subPath.concat(i);
-                    var obj = getObject(from, fromObjects, subPath.join('.'));
-                    if (obj) {
-                      var afterId = obj._id;
-                      if (_.has(draftObjects.byId, afterId)) {
-                        deleteObject(draft, draftObjects, value);
-                        insertObjectAfter(draft, draftObjects, afterId, value);
-                        return;
-                      }
-                    }
-                  }  
-                }
-                deleteObject(draft, draftObjects, value);
-                appendObject(draft, draftObjects, fromDotPath.replace(/\.\d$/, ''), value);
-              }
-            });
-
-            // Step 3: remove all of these objects so jsondiffpatch doesn't consider them
-            purgeObjects(draft, draftObjects);
-            purgeObjects(commit.from, fromObjects);
-            purgeObjects(commit.to, toObjects);
-            
-            // Step 4: patch as normal for everything that doesn't have an _id
-            
-            try {
-              console.log('patch is: ', JSON.stringify(patch, null, '  '));
-              console.log('draft is: ', JSON.stringify(draft, null, '  '));
-              diff.patch(draft, patch);
-            } catch (e) {
-              errors.push(locale.replace(/\-draft$/, ''));
-              console.error(e);
-            }
-            return callback(null);
-            
+                       
             function getObject(context, objects, dotPath) {
               return deep(context, dotPath);
             }
             
             function deleteObject(context, objects, value) {
+              console.log('deleting ' + value._id);
               var dotPath = objects.dotPaths[value._id];
               if (!dotPath) {
                 return;
               }
-              deep.set(context, dotPath, undefined);
+              deep(context, dotPath, undefined);
             }
             
             function appendObject(context, objects, path, object) {
+              console.log('appending at ' + path);
               var array = deep.get(context, path);
               if (!Array.isArray(array)) {
                 return;
@@ -886,9 +902,16 @@ module.exports = {
             }
             
             function purgeObjects(context, objects) {
-              _.each(objects, function(object) {
+              _.each(objects.objects, function(object) {
                 deleteObject(context, objects, object);
               });
+            }
+
+            function updateObject(context, objects, object) {
+              var dotPath = objects.dotPaths[object._id];
+              if (dotPath) {
+                deep.set(context, dotPath, object);
+              }
             }
             
           }
