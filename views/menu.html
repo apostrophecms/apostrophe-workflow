@@ -4,7 +4,7 @@
 	{{ buttons.normal('Locale: ' + data.workflow.locale, { action: 'admin-bar-item', value: 'apostrophe-workflow-locale-picker-modal' }, 'apos-workflow-locale-button' ) }}
 
 	<div class="apos-dropdown apos-dropdown--button apos-dropdown--up apos-workflow-state" data-apos-dropdown="up" data-apos-actionable="">
-		<a class="apos-button" data-apos-dropdown-button-label="" style="padding-right: 20px;">
+		<a class="apos-button apos-workflow-state-toggle" data-apos-dropdown-button-label="" style="padding-right: 20px;">
 			<span class="apos-button-label">Mode: {{ data.workflowMode | capitalize }}</span>
 		</a>
 		<ul class="apos-dropdown-items" data-apos-dropdown-items="">
