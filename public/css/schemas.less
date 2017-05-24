@@ -1,0 +1,75 @@
+.apos-ui .apos-workflow-field-controls
+{
+  position: relative;
+  float: right;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  a
+  {
+    color: @apos-primary;
+    margin-right: 10px;
+  }
+
+  .apos-workflow-field-current
+  {
+    color: @apos-mid;
+  }
+
+  .apos-workflow-revert-field 
+  {
+    font-family: 'FontAwesome';
+    position: absolute;
+    font-size: 18px;
+    color: @apos-primary;
+    right: -28px;
+    top: 50px;
+    margin-right: 0;
+  }
+}
+
+.apos-ui .apos-workflow-field-state-control
+{
+  // -webkit-appearance:none;
+  outline: none;
+  border-radius: 0;
+  border: 1px solid @apos-mid;
+  padding: 2px;
+  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.apos-ui .apos-field-input:disabled
+{
+  opacity: 0.5;
+}
+
+.apos-workflow-live-field
+{
+  position: relative;
+  .apos-workflow-live-field-mask
+  {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  // There is also jQuery to prevent keyboard events.
+  pointer-events: none;
+  label:first-child {
+    // Allow clicks on the live/draft toggle
+    pointer-events: auto;
+  }
+  .apos-field:first-child {
+    display: none;
+  }
+}
+
+
+.apos-ui .apos-field.apos-workflow-field-changed .apos-field-input
+{
+  border: 1px solid purple;
+}

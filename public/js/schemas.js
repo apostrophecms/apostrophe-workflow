@@ -34,41 +34,44 @@ apos.define('apostrophe-schemas', {
           if (!_.isEqual(object[field.name], data.doc[field.name])) {
             $draft.addClass('apos-workflow-field-changed');
           }
+
           var $draftControls = $(
             '<span class="apos-workflow-field-controls">' +
-              '<a href="#" class="apos-workflow-field-current" data-apos-workflow-draft>draft</a> | ' +
-              '<a href="#" data-apos-workflow-live>live</a>' +
+              '<select class="apos-workflow-field-state-control" data-apos-workflow-field-state-control>' +
+                '<option value="draft" selected>Draft</option>' +
+                '<option value="live">Live</option>' +
+              '</select>' +
             '</span>'
           );
+
           $draft.find('label').prepend($draftControls);
+
           var $liveControls = $(
             '<span class="apos-workflow-field-controls">' +
-              '<a href="#" data-apos-workflow-draft>draft</a> | ' +
-              '<a href="#" class="apos-workflow-field-current" data-apos-workflow-live>live</a> <a href="#" data-apos-workflow-revert>revert</a>' +
+              '<select class="apos-workflow-field-state-control" data-apos-workflow-field-state-control>' +
+                '<option value="draft">Draft</option>' +
+                '<option value="live" selected>Live</option>' +
+              '</select>' +
+              '<a href="#" class="apos-workflow-revert-field" data-apos-workflow-revert></a>' +
             '</span>'
           );
+
           $live.find('label').prepend($liveControls);
           
-          $draftControls.on('click', '[data-apos-workflow-live]:first', function() {
-            $live.show();
-            $draft.hide();
-            return false;
+          $draftControls.find('[data-apos-workflow-field-state-control]').on('change', function () {
+            var state = $(this).val();
+            if (state === 'live') {
+              $live.show();
+              $draft.hide();
+            }
           });
 
-          $draftControls.on('click', '[data-apos-workflow-draft]:first', function() {
-            // Already there
-            return false;
-          });
-
-          $liveControls.on('click', '[data-apos-workflow-draft]:first', function() {
-            $live.hide();
-            $draft.show();
-            return false;
-          });
-
-          $liveControls.on('click', '[data-apos-workflow-live]:first', function() {
-            // Already there
-            return false;
+          $liveControls.find('[data-apos-workflow-field-state-control]').on('change', function () {
+            var state = $(this).val();
+            if (state === 'draft') {
+              $live.hide();
+              $draft.show();
+            }
           });
 
           $liveControls.on('click', '[data-apos-workflow-revert]:first', function() {
@@ -111,16 +114,16 @@ apos.define('apostrophe-schemas', {
     self.afterPopulate = function($el, schema, object, callback) {
       // Make sure people can't edit the preview of the live version of the field
       $el.find('[data-apos-workflow-live-field] *').each(function() {
-        if (typeof this.disabled != "undefined") {
+        if (typeof this.disabled != "undefined" ) {
           this.disabled = true;
         }
       });
       // But allow the toggles to be clicked
-      $el.find('[data-apos-workflow-live-field] label:first, [data-apos-workflow-live-field] label:first *').each(function() {
-        if (typeof this.disabled != "undefined") {
-          this.disabled = false;
-        }
+      // TOM PLEASE MAKE THIS WORK
+      $el.find('[data-apos-workflow-live-field] [data-apos-workflow-field-state-control], [data-apos-workflow-live-field] [data-apos-workflow-field-state-control] *').each(function(){
+        $(this).prop( "disabled", false );
       });
+
       // Try to give away the focus if it arrives via keyboard on an anchor element
       $el.on('focus', '[data-apos-workflow-live-field] a', function() {
         if ($(this).closest('label').length) {
