@@ -767,6 +767,7 @@ module.exports = {
                 if (_.has(draftObjects.dotPaths, value._id)) {
                   console.log('deleted');
                   deleteObject(draft, draftObjects, value._id);
+                  flatternArrays(draft);
                 }
                 return;
               }
@@ -774,6 +775,7 @@ module.exports = {
             _.each(fromObjects.objects, function(value) {
               // Modified. Could also be moved, so don't return
               if (JSON.stringify(value) !== JSON.stringify(toObjects.byId[value._id])) {
+                console.log('modified');
                 updateObject(draft, draftObjects, value);
               }
               // Moved. Look at neighbor ids, not indexes, to account for
@@ -794,6 +796,7 @@ module.exports = {
                       if (_.has(draftObjects.byId, afterId)) {
                         console.log('moved');
                         deleteObject(draft, draftObjects, value);
+                        removeArrayGaps(draft);
                         insertObjectAfter(draft, draftObjects, afterId, value);
                         return;
                       }
@@ -801,6 +804,7 @@ module.exports = {
                   }  
                 }
                 deleteObject(draft, draftObjects, value);
+                removeArrayGaps(draft);
                 appendObject(draft, draftObjects, fromDotPath.replace(/\.\d$/, ''), value);
               }
             });
@@ -809,10 +813,11 @@ module.exports = {
             purgeObjects(draft, draftObjects);
             purgeObjects(commit.from, fromObjects);
             purgeObjects(commit.to, toObjects);
-            // Eliminate gaps in arrays
-            draft = JSON.parse(JSON.stringify(draft));
-            commit.from = JSON.parse(JSON.stringify(commit.from));
-            commit.to = JSON.parse(JSON.stringify(commit.to));
+            
+            console.log('after purge');
+            console.log('from', fromObjects);
+            console.log('draft', draftObjects);
+            return callback(null);
 
             // Step 4: patch as normal for everything that doesn't have an _id
 
@@ -892,6 +897,9 @@ module.exports = {
               deep(context, dotPath, undefined);
             }
             
+            function removeArrayGaps(context) {
+            }
+            
             function appendObject(context, objects, path, object) {
               console.log('appending at ' + path);
               var array = deep.get(context, path);
@@ -905,6 +913,7 @@ module.exports = {
               _.each(objects.objects, function(object) {
                 deleteObject(context, objects, object);
               });
+              removeArrayGaps(context);
             }
 
             function updateObject(context, objects, object) {
