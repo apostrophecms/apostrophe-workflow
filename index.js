@@ -1111,8 +1111,7 @@ module.exports = {
         path: 1,
         rank: 1,
         type: 1,
-        tags: 1,
-        workflowSubmitted: 1
+        tags: 1
       };
     };
     
@@ -1236,7 +1235,6 @@ module.exports = {
             req.session.workflowMode = 'live';
           }
         }
-        var locale = self.locales[req.locale];
         return next();
       }
     };
