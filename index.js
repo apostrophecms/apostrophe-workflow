@@ -68,6 +68,7 @@ module.exports = {
     self.extendPieces();
     self.extendPermissionsField();
     self.extendPermissions();
+    self.extendPages();
     self.apos.pages.addAfterContextMenu(self.menu);
     return self.enableCollection(callback);
   },
@@ -269,6 +270,14 @@ module.exports = {
           action: 'commit'
         });
       }
+    };
+    
+    self.extendPages = function() {
+      // Trash must be managed at each level of the page tree so that
+      // users lacking cross-locale permissions are not forbidden to
+      // trash things locally. Moving pages requires permissions across
+      // many locales
+      self.apos.pages.options.trashInTree = true;
     };
 
     // Every time a doc is saved, check whether its type is included in workflow. If it is,
