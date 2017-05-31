@@ -1970,12 +1970,12 @@ module.exports = {
 };
 
 function getStem(dotPath) {
-  let stem = dotPath.split(/\./);
+  var stem = dotPath.split(/\./);
   stem.pop();
   return stem = stem.join('.');
 }
 
 function getIndex(dotPath) {
-  let stem = dotPath.split(/\./);
+  var stem = dotPath.split(/\./);
   return parseInt(stem[stem.length - 1]);
 }
