@@ -1,3 +1,4 @@
+@import 'schemas.less';
 @import 'menu.less';
 
 .apos-workflow-preview
@@ -57,47 +58,6 @@
   color: orange;
   font-weight: bold;
   font-size: 24px;
-}
-
-.apos-workflow-field-controls
-{
-  float: right;
-}
-
-.apos-workflow-live-field
-{
-  position: relative;
-  .apos-workflow-live-field-mask
-  {
-    position: absolute;
-    z-index: 100;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: @apos-black;
-    opacity: 0.05;
-  }
-  // There is also jQuery to prevent keyboard events.
-  pointer-events: none;
-  label:first-child {
-    // Allow clicks on the live/draft toggle
-    pointer-events: auto;
-  }
-  .apos-field:first-child {
-    display: none;
-  }
-}
-
-.apos-workflow-field-current
-{
-  font-weight: bold;
-  color: black;
-}
-
-.apos-ui .apos-field.apos-workflow-field-changed
-{
-  border: 1px solid purple;
 }
 
 .apos-workflow-live-page {
