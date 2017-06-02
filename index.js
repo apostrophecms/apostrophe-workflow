@@ -1,5 +1,7 @@
 var async = require('async');
 var _ = require('lodash');
+var deep = require('deep-get-set');
+var removeDotPathViaSplice = require('./lib/removeDotPathViaSplice.js');
 
 var diff = require('jsondiffpatch').create({
   objectHash: function(obj, index) {
@@ -66,6 +68,7 @@ module.exports = {
     self.extendPieces();
     self.extendPermissionsField();
     self.extendPermissions();
+    self.extendPages();
     self.apos.pages.addAfterContextMenu(self.menu);
     return self.enableCollection(callback);
   },
@@ -267,6 +270,14 @@ module.exports = {
           action: 'commit'
         });
       }
+    };
+    
+    self.extendPages = function() {
+      // Trash must be managed at each level of the page tree so that
+      // users lacking cross-locale permissions are not forbidden to
+      // trash things locally. Moving pages requires permissions across
+      // many locales
+      self.apos.pages.options.trashInTree = true;
     };
 
     // Every time a doc is saved, check whether its type is included in workflow. If it is,
@@ -720,11 +731,15 @@ module.exports = {
         });
       }
       function applyPatches(callback) {
+
         return async.eachSeries(locales, function(locale, callback) {
+
           var draft;
+
           return async.series([ getDraft, resolveToSource, applyPatch, resolveToDestination, update ], callback);
+
           function getDraft(callback) {
-            return self.apos.docs.find(req, { workflowGuid: commit.workflowGuid }).published(null).workflowLocale(locale).permission('edit').toObject(function(err, _draft) {
+            return self.apos.docs.find(req, { workflowGuid: commit.workflowGuid }).published(null).workflowLocale(locale).permission('edit').areas(false).joins(false).toObject(function(err, _draft) {
               if (err) {
                 return callback(err);
               }
@@ -732,19 +747,85 @@ module.exports = {
               return callback(null);
             });
           }
+
           // Resolve relationship ids to point to the locale the patch is coming from,
           // so that the diff applies properly
           function resolveToSource(callback) {
             return self.resolveRelationships(req, draft, commit.to.workflowLocale, callback);
           }
+
           function applyPatch(callback) {
+
             if (!draft) {
               errors.push(locale.replace(/\-draft$/, '') + ': not found, run task');
               return callback(null);
             }
+
             self.deleteExcludedProperties(commit.from);
             self.deleteExcludedProperties(commit.to);
+            
+            // Step 1: find all the sub-objects with an _id property that are
+            // present in the docs and sort them in descending order by
+            // depth. These will be schema array items and widgets
+
+            var fromObjects = getObjects(commit.from);
+            var toObjects = getObjects(commit.to);
+            var draftObjects = getObjects(draft);
+                        
+            // Step 2: iterate over those objects, patching directly as appropriate
+            
+            // "to" is the old version, PRIOR to the commit. Anything present there and
+            // absent in "from" was therefore removed DURING the commit
+            _.each(toObjects.objects, function(value) {
+              // Deleted
+              if (!_.has(fromObjects.dotPaths, value._id)) {
+                if (_.has(draftObjects.dotPaths, value._id)) {
+                  deleteObject(draft, draftObjects, value._id);
+                }
+              }
+            });
+            _.each(fromObjects.objects, function(value) {
+              if (!_.has(draftObjects.byId, value._id)) {
+                if (!_.has(toObjects.byId, value._id)) {
+                  // New in this commit, bring it to the draft;
+                  // but where?
+                  moved(fromObjects.dotPaths[value._id], value);
+                  return;
+                } else {
+                  // console.log('not in draft (possibly deleted): ' + value._id);
+                  return;
+                }
+              }
+              // Modified. Could also be moved, so don't return
+              if (JSON.stringify(value) !== JSON.stringify(toObjects.byId[value._id])) {
+                // console.log('modified');
+                updateObject(draft, draftObjects, value);
+                // So we know the difference no longer exists when examining
+                // a parent object
+                deleteObject(commit.from, fromObjects, value);
+                deleteObject(commit.to, toObjects, value);
+              }
+              // Moved. Look at neighbor ids, not indexes, to account for
+              // existing divergences
+              
+              var toDotPath = toObjects.dotPaths[value._id];
+              var fromDotPath = fromObjects.dotPaths[value._id];
+              if (toDotPath !== fromDotPath) {
+                // console.log('moved');
+                moved(fromDotPath, value);
+                return;
+              }
+            });
+
+            // Step 3: remove any remaining _id objects in commit.from and commit.to
+            // so jsondiffpatch doesn't consider them
+            purgeObjects(commit.from, fromObjects);
+            purgeObjects(commit.to, toObjects);
+            
+            // Step 4: patch as normal for everything that doesn't have an _id
+
             var patch = diff.diff(commit.to, commit.from);
+
             // If a patch edits a widget in an area that doesn't exist at all yet
             // in the receiving locale, create the area
             _.each(patch, function(value, key) {
@@ -757,15 +838,143 @@ module.exports = {
                 }
               }
             });
+            
             try {
-              console.log('patch is: ', JSON.stringify(patch, null, '  '));
-              console.log('draft is: ', JSON.stringify(draft, null, '  '));
+              // console.log('patch is: ', JSON.stringify(patch, null, '  '));
+              // console.log('draft is: ', JSON.stringify(draft, null, '  '));
+              // TODO turn this back on
+              return callback(null);
               diff.patch(draft, patch);
             } catch (e) {
               errors.push(locale.replace(/\-draft$/, ''));
               console.error(e);
+              return callback(null);
             }
-            return callback(null);
+          
+            function getObjects(doc) {
+              var objects = [];
+              var dotPaths = {};
+              var dots = {};
+              self.apos.docs.walk(doc, function(doc, key, value, dotPath, ancestors) {
+                if (value && (typeof(value) === 'object') && value._id) {
+                  objects.push(value);
+                  dotPaths[value._id] = dotPath;
+                  dots[value._id] = 0;
+                  for (var i = 0; (i < dotPath.length); i++) {
+                    if (dotPath.charAt(i) === '.') {
+                      dots[value._id]++;
+                    }
+                  }
+                }
+              });
+                         
+              objects.sort(function(a, b) {
+                if (dots[a._id] > dots[b._id]) {
+                  return -1;
+                } else if (dots[a._id] > dots[b._id]) {
+                  return 1;
+                } else {
+                  return 0;
+                }
+              });
+
+              return {
+                objects: objects,
+                dotPaths: dotPaths,
+                dots: dots,
+                byId: _.indexBy(objects, '_id')
+              };
+
+            }
+                       
+            function getObject(context, objects, dotPath) {
+              return deep(context, dotPath);
+            }
+            
+            function deleteObject(context, objects, value) {
+              var dotPath = objects.dotPaths[value._id];
+              if (!dotPath) {
+                return;
+              }
+              if (removeDotPathViaSplice(context, dotPath)) {
+                // Was an array removal; we have to adjust the dotPaths of
+                // other things appearing later in the same array
+                var stem = getStem(dotPath);
+                var index = getIndex(dotPath);
+                var array = deep(context, stem);
+                for (var i = index; (i < array.length); i++) {
+                  var id = array[i] && array[i]._id;
+                  if (id) {
+                    objects.dotPaths[id] = stem + '.' + i;
+                  }
+                }
+              }
+            }
+            
+            function insertObjectAfter(context, objects, afterId, value) {
+              var afterDotPath = objects.dotPaths[afterId];
+              var stem = getStem(afterDotPath);
+              var index = getIndex(afterDotPath);
+              var array = deep(context, stem);
+              array.splice(index + 1, 0, value);
+              for (var i = index + 1; (i < array.length); i++) {
+                var id = array[i] && array[i]._id;
+                if (id) {
+                  objects.dotPaths[id] = stem + '.' + i;
+                }
+              }
+            }
+                        
+            function appendObject(context, objects, path, object) {
+              var array = deep(context, path);
+              if (!Array.isArray(array)) {
+                return;
+              }
+              array.push(object);
+            }
+            
+            function purgeObjects(context, objects) {
+              _.each(objects.objects, function(object) {
+                deleteObject(context, objects, object);
+              });
+            }
+
+            function updateObject(context, objects, object) {
+              var dotPath = objects.dotPaths[object._id];
+              if (dotPath) {
+                deep(context, dotPath, object);
+              }
+            }
+            
+            function moved(fromDotPath, value) {
+              var fromIndex = parseInt(_.last(fromDotPath.split('.')));
+              var afterId;
+              if (fromIndex > 0) {
+                for (var i = fromIndex - 1; (i >= 0); i--) {
+                  var subPath = fromDotPath.split('.');
+                  subPath.pop();
+                  subPath.push(i);
+                  var obj = getObject(commit.from, fromObjects, subPath.join('.'));
+                  var afterId = obj._id;
+                  if (_.has(draftObjects.byId, afterId)) {
+                    deleteObject(draft, draftObjects, value);
+                    insertObjectAfter(draft, draftObjects, afterId, value);
+                    // So we know the difference no longer exists when examining
+                    // a parent object
+                    deleteObject(commit.from, fromObjects, value);
+                    deleteObject(commit.to, toObjects, value);
+                    return;
+                  }
+                }  
+              }
+              deleteObject(draft, draftObjects, value);
+              appendObject(draft, draftObjects, fromDotPath.replace(/\.\d+$/, ''), value);
+              // So we know the difference no longer exists when examining
+              // a parent object
+              deleteObject(commit.from, fromObjects, value);
+              deleteObject(commit.to, toObjects, value);              
+            }
+            
           }
           // Resolve relationship ids back to the locale the draft is coming from
           function resolveToDestination(callback) {
@@ -898,7 +1107,7 @@ module.exports = {
           criteria
         ]
       };
-      return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).sort({ $exists: 1 }).published(null).workflowLocale(false).toArray(callback);
+      return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).sort({ $exists: 1 }).published(null).toArray(callback);
     };
         
     // Returns the projection to be used when fetching submitted docs to generate
@@ -1035,7 +1244,6 @@ module.exports = {
             req.session.workflowMode = 'live';
           }
         }
-        var locale = self.locales[req.locale];
         return next();
       }
     };
@@ -1769,3 +1977,14 @@ module.exports = {
 
   }
 };
+
+function getStem(dotPath) {
+  var stem = dotPath.split(/\./);
+  stem.pop();
+  return stem = stem.join('.');
+}
+
+function getIndex(dotPath) {
+  var stem = dotPath.split(/\./);
+  return parseInt(stem[stem.length - 1]);
+}
