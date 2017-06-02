@@ -59,18 +59,24 @@ apos.define('apostrophe-schemas', {
           $live.find('label').prepend($liveControls);
           
           $draftControls.find('[data-apos-workflow-field-state-control]').on('change', function () {
-            var state = $(this).val();
+            var $select = $(this);
+            var state = $select.val();
             if (state === 'live') {
               $live.show();
               $draft.hide();
+              // So when we toggle back to this we see the right initial state again
+              $select.val('draft');
             }
           });
 
           $liveControls.find('[data-apos-workflow-field-state-control]').on('change', function () {
-            var state = $(this).val();
+            var $select = $(this);
+            var state = $select.val();
             if (state === 'draft') {
               $live.hide();
               $draft.show();
+              // So when we toggle back to this we see the right initial state again
+              $select.val('live');
             }
           });
 
@@ -113,7 +119,7 @@ apos.define('apostrophe-schemas', {
     // mouse events, reject focus as much as we can and add a little opacity.
     self.afterPopulate = function($el, schema, object, callback) {
       // Make sure people can't edit the preview of the live version of the field
-      $el.find('[data-apos-workflow-live-field] *').each(function() {
+      $el.find('[data-apos-workflow-live-field] > fieldset *').each(function() {
         if (typeof this.disabled != "undefined" ) {
           this.disabled = true;
         }
