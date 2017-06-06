@@ -240,9 +240,17 @@ module.exports = {
     };
     
     // When editing pieces, we should always get the draft version of
-    // the content unless otherwise specified
+    // the content unless otherwise specified. Also, you should be able
+    // to edit a piece in the trash, as otherwise you cannot export
+    // its trashiness to other locales.
+    //
+    // TODO: a number of things here would be nicer if the workflow module
+    // were a self-enabling bundle, but A2 doesn't have those yet.
 
     self.extendPieces = function() {
+      _.each(self.apos.instancesOf('apostrophe-pieces'), function(module) {
+        module.options.canEditTrash = true;
+      });
       self.apos.on('piecesFindForEditing', function(type, cursor) {
         if (!self.includeType(type)) {
           return;
