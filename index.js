@@ -112,13 +112,32 @@ module.exports = {
       'path',
       'rank',
       'level',
-      'docPermissions',
       'createdAt',
       'updatedAt',
       'lowSearchText',
       'highSearchText',
       'highSearchWords',
-      'searchSummary'
+      'searchSummary',
+      
+      // Permissions are propagated across all locales by docAfterSave,
+      // so it is redundant and inappropriate to include them in workflow
+      'docPermissions',
+      'loginRequired',
+      'viewUsersIds',
+      'viewGroupsIds',
+      'editUsersIds',
+      'editGroupsIds',
+      'viewUsersRelationships',
+      'viewGroupsRelationships',
+      'editUsersRelationships',
+      'editGroupsRelationships',
+      // This one isn't even really part of the state, but it dirties the diff
+      'applyLoginRequiredToSubpages',
+      // Ditto — sometimes wind up in db even though they are ephemeral
+      'viewUsersRemovedIds',
+      'viewGroupsRemovedIds',
+      'editUsersRemovedIds',
+      'editGroupsRemovedIds'
     ];
     
     // Attachment fields themselves are not directly localized (they are not docs)
@@ -384,8 +403,16 @@ module.exports = {
           _doc._workflowPropagating = true;
           if (!locale.match(/\-draft$/)) {
             // Otherwise you can make something happen in public just by creating a new doc
-            // that is published as a draft and watching it propagate
-            _doc.published = false;
+            // and watching it propagate.
+            //
+            // If the page in question is the home page unpublish it in other locales,
+            // so at least an editor can reach it. If the page is any other page trash it
+            // in the other locales, it can be activated for those locales via reorganize
+            if (_doc.slug === '/') {
+              _doc.published = false;
+            } else {
+              _doc.trash = true;
+            }
           }
           self.ensureWorkflowLocaleForPathIndex(_doc);
           return async.series([
@@ -414,7 +441,16 @@ module.exports = {
           workflowGuid: doc.workflowGuid
         }, {
           $set: {
-            docPermissions: doc.docPermissions
+            'loginRequired': doc.loginRequired,
+            'viewUsersIds': doc.viewUsersIds,
+            'viewGroupsIds': doc.viewGroupsIds,
+            'editUsersIds': doc.editUsersIds,
+            'editGroupsIds': doc.editGroupsIds,
+            'viewUsersRelationships': doc.viewUsersRelationships,
+            'viewGroupsRelationships': doc.viewGroupsRelationships,
+            'editUsersRelationships': doc.editUsersRelationships,
+            'editGroupsRelationships': doc.editGroupsRelationships,
+            'docPermissions': doc.docPermissions
           }
         }, {
           multi: true
@@ -625,7 +661,7 @@ module.exports = {
         if (!req.locale.match(/\-draft$/)) {
           locale += '-draft';
         }
-        return self.apos.docs.find(req, { _id: id }).permission('edit').published(null).workflowLocale(locale).toObject(function(err, _draft) {
+        return self.apos.docs.find(req, { _id: id }).permission('edit').published(null).trash(null).workflowLocale(locale).toObject(function(err, _draft) {
           if (err) {
             return callback(err);
           }
@@ -639,7 +675,7 @@ module.exports = {
       // We don't actually need the live version (the previewing stuff happens in an iframe),
       // but we should verify we have edit permissions there
       function getLive(callback) {
-        return self.apos.docs.find(req, { workflowGuid: draft.workflowGuid }).workflowLocale(req.locale.replace(/\-draft$/, '')).permission('edit').published(null).toObject(function(err, _live) {
+        return self.apos.docs.find(req, { workflowGuid: draft.workflowGuid }).trash(null).workflowLocale(req.locale.replace(/\-draft$/, '')).permission('edit').published(null).toObject(function(err, _live) {
           if (err) {
             return callback(err);
           }
@@ -739,7 +775,7 @@ module.exports = {
           return async.series([ getDraft, resolveToSource, applyPatch, resolveToDestination, update ], callback);
 
           function getDraft(callback) {
-            return self.apos.docs.find(req, { workflowGuid: commit.workflowGuid }).published(null).workflowLocale(locale).permission('edit').areas(false).joins(false).toObject(function(err, _draft) {
+            return self.apos.docs.find(req, { workflowGuid: commit.workflowGuid }).trash(null).published(null).workflowLocale(locale).permission('edit').areas(false).joins(false).toObject(function(err, _draft) {
               if (err) {
                 return callback(err);
               }
@@ -838,13 +874,12 @@ module.exports = {
                 }
               }
             });
-            
+                        
             try {
               // console.log('patch is: ', JSON.stringify(patch, null, '  '));
               // console.log('draft is: ', JSON.stringify(draft, null, '  '));
-              // TODO turn this back on
-              return callback(null);
               diff.patch(draft, patch);
+              return callback(null);
             } catch (e) {
               errors.push(locale.replace(/\-draft$/, ''));
               console.error(e);
@@ -988,11 +1023,15 @@ module.exports = {
     });
     
     self.deleteExcludedProperties = function(doc) {
+      // console.log('before delete:');
+      // console.log(JSON.stringify(doc, null, '  '));
       _.each(doc, function(val, key) {
         if (!self.includeProperty(key)) {
           delete doc[key];
         }
       });
+      // console.log('after delete:');
+      // console.log(JSON.stringify(doc, null, '  '));
     };
     
     // Given a workflowGuid and a draft workflowLocale, return the doc for the corresponding live locale
@@ -1022,7 +1061,7 @@ module.exports = {
       });
       
       function get(callback) {
-        return self.apos.docs.find(req, { workflowGuid: guid, workflowLocale: locale }).published(null).workflowLocale(locale).toObject(function(err, _live) {
+        return self.apos.docs.find(req, { workflowGuid: guid, workflowLocale: locale }).trash(null).published(null).workflowLocale(locale).toObject(function(err, _live) {
           live = _live;
           return callback(err);
         });
@@ -1107,7 +1146,7 @@ module.exports = {
           criteria
         ]
       };
-      return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).sort({ $exists: 1 }).published(null).toArray(callback);
+      return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).sort({ $exists: 1 }).trash(null).published(null).toArray(callback);
     };
         
     // Returns the projection to be used when fetching submitted docs to generate
@@ -1125,7 +1164,7 @@ module.exports = {
     };
     
     self.findDocForEditing = function(req, docId, callback) {
-      self.apos.docs.find(req, { _id: docId }).permission('edit').published(null).workflowLocale(null).areas(false).joins(false).toObject(callback);
+      self.apos.docs.find(req, { _id: docId }).permission('edit').trash(null).published(null).workflowLocale(null).areas(false).joins(false).toObject(callback);
     };
     
     // Fetch a draft doc along with all of the past commits in which it is the source ("fromId").
@@ -1378,7 +1417,7 @@ module.exports = {
           submit
         ], callback);
         function checkPermissions(callback) {
-          return self.apos.docs.find(req, { _id: id }, { _id: 1 }).workflowLocale(self.draftify(req.locale)).permission('edit').toObject(function(err, obj) {
+          return self.apos.docs.find(req, { _id: id }, { _id: 1 }).workflowLocale(self.draftify(req.locale)).permission('edit').trash(null).toObject(function(err, obj) {
             if (err) {
               return callback(err);
             }
@@ -1800,11 +1839,13 @@ module.exports = {
         // No localization for pages. That's unusual but allowed
         return callback(null);
       }
-      // Grab the pages of interest across all locales other than the original (already checked)
+      // Grab the pages of interest across all locales other than the original (already checked).
+      // Intentionally don't grab it for locales where it is trash — that means there's no
+      // concern about its movements for that locale
       return self.apos.docs.find(req, {
         workflowGuid: { $in: [ moved.workflowGuid, data.oldParent.workflowGuid, data.parent.workflowGuid ] },
         workflowLocale: { $ne: moved.workflowLocale }
-      }).joins(false).areas(false).workflowLocale(null).permission(false).published(null).trash(null).toArray(function(err, pages) {
+      }).joins(false).areas(false).workflowLocale(null).permission(false).published(null).toArray(function(err, pages) {
         if (err) {
           return callback(err);
         }
