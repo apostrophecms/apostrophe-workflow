@@ -23,9 +23,15 @@
 {% endblock %}
 
 {%- block body -%}
+  {% if data.modifiedFields.length %}
+    <div class="apos-workflow-modified-fields">
+      <p>{{ __('Modified fields: %s', data.modifiedFields | join(', ')) }}</p>
+      <p class="apos-workflow-hint">Also see below for content edited in context.</p>
+    </div>
+  {% endif %}
   <div class="apos-workflow-preview">
     {% if data.doc._url %}
-      <iframe class="apos-workflow-preview" src="{{ data.doc._url | build({ workflowPreview: data.doc._id }) }}"></iframe>
+      <iframe class="apos-workflow-preview-iframe" src="{{ data.doc._url | build({ workflowPreview: data.doc._id }) }}"></iframe>
     {% else %}
       <p>No preview available.</p>
     {% endif %}

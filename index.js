@@ -1496,16 +1496,77 @@ module.exports = {
         return res.status(404).send('not found');
       }
       var id = self.apos.launder.id(req.body.id);
-      // We get both the same way the commit route does, for the sake of the permissions check,
-      // so it doesn't initially appear that someone can be sneaky (although they can't really)
-      return self.getDraftAndLive(req, id, function(err, draft, live) {
+      var draft, live, modifiedFields;
+      return async.series([
+        getDraftAndLive,
+        getModifiedFields
+      ], function(err) {
         if (err) {
           console.error(err);
-          return res.status(500).send('error');
+          res.status(500).send('error');
         }
-        return res.send(self.render(req, 'commit-modal.html', { doc: draft }));
+        return res.send(self.render(req, 'commit-modal.html', { doc: draft, modifiedFields: modifiedFields }));
       });
+      
+      function getDraftAndLive(callback) {
+        // We get both the same way the commit route does, for the sake of the permissions check,
+        // so it doesn't initially appear that someone can be sneaky (although they can't really)
+        return self.getDraftAndLive(req, id, function(err, _draft, _live) {
+          draft = _draft;
+          live = _live;
+          return callback(err);
+        });
+      }
+      
+      function getModifiedFields(callback) {
+        return self.getModifiedFields(req, draft, live, function(err, _modifiedFields) {
+          modifiedFields = _modifiedFields;
+          return callback(err);
+        });
+      }
     });
+    
+    self.getModifiedFields = function(req, before, after, callback) {
+      return self.resolveRelationships(req, before, after.workflowLocale, function(err) {
+        if (err) {
+          return callback(err);
+        }
+        before = _.cloneDeep(before);
+        after = _.cloneDeep(after);
+        self.deleteExcludedProperties(before);
+        self.deleteExcludedProperties(after);
+        var schema = self.apos.docs.getManager(after.type).schema;
+        var modifiedFields = [];
+        _.each(schema, function(field) {
+          // TODO a more sustainable way of handling new field types where
+          // the prop name and the field name differ. Can we get the
+          // versions module to help?
+          var prop = field.idField || field.idsField || field.name;
+          // Prevent false positives for booleans that are undefined vs. false
+          if (!before[prop]) {
+            if (field.type === 'tags') {
+              before[prop] = [];
+            } else {
+              before[prop] = false;
+            }
+          }
+          if (!after[prop]) {
+            if (field.type === 'tags') {
+              after[prop] = [];
+            } else {
+              after[prop] = false;
+            }
+          }
+          if (!_.isEqual(before[prop], after[prop])) {
+            modifiedFields.push(field.label);
+          }
+        });
+        if (before.type !== after.type) {
+          modifiedFields.push('Type');
+        }
+        return callback(null, modifiedFields);
+      });
+    };
 
     self.route('post', 'review-modal', function(req, res) {
 
@@ -1517,15 +1578,16 @@ module.exports = {
       var id = self.apos.launder.id(req.body.id);
       var doc;
       var commit;
+      var modifiedFields;
 
       return async.series([
-        find, after
+        find, getModifiedFields, after
       ], function(err) {
         if (err) {
           console.error(err);
           return res.status(500).send('error');
         }
-        return res.send(self.render(req, 'review-modal.html', { commit: commit, doc: commit.to }));
+        return res.send(self.render(req, 'review-modal.html', { commit: commit, doc: commit.to, modifiedFields: modifiedFields }));
       });
       
       function find(callback) {
@@ -1537,6 +1599,16 @@ module.exports = {
             return callback('notfound');
           }
           commit = _commit;
+          return callback(null);
+        });
+      }
+      
+      function getModifiedFields(callback) {
+        return self.getModifiedFields(req, commit.to, commit.from, function(err, _modifiedFields) {
+          if (err) {
+            return callback(err);
+          }
+          modifiedFields = _modifiedFields;
           return callback(null);
         });
       }
