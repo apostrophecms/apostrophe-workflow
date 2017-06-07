@@ -98,7 +98,7 @@ module.exports = {
       _.each(self.locales, function(locale, name) {
         newLocales[name] = locale;
         var draftLocale = _.cloneDeep(locale);
-        draftLocale.name += '-draft';
+        draftLocale.name = draftLocale.name + '-draft';
         delete draftLocale.children;
         newLocales[draftLocale.name] = draftLocale;
       });
@@ -259,7 +259,7 @@ module.exports = {
         if (!req.locale.match(/\-draft$/)) {
           var locale = cursor.get('workflowLocale');
           if (locale === undefined) {
-            cursor.workflowLocale(req.locale + '-draft');
+            cursor.workflowLocale(self.draftify(req.locale));
           }
         }
       });
@@ -326,7 +326,7 @@ module.exports = {
           // Always create the draft first, so we can then find it by id successfully
           // via code that is overridden to look for drafts. All the locales get created
           // but we want to return the draft's _id
-          doc.workflowLocale += '-draft';
+          doc.workflowLocale = self.draftify(doc.workflowLocale);
         }
         doc.workflowGuid = self.apos.utils.generateId();
         doc._workflowNew = true;
@@ -665,10 +665,7 @@ module.exports = {
         return callback(null, draft, live);
       });
       function getDraft(callback) {
-        var locale = req.locale;
-        if (!req.locale.match(/\-draft$/)) {
-          locale += '-draft';
-        }
+        var locale = self.draftify(req.locale);
         return self.apos.docs.find(req, { _id: id }).permission('edit').published(null).trash(null).workflowLocale(locale).toObject(function(err, _draft) {
           if (err) {
             return callback(err);
@@ -683,7 +680,7 @@ module.exports = {
       // We don't actually need the live version (the previewing stuff happens in an iframe),
       // but we should verify we have edit permissions there
       function getLive(callback) {
-        return self.apos.docs.find(req, { workflowGuid: draft.workflowGuid }).trash(null).workflowLocale(req.locale.replace(/\-draft$/, '')).permission('edit').published(null).toObject(function(err, _live) {
+        return self.apos.docs.find(req, { workflowGuid: draft.workflowGuid }).trash(null).workflowLocale(self.liveify(req.locale)).permission('edit').published(null).toObject(function(err, _live) {
           if (err) {
             return callback(err);
           }
@@ -711,7 +708,7 @@ module.exports = {
           console.error(err);
           return res.send({ status: 'error' });
         }
-        return res.send({ status: 'ok', commitId: commitId });
+        return res.send({ status: 'ok', commitId: commitId, title: draft.title });
       });
       function getDraftAndLive(callback) {
         return self.getDraftAndLive(req, id, function(err, _draft, _live) {
@@ -738,6 +735,7 @@ module.exports = {
       }
       var id = self.apos.launder.id(req.body.id);
       var locales = [];
+      var success = [];
       var errors = [];
       var drafts;
       if (Array.isArray(req.body.locales)) {
@@ -746,7 +744,7 @@ module.exports = {
         });
       }
       locales = _.map(locales, function(locale) {
-        return locale + '-draft';
+        return self.draftify(locale);
       });
       var commit;
       return async.series({
@@ -760,7 +758,7 @@ module.exports = {
         // Here the `errors` object has locales as keys and strings as values; these can be
         // displayed or, since they are technical, just flagged as locales to which the patch
         // could not be successfully applied
-        return res.send({ status: 'ok', errors: errors });
+        return res.send({ status: 'ok', success: success, errors: errors });
       });
       function getCommit(callback) {
         return self.findDocAndCommit(req, id, function(err, doc, _commit) {
@@ -801,7 +799,7 @@ module.exports = {
           function applyPatch(callback) {
 
             if (!draft) {
-              errors.push(locale.replace(/\-draft$/, '') + ': not found, run task');
+              errors.push({ locale: self.liveify(locale), message: 'not found, run task' });
               return callback(null);
             }
 
@@ -887,9 +885,10 @@ module.exports = {
               // console.log('patch is: ', JSON.stringify(patch, null, '  '));
               // console.log('draft is: ', JSON.stringify(draft, null, '  '));
               diff.patch(draft, patch);
+              success.push(self.liveify(draft.workflowLocale));
               return callback(null);
             } catch (e) {
-              errors.push(locale.replace(/\-draft$/, ''));
+              errors.push({ locale: self.liveify(locale), message: 'Some or all content was too different' });
               console.error(e);
               return callback(null);
             }
@@ -1052,7 +1051,7 @@ module.exports = {
       }
       var guid = self.apos.launder.string(req.body.workflowGuid);
       var locale = self.apos.launder.string(req.body.workflowLocale);
-      locale = locale.replace(/\-draft$/, '');
+      locale = self.liveify(locale);
       var live;
 
       return async.series([
@@ -1079,7 +1078,7 @@ module.exports = {
         if (!req.body.resolveRelationshipsToDraft) {
           return callback(null);
         }
-        return self.resolveRelationships(req, live, locale + '-draft', callback);
+        return self.resolveRelationships(req, live, self.draftify(locale), callback);
       }
       
       function fail(err) {
@@ -1285,7 +1284,7 @@ module.exports = {
         req.session.locale = req.locale;
         if (req.user) {
           if (req.session.workflowMode === 'draft') {
-            req.locale += '-draft';
+            req.locale = self.draftify(req.locale);
           } else {
             // Default mode is previewing the live content, not editing
             req.session.workflowMode = 'live';
@@ -1392,11 +1391,9 @@ module.exports = {
       }
       req.session.workflowMode = (req.body.mode === 'draft') ? 'draft' : 'live';
       if (req.body.mode === 'draft') {
-        if (!req.locale.match(/\-draft$/)) {
-          req.locale += '-draft';
-        }
+        req.locale = self.draftify(req.locale);
       } else {
-        req.locale = req.locale.replace(/\-draft$/, '');
+        req.locale = self.liveify(req.locale);
       }
       return self.apos.docs.find(req, { workflowGuid: self.apos.launder.id(req.body.workflowGuid) })
         .published(null)
@@ -1667,6 +1664,10 @@ module.exports = {
       }
     };
 
+    self.liveify = function(locale) {
+      return locale.replace(/\-draft$/, '');
+    };
+    
     self.getCreateSingletonOptions = function(req) {
       return {
         action: self.action,
@@ -1711,7 +1712,7 @@ module.exports = {
       if (context && context.workflowGuid) {
         req.data.workflow.context = context;
       }
-      req.data.workflow.locale = req.locale.replace(/\-draft$/, '');
+      req.data.workflow.locale = self.liveify(req.locale);
 
       if (!req.user) {
         return callback(null);

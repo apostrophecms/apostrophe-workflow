@@ -14,8 +14,13 @@ apos.define('apostrophe-workflow-commit-modal', {
     self.saveContent = function(callback) {
       return self.api('commit', { id: options.body.id }, function(result) {
         if (result.status !== 'ok') {
-          alert('An error occurred.');
+          apos.notify('An error occurred.', { type: 'error' });
           return callback(result.status);
+        }
+        if (result.title) {
+          apos.notify('%s was committed successfully.', result.title, { type: 'success' });
+        } else {
+          apos.notify('The document was committed successfully.', { type: 'success' });
         }
         if (_.keys(self.manager.locales).length > 2) {
           // We have more than two locales (more than default and default-draft),

@@ -97,7 +97,7 @@ apos.define('apostrophe-schemas', {
         }, function(err) {
           if (err) {
             // Could be an inconsistent state, so treat it as a proper error
-            alert('An error occurred. Please try again.');
+            apos.notify('An error occurred. Please try again.', { type: 'error' });
             return callback(err);
           }
           return next();

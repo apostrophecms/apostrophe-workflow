@@ -25,6 +25,10 @@ apos.define('apostrophe-workflow-export-modal', {
           locales.push(matches[1]);
         }
       });
+      if (!locales.length) {
+        apos.notify('Select at least one locale to export to.', { type: 'error' });
+        return callback('user');
+      }
       var result = {
         // id is a commit id, not a doc id
         id: options.body.id,
@@ -32,11 +36,14 @@ apos.define('apostrophe-workflow-export-modal', {
       };
       return self.api('export', result, function(result) {
         if (result.status !== 'ok') {
-          alert('An error occurred.');
+          apos.notify('An error occurred.', { type: 'error' });
           return callback(result.status);
         }
-        if (result.errors && result.errors.length) {
-          alert('These changes were too different to be applied to the following locales: ' + result.errors.join(', '));
+        _.each(result.errors, function(error) {
+          apos.notify('%s: ' + error.message, error.locale, { type: 'error' });
+        });
+        if (result.success.length) {
+          apos.notify('Successfully exported to: %s', result.success.join(', '), { type: 'success' });
         }
         return callback(null);
       }, function(err) {
