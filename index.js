@@ -413,11 +413,14 @@ module.exports = {
             // Otherwise you can make something happen in public just by creating a new doc
             // and watching it propagate.
             //
-            // If the page in question is the home page unpublish it in other locales,
-            // so at least an editor can reach it. If the page is any other page trash it
+            // If the doc in question is the home page unpublish it in other locales,
+            // so at least an editor can reach it. If the doc is the global doc it should
+            // be published and not trash across all locales. If the page is any other page trash it
             // in the other locales, it can be activated for those locales via reorganize
             if (_doc.slug === '/') {
               _doc.published = false;
+            } else if (_doc.slug === 'global') {
+              // The global doc
             } else {
               _doc.trash = true;
             }
