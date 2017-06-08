@@ -780,8 +780,11 @@ module.exports = {
 
         return async.eachSeries(locales, function(locale, callback) {
 
-          var draft;
+          var draft, from, to;
 
+          from = _.cloneDeep(commit.from);
+          to = _.cloneDeep(commit.to);
+          
           return async.series([ getDraft, resolveToSource, applyPatch, resolveToDestination, update ], callback);
 
           function getDraft(callback) {
@@ -797,7 +800,7 @@ module.exports = {
           // Resolve relationship ids to point to the locale the patch is coming from,
           // so that the diff applies properly
           function resolveToSource(callback) {
-            return self.resolveRelationships(req, draft, commit.to.workflowLocale, callback);
+            return self.resolveRelationships(req, draft, to.workflowLocale, callback);
           }
 
           function applyPatch(callback) {
@@ -807,15 +810,35 @@ module.exports = {
               return callback(null);
             }
 
-            self.deleteExcludedProperties(commit.from);
-            self.deleteExcludedProperties(commit.to);
+            self.deleteExcludedProperties(from);
+            self.deleteExcludedProperties(to);
+
+            // Step 0: make sure areas exist so we don't wind up with patches that remove them
+            // or nowhere to add them
+
+            _.each(from, function(value, key) {
+              if (value && value.type === 'area') {
+                if (!draft[key]) {
+                  draft[key] = {
+                    type: 'area',
+                    items: []
+                  };
+                }
+                if (!to[key]) {
+                  to[key] = {
+                    type: 'area',
+                    items: []
+                  };
+                }
+              }
+            });
             
             // Step 1: find all the sub-objects with an _id property that are
             // present in the docs and sort them in descending order by
             // depth. These will be schema array items and widgets
 
-            var fromObjects = getObjects(commit.from);
-            var toObjects = getObjects(commit.to);
+            var fromObjects = getObjects(from);
+            var toObjects = getObjects(to);
             var draftObjects = getObjects(draft);
                         
             // Step 2: iterate over those objects, patching directly as appropriate
@@ -847,12 +870,11 @@ module.exports = {
                 updateObject(draft, draftObjects, value);
                 // So we know the difference no longer exists when examining
                 // a parent object
-                deleteObject(commit.from, fromObjects, value);
-                deleteObject(commit.to, toObjects, value);
+                deleteObject(from, fromObjects, value);
+                deleteObject(to, toObjects, value);
               }
               // Moved. Look at neighbor ids, not indexes, to account for
               // existing divergences
-              
               var toDotPath = toObjects.dotPaths[value._id];
               var fromDotPath = fromObjects.dotPaths[value._id];
               if (toDotPath !== fromDotPath) {
@@ -863,35 +885,15 @@ module.exports = {
 
             // Step 3: remove any remaining _id objects in commit.from and commit.to
             // so jsondiffpatch doesn't consider them
-            purgeObjects(commit.from, fromObjects);
-            purgeObjects(commit.to, toObjects);
+            purgeObjects(from, fromObjects);
+            purgeObjects(to, toObjects);
             
             // console.log('at this point draft is: ', JSON.stringify(draft, null, '  '));
             
-            // Make sure areas exist so we don't wind up with patches that remove them
-            _.each(commit.from, function(value, key) {
-              if (value && value.type === 'area') {
-                if (!draft[key]) {
-                  draft[key] = {
-                    type: 'area',
-                    items: []
-                  };
-                }
-                if (!commit.to[key]) {
-                  commit.to[key] = {
-                    type: 'area',
-                    items: []
-                  };
-                }
-              }
-            });
-
             // Step 4: patch as normal for everything that doesn't have an _id
 
-            var patch = diff.diff(commit.to, commit.from);
-                        
+            var patch = diff.diff(to, from);
             try {
-              // console.log('patch is: ', JSON.stringify(patch, null, '  '));
               // console.log('draft is: ', JSON.stringify(draft, null, '  '));
               diff.patch(draft, patch);
               success.push(self.liveify(draft.workflowLocale));
@@ -1006,15 +1008,15 @@ module.exports = {
                   var subPath = fromDotPath.split('.');
                   subPath.pop();
                   subPath.push(i);
-                  var obj = getObject(commit.from, fromObjects, subPath.join('.'));
+                  var obj = getObject(from, fromObjects, subPath.join('.'));
                   var afterId = obj._id;
                   if (_.has(draftObjects.byId, afterId)) {
                     deleteObject(draft, draftObjects, value);
                     insertObjectAfter(draft, draftObjects, afterId, value);
                     // So we know the difference no longer exists when examining
                     // a parent object
-                    deleteObject(commit.from, fromObjects, value);
-                    deleteObject(commit.to, toObjects, value);
+                    deleteObject(from, fromObjects, value);
+                    deleteObject(to, toObjects, value);
                     return;
                   }
                 }  
@@ -1023,8 +1025,8 @@ module.exports = {
               appendObject(draft, draftObjects, fromDotPath.replace(/\.\d+$/, ''), value);
               // So we know the difference no longer exists when examining
               // a parent object
-              deleteObject(commit.from, fromObjects, value);
-              deleteObject(commit.to, toObjects, value);              
+              deleteObject(from, fromObjects, value);
+              deleteObject(to, toObjects, value);              
             }
             
           }
