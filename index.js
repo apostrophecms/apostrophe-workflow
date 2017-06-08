@@ -766,6 +766,10 @@ module.exports = {
             return callback(err);
           }
           commit = _commit;
+          locales = _.filter(locales, function(locale) {
+            // Reapplying to source locale doesn't make sense
+            return (locale !== commit.from.workflowLocale);
+          });
           if (!commit) {
             return callback('notfound');
           }
@@ -840,7 +844,6 @@ module.exports = {
               }
               // Modified. Could also be moved, so don't return
               if (JSON.stringify(value) !== JSON.stringify(toObjects.byId[value._id])) {
-                // console.log('modified');
                 updateObject(draft, draftObjects, value);
                 // So we know the difference no longer exists when examining
                 // a parent object
@@ -853,7 +856,6 @@ module.exports = {
               var toDotPath = toObjects.dotPaths[value._id];
               var fromDotPath = fromObjects.dotPaths[value._id];
               if (toDotPath !== fromDotPath) {
-                // console.log('moved');
                 moved(fromDotPath, value);
                 return;
               }
@@ -864,28 +866,36 @@ module.exports = {
             purgeObjects(commit.from, fromObjects);
             purgeObjects(commit.to, toObjects);
             
-            // Step 4: patch as normal for everything that doesn't have an _id
-
-            var patch = diff.diff(commit.to, commit.from);
-
-            // If a patch edits a widget in an area that doesn't exist at all yet
-            // in the receiving locale, create the area
-            _.each(patch, function(value, key) {
-              if (!draft[key]) {
-                if (commit.from[key] && (commit.from[key].type === 'area')) {
+            // console.log('at this point draft is: ', JSON.stringify(draft, null, '  '));
+            
+            // Make sure areas exist so we don't wind up with patches that remove them
+            _.each(commit.from, function(value, key) {
+              if (value && value.type === 'area') {
+                if (!draft[key]) {
                   draft[key] = {
+                    type: 'area',
+                    items: []
+                  };
+                }
+                if (!commit.to[key]) {
+                  commit.to[key] = {
                     type: 'area',
                     items: []
                   };
                 }
               }
             });
+
+            // Step 4: patch as normal for everything that doesn't have an _id
+
+            var patch = diff.diff(commit.to, commit.from);
                         
             try {
               // console.log('patch is: ', JSON.stringify(patch, null, '  '));
               // console.log('draft is: ', JSON.stringify(draft, null, '  '));
               diff.patch(draft, patch);
               success.push(self.liveify(draft.workflowLocale));
+              // console.log('at this point draft is: ', JSON.stringify(draft, null, '  '));
               return callback(null);
             } catch (e) {
               errors.push({ locale: self.liveify(locale), message: 'Some or all content was too different' });
