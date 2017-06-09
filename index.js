@@ -24,33 +24,33 @@ var diff = require('jsondiffpatch').create({
 module.exports = {
 
   // ## Options
-  // 
+  //
   // `includeTypes: [ 'my-blog-post', 'my-event' ]`
-  // 
+  //
   // Apply workflow only to docs of the specified types. IF WORKFLOW IS ENABLED FOR ANY PAGE TYPE,
   // AS OPPOSED TO A PIECE, IT MUST BE ENABLED FOR *ALL* PAGE TYPES.
-  // 
+  //
   // `excludeTypes: [ 'my-personal-profile' ]`
-  // 
+  //
   // Apply workflow to everything EXCEPT the specified types. IF WORKFLOW IS ENABLED FOR ANY PAGE TYPE,
   // AS OPPOSED TO A PIECE, IT MUST BE ENABLED FOR *ALL* PAGE TYPES.
-  // 
+  //
   // If both options are present, a type must appear in `includeTypes`
   // and NOT appear in `excludeTypes`.
-  // 
+  //
   // `baseExcludeTypes: [ 'apostrophe-user', 'apostrophe-group' ]`
-  // 
+  //
   // **Typically not changed.** A short list of types that should never be subject to workflow,
   // no matter what the other options say. For security reasons this list contains users and groups
   // by default. You will usually leave this alone.
-  // 
+  //
   // `excludeProperties: [ 'hitCounter' ]`
-  // 
+  //
   // A list of properties that should not be subject to workflow, but rather should be allowed to
   // vary for each locale and never be copied. These are typically properties
   // that don't make sense to edit as a "draft" and then submit as the new live version. For
   // instance, you wouldn't want to overwrite a page view counter field.
-  // 
+  //
   // There is no `includeProperties` option. In Apostrophe 2.x workflow applies to properties by default,
   // and excluded properties are unique to the locale (that is, either draft or live version of the doc).
   //
@@ -74,16 +74,17 @@ module.exports = {
   },
 
   construct: function(self, options) {
+    console.log("Here!");
     self.nestedLocales = options.locales || [
       {
         name: 'default'
       }
     ];
-    
+
     self.locales = {};
     flattenLocales(self.nestedLocales);
     addDraftLocales();
-    
+
     function flattenLocales(locales) {
       _.each(locales, function(locale) {
         self.locales[locale.name] = locale;
@@ -92,7 +93,7 @@ module.exports = {
         }
       });
     }
-    
+
     function addDraftLocales() {
       var newLocales = {};
       _.each(self.locales, function(locale, name) {
@@ -104,7 +105,7 @@ module.exports = {
       });
       self.locales = newLocales;
     }
-    
+
     self.defaultLocale = options.defaultLocale || 'default';
 
     self.baseExcludeProperties = options.baseExcludeProperties || [
@@ -118,7 +119,7 @@ module.exports = {
       'highSearchText',
       'highSearchWords',
       'searchSummary',
-      
+
       // Permissions are propagated across all locales by docAfterSave,
       // so it is redundant and inappropriate to include them in workflow
       'docPermissions',
@@ -139,10 +140,10 @@ module.exports = {
       'editUsersRemovedIds',
       'editGroupsRemovedIds'
     ];
-    
+
     // Attachment fields themselves are not directly localized (they are not docs)
     self.excludeActions = (self.options.excludeActions || []).concat(self.options.baseExcludeActions || [ 'admin', 'edit-attachment' ]);
-    
+
     self.includeVerbs = (self.options.includeVerbs || []).concat(self.options.baseIncludeVerbs  || [ 'admin', 'edit' ]);
 
     // Localizing users and groups raises serious security questions. If they have a public representation,
@@ -152,7 +153,7 @@ module.exports = {
     // In 2.x, workflow applies to every property not explicitly excluded,
     // so configuration is simpler (localization will refine this though)
     self.excludeProperties = self.baseExcludeProperties.concat(options.excludeProperties || []);
-    
+
     self.includeTypes = options.includeTypes || false;
     self.excludeTypes = self.baseExcludeTypes.concat(options.excludeTypes || []);
 
@@ -162,7 +163,7 @@ module.exports = {
     };
 
     require('./lib/permissions-schema-field.js')(self, options);
-    
+
     // Extend the index parameters for the unique indexes on path and slug to allow for
     // two docs with the same slug in different locales
 
@@ -176,12 +177,12 @@ module.exports = {
         params.workflowLocaleForPathIndex = 1;
       });
     };
-    
+
     self.extendPermissions = function() {
       self.apos.on('can', _.partial(self.onPermissions, 'can'));
       self.apos.on('criteria', _.partial(self.onPermissions, 'criteria'));
     };
-    
+
     self.onPermissions = function(event, req, action, object, info) {
       if (_.contains(self.excludeActions, action)) {
         return;
@@ -238,7 +239,7 @@ module.exports = {
       }
 
     };
-    
+
     // When editing pieces, we should always get the draft version of
     // the content unless otherwise specified. Also, you should be able
     // to edit a piece in the trash, as otherwise you cannot export
@@ -298,7 +299,7 @@ module.exports = {
         });
       }
     };
-    
+
     self.extendPages = function() {
       // Trash must be managed at each level of the page tree so that
       // users lacking cross-locale permissions are not forbidden to
@@ -343,7 +344,7 @@ module.exports = {
         doc.workflowLocaleForPathIndex = doc.workflowLocale;
       }
     };
-    
+
     // Every time a doc is saved, check whether its type is included in workflow. If it is,
     // check for locales in which that workflowGuid does not exist yet, and bring it into existence
     // there. If the doc has the `_workflowNew` property as set by `docBeforeSave`, we can assume
@@ -354,12 +355,12 @@ module.exports = {
     self.docAfterSave = function(req, doc, options, callback) {
 
       var missingLocales;
-      
+
       if (doc._workflowPropagating) {
         // Recursion guard
         return callback(null);
       }
-      
+
       if (!self.includeType(doc.type)) {
         return callback(null);
       }
@@ -430,7 +431,7 @@ module.exports = {
             _.partial(self.resolveRelationships, req, _doc, _doc.workflowLocale),
             insert
           ], callback);
-          
+
           function insert(callback) {
             // TODO: copy attachments so they are not directly shared resulting in cross-locale modification
             return self.apos.docs.insert(req, _doc, { permissions: false }, function(err) {
@@ -440,7 +441,7 @@ module.exports = {
 
         }, callback);
       }
-      
+
       function permissionsAcrossLocales(callback) {
         // If I can edit a specific page in ch-fr, I can also edit that same page in gb-en,
         // PROVIDED THAT I can edit pages in gb-en at all (we have locale-specific
@@ -468,7 +469,7 @@ module.exports = {
         }, callback);
       }
     };
-    
+
     // Resolve relationships between this doc and other docs, which need to be
     // mapped to the appropriate doc in the new locale, via the workflowGuid
     // property of each doc.
@@ -515,7 +516,7 @@ module.exports = {
             remapDocs();
             return callback(null);
           });
-          
+
           function findWorkflowGuids(callback) {
             if (join.type === 'joinByOne') {
               return self.apos.docs.db.find({ _id: { $in: [ join.doc[join.field.idField] ] } }, { workflowGuid: 1 }).toArray(function(err, docs) {
@@ -581,12 +582,12 @@ module.exports = {
           }
 
         }, callback);
-                  
+
         function findJoinsInDocSchema() {
           var schema = self.apos.docs.getManager(doc.type).schema;
           joins = joins.concat(findJoinsInSchema(doc, schema));
         }
-        
+
         function findJoinsInAreas() {
           var widgets = [];
           self.apos.areas.walk(doc, function(area, dotPath) {
@@ -597,7 +598,7 @@ module.exports = {
             joins = joins.concat(findJoinsInSchema(widget, schema));
           });
         }
-        
+
         function findJoinsInSchema(doc, schema) {
           return _.map(
             _.filter(
@@ -612,9 +613,9 @@ module.exports = {
               return { doc: doc, field: field };
             }
           );
-        }  
-      } 
-   
+        }
+      }
+
     };
 
     // Commit a doc from one locale to another. `from` and `to` should
@@ -648,13 +649,13 @@ module.exports = {
         });
       }
     };
-    
+
     // Fetch the draft version of a doc, whose id is `id`, and also the live version of the same
     // doc. On success, deliver `(null, draft, live)` to the callback.
     //
     // This method will operate properly regardless of whether `req.locale` is the live locale
     // or the one with the `-draft` suffix.
-    
+
     self.getDraftAndLive = function(req, id, callback) {
       var draft;
       var live;
@@ -693,9 +694,9 @@ module.exports = {
           }
           return callback(null);
         });
-      }      
+      }
     };
-    
+
     self.route('post', 'commit', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
@@ -787,7 +788,7 @@ module.exports = {
 
           from = _.cloneDeep(commit.from);
           to = _.cloneDeep(commit.to);
-          
+
           return async.series([ getDraft, resolveToSource, applyPatch, resolveToDestination, update ], callback);
 
           function getDraft(callback) {
@@ -835,7 +836,7 @@ module.exports = {
                 }
               }
             });
-            
+
             // Step 1: find all the sub-objects with an _id property that are
             // present in the docs and sort them in descending order by
             // depth. These will be schema array items and widgets
@@ -843,9 +844,9 @@ module.exports = {
             var fromObjects = getObjects(from);
             var toObjects = getObjects(to);
             var draftObjects = getObjects(draft);
-                        
+
             // Step 2: iterate over those objects, patching directly as appropriate
-            
+
             // "to" is the old version, PRIOR to the commit. Anything present there and
             // absent in "from" was therefore removed DURING the commit
             _.each(toObjects.objects, function(value) {
@@ -890,9 +891,9 @@ module.exports = {
             // so jsondiffpatch doesn't consider them
             purgeObjects(from, fromObjects);
             purgeObjects(to, toObjects);
-            
+
             // console.log('at this point draft is: ', JSON.stringify(draft, null, '  '));
-            
+
             // Step 4: patch as normal for everything that doesn't have an _id
 
             var patch = diff.diff(to, from);
@@ -907,7 +908,7 @@ module.exports = {
               console.error(e);
               return callback(null);
             }
-          
+
             function getObjects(doc) {
               var objects = [];
               var dotPaths = {};
@@ -924,7 +925,7 @@ module.exports = {
                   }
                 }
               });
-                         
+
               objects.sort(function(a, b) {
                 if (dots[a._id] > dots[b._id]) {
                   return -1;
@@ -943,11 +944,11 @@ module.exports = {
               };
 
             }
-                       
+
             function getObject(context, objects, dotPath) {
               return deep(context, dotPath);
             }
-            
+
             function deleteObject(context, objects, value) {
               var dotPath = objects.dotPaths[value._id];
               if (!dotPath) {
@@ -967,7 +968,7 @@ module.exports = {
                 }
               }
             }
-            
+
             function insertObjectAfter(context, objects, afterId, value) {
               var afterDotPath = objects.dotPaths[afterId];
               var stem = getStem(afterDotPath);
@@ -981,7 +982,7 @@ module.exports = {
                 }
               }
             }
-                        
+
             function appendObject(context, objects, path, object) {
               var array = deep(context, path);
               if (!Array.isArray(array)) {
@@ -989,7 +990,7 @@ module.exports = {
               }
               array.push(object);
             }
-            
+
             function purgeObjects(context, objects) {
               _.each(objects.objects, function(object) {
                 deleteObject(context, objects, object);
@@ -1002,7 +1003,7 @@ module.exports = {
                 deep(context, dotPath, object);
               }
             }
-            
+
             function moved(fromDotPath, value) {
               var fromIndex = parseInt(_.last(fromDotPath.split('.')));
               var afterId;
@@ -1022,28 +1023,28 @@ module.exports = {
                     deleteObject(to, toObjects, value);
                     return;
                   }
-                }  
+                }
               }
               deleteObject(draft, draftObjects, value);
               appendObject(draft, draftObjects, fromDotPath.replace(/\.\d+$/, ''), value);
               // So we know the difference no longer exists when examining
               // a parent object
               deleteObject(from, fromObjects, value);
-              deleteObject(to, toObjects, value);              
+              deleteObject(to, toObjects, value);
             }
-            
+
           }
           // Resolve relationship ids back to the locale the draft is coming from
           function resolveToDestination(callback) {
             return self.resolveRelationships(req, draft, draft.workflowLocale, callback);
           }
           function update(callback) {
-            return self.apos.docs.update(req, draft, callback); 
+            return self.apos.docs.update(req, draft, callback);
           }
         }, callback);
       }
     });
-    
+
     self.deleteExcludedProperties = function(doc) {
       // console.log('before delete:');
       // console.log(JSON.stringify(doc, null, '  '));
@@ -1055,7 +1056,7 @@ module.exports = {
       // console.log('after delete:');
       // console.log(JSON.stringify(doc, null, '  '));
     };
-    
+
     // Given a workflowGuid and a draft workflowLocale, return the doc for the corresponding live locale
 
     self.route('post', 'get-live', function(req, res) {
@@ -1081,28 +1082,28 @@ module.exports = {
         }
         return res.send({ status: 'ok', doc: live });
       });
-      
+
       function get(callback) {
         return self.apos.docs.find(req, { workflowGuid: guid, workflowLocale: locale }).trash(null).published(null).workflowLocale(locale).toObject(function(err, _live) {
           live = _live;
           return callback(err);
         });
       }
-      
+
       function ids(callback) {
         if (!req.body.resolveRelationshipsToDraft) {
           return callback(null);
         }
         return self.resolveRelationships(req, live, self.draftify(locale), callback);
       }
-      
+
       function fail(err) {
         console.error(err);
         return res.send({ status: 'error' });
       }
 
     });
-        
+
     // Copy properties that are included in workflow from the doc `from`
     // to the doc `to`. TODO: this method does not yet address copying
     // modified attachments to make sure an edit to one locale does not alter
@@ -1119,7 +1120,7 @@ module.exports = {
       // * Not damage everything else
       //
       // So we copy all schema properties and top-level areas not excluded.
-      
+
       _.each(from, function(val, key) {
         if (self.includeProperty(key)) {
           to[key] = val;
@@ -1128,11 +1129,11 @@ module.exports = {
 
       // TODO deal with copying attachments rather than referencing
       // the same file, however take care not to do it if there is no change
-      
+
       return setImmediate(callback);
     };
-    
-    // Returns true if this top level doc property should be included 
+
+    // Returns true if this top level doc property should be included
     // when committing changes from draft to live
     self.includeProperty = function(prop) {
       if (prop.match(/^_?workflow/)) {
@@ -1143,7 +1144,7 @@ module.exports = {
       }
       return true;
     };
-        
+
     // The callback will receive basic information about all docs editable by the
     // current user that are awaiting approval to merge from draft to live.
     //
@@ -1170,7 +1171,7 @@ module.exports = {
       };
       return self.apos.docs.find(req, criteria, self.getSubmittedProjection()).sort({ $exists: 1 }).trash(null).published(null).toArray(callback);
     };
-        
+
     // Returns the projection to be used when fetching submitted docs to generate
     // a list of docs requiring approval. Should be enough to generate permalinks.
 
@@ -1184,11 +1185,11 @@ module.exports = {
         tags: 1
       };
     };
-    
+
     self.findDocForEditing = function(req, docId, callback) {
       self.apos.docs.find(req, { _id: docId }).permission('edit').trash(null).published(null).workflowLocale(null).areas(false).joins(false).toObject(callback);
     };
-    
+
     // Fetch a draft doc along with all of the past commits in which it is the source ("fromId").
     //
     // On success, invokes callback with `(null, doc, commits)` where `commits` is an array.
@@ -1245,7 +1246,7 @@ module.exports = {
           return callback(null);
         });
       }
-      
+
       function getDoc(callback) {
         return self.findDocForEditing(req, commit.fromId, function(err, _doc) {
           if (err) {
@@ -1260,7 +1261,7 @@ module.exports = {
       }
 
     };
-        
+
     // Decide whether a doc type is subject to workflow as documented for the module options.
 
     self.includeType = function(type) {
@@ -1275,7 +1276,7 @@ module.exports = {
       }
       return true;
     };
-    
+
     // Set `req.locale` based on `req.query.locale` or `req.session.locale`.
     // If the locale is not present or is not valid, set `req.locale` to the
     // default locale. Store the locale in `req.session.locale`. TODO: also
@@ -1284,6 +1285,8 @@ module.exports = {
     self.expressMiddleware = {
       before: 'apostrophe-global',
       middleware: function(req, res, next) {
+        var subdomain = req.absoluteUrl.match(/[http|https]:\/\/(\w{2})\./i);
+
         if (req.query.workflowLocale) {
           // Switch locale choice in session via query string, then redirect
           var locale = self.apos.launder.string(req.query.workflowLocale);
@@ -1291,6 +1294,11 @@ module.exports = {
             req.session.locale = locale;
           }
           return res.redirect(req.url.replace(/\??workflowLocale=[^&]+&?/, ''));
+        }
+        if (subdomain) {
+          if (_.has(self.locales, subdomain)) {
+              req.session.locale = subdomain;
+            }
         }
         req.locale = req.query.locale || req.session.locale;
         if ((!req.locale) || (!_.has(self.locales, req.locale))) {
@@ -1308,7 +1316,7 @@ module.exports = {
         return next();
       }
     };
-                
+
     self.enableAddMissingLocalesTask = function() {
       self.apos.tasks.add(self.__meta.name, 'add-missing-locales',
         'Run this task after adding new locales or setting up the module for the first time.',
@@ -1318,7 +1326,7 @@ module.exports = {
 
     self.addMissingLocalesTask = function(apos, argv, callback) {
       var req = self.apos.tasks.getReq();
-      
+
       return async.series([
         fixIndexes,
         noLocales,
@@ -1326,7 +1334,7 @@ module.exports = {
       ], function(err) {
         return callback(err);
       });
-      
+
       function fixIndexes(callback) {
         var old;
         return async.series([
@@ -1374,7 +1382,7 @@ module.exports = {
           return self.apos.docs.db.dropIndex(existing.name, callback);
         }
       }
-      
+
       function noLocales(callback) {
         return self.apos.migrations.eachDoc({ workflowLocale: { $exists: 0 } }, function(doc, callback) {
           if (!self.includeType(doc.type)) {
@@ -1386,7 +1394,7 @@ module.exports = {
           return self.apos.docs.update(req, doc, callback);
         }, callback);
       }
-      
+
       function missingSomeLocales(callback) {
         return self.apos.migrations.eachDoc({ workflowLocale: self.defaultLocale }, function(doc, callback) {
           if (!self.includeType(doc.type)) {
@@ -1398,7 +1406,7 @@ module.exports = {
         }, callback);
       }
     };
-    
+
     self.route('post', 'workflow-mode', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
@@ -1424,7 +1432,7 @@ module.exports = {
         }
       );
     });
-        
+
     self.route('post', 'submit', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
@@ -1464,7 +1472,7 @@ module.exports = {
         return res.send({ status: 'ok' });
       });
     });
-    
+
     self.route('post', 'manage-modal', function(req, res) {
       if (!req.user) {
         // Confusion to the enemy
@@ -1522,7 +1530,7 @@ module.exports = {
         }
         return res.send(self.render(req, 'commit-modal.html', { doc: draft, modifiedFields: modifiedFields }));
       });
-      
+
       function getDraftAndLive(callback) {
         // We get both the same way the commit route does, for the sake of the permissions check,
         // so it doesn't initially appear that someone can be sneaky (although they can't really)
@@ -1532,7 +1540,7 @@ module.exports = {
           return callback(err);
         });
       }
-      
+
       function getModifiedFields(callback) {
         return self.getModifiedFields(req, draft, live, function(err, _modifiedFields) {
           modifiedFields = _modifiedFields;
@@ -1540,7 +1548,7 @@ module.exports = {
         });
       }
     });
-    
+
     self.getModifiedFields = function(req, before, after, callback) {
       return self.resolveRelationships(req, before, after.workflowLocale, function(err) {
         if (err) {
@@ -1604,7 +1612,7 @@ module.exports = {
         }
         return res.send(self.render(req, 'review-modal.html', { commit: commit, doc: commit.to, modifiedFields: modifiedFields }));
       });
-      
+
       function find(callback) {
         return self.findDocAndCommit(req, id, function(err, doc, _commit) {
           if (err) {
@@ -1617,7 +1625,7 @@ module.exports = {
           return callback(null);
         });
       }
-      
+
       function getModifiedFields(callback) {
         return self.getModifiedFields(req, commit.to, commit.from, function(err, _modifiedFields) {
           if (err) {
@@ -1627,7 +1635,7 @@ module.exports = {
           return callback(null);
         });
       }
-      
+
       function after(callback) {
         return self.after(req, commit.to, callback);
       }
@@ -1651,7 +1659,7 @@ module.exports = {
         return res.send(self.render(req, 'export-modal.html', { commit: commit, nestedLocales: self.nestedLocales }));
       });
     });
-    
+
     self.route('post', 'diff', function(req, res) {
 
       if (!req.user) {
@@ -1678,7 +1686,7 @@ module.exports = {
 
         self.deleteExcludedProperties(live);
         self.deleteExcludedProperties(draft);
-        
+
         // console.log(JSON.stringify(live, null, '  '), JSON.stringify(draft, null, '  '));
 
         return res.send({
@@ -1688,9 +1696,9 @@ module.exports = {
           ),
           id: id
         });
-        
+
       });
-      
+
       function getContent(callback) {
         if (commitId) {
           return getCommit(callback);
@@ -1698,7 +1706,7 @@ module.exports = {
           return getDraftAndLive(callback);
         }
       }
-      
+
       function getCommit(callback) {
         return self.findDocAndCommit(req, commitId, function(err, doc, commit) {
           if (err) {
@@ -1724,7 +1732,7 @@ module.exports = {
           return callback(null);
         });
       }
-      
+
       function resolveRelationships(callback) {
         var resolve = [];
         // You'd think it would be obvious which of these has a -draft locale suffix,
@@ -1742,7 +1750,7 @@ module.exports = {
       }
 
     });
-    
+
     self.draftify = function(locale) {
       if (locale.match(/\-draft$/)) {
         return locale;
@@ -1754,7 +1762,7 @@ module.exports = {
     self.liveify = function(locale) {
       return locale.replace(/\-draft$/, '');
     };
-    
+
     self.getCreateSingletonOptions = function(req) {
       return {
         action: self.action,
@@ -1786,7 +1794,7 @@ module.exports = {
         items: [ self.__meta.name + '-locale-picker-modal', self.__meta.name + '-manage-modal' ]
       });
     };
-    
+
     self.pageBeforeSend = function(req, callback) {
       if (req.user && (req.session.workflowMode === 'live')) {
         req.disableEditing = true;
@@ -1819,7 +1827,7 @@ module.exports = {
       if (!req.query.workflowReview) {
         return callback(null);
       }
-      
+
       req.disableEditing = true;
       // A commit id, not a doc id
       var id = self.apos.launder.id(req.query.workflowReview);
@@ -1829,7 +1837,7 @@ module.exports = {
 
       return async.series([
         findDocAndCommit,
-        after        
+        after
       ], function(err) {
         if (err) {
           return callback(err);
@@ -1860,7 +1868,7 @@ module.exports = {
           return callback(null);
         });
       }
-      
+
       function after(callback) {
         return self.after(req, commit.from, callback);
       }
@@ -1874,9 +1882,9 @@ module.exports = {
       if (!manager) {
         return callback('no manager');
       }
-      return manager.find(req).after([ doc ], callback);      
+      return manager.find(req).after([ doc ], callback);
     };
-    
+
     self.getLocalizations = function(req, workflowGuid, callback) {
       // Get the URLs of the context doc across locales for the locale switcher,
       // using a conservative projection for speed
@@ -1900,11 +1908,11 @@ module.exports = {
         return callback(null, localizations);
       });
     };
-    
+
     self.getContext = function(req) {
-      return req.data.piece || req.data.page;      
+      return req.data.piece || req.data.page;
     };
-    
+
     self.getContextProjection = function() {
       return {
         title: 1,
@@ -1925,10 +1933,10 @@ module.exports = {
       }
       return self.partial('menu', { workflowMode: req.session.workflowMode });
     };
-    
+
     // "Based on `req`, `moved`, `data.oldParent` and `data.parent`, decide whether
     // this move should be permitted. If it should not be, report an error." The `apostrophe-pages`
-    // module did this already, but we must consider the impact on all locales. 
+    // module did this already, but we must consider the impact on all locales.
 
     self.pageMovePermissions = function(req, moved, data, options, callback) {
       if (!moved.workflowGuid) {
@@ -1980,7 +1988,7 @@ module.exports = {
         return callback(error);
       });
     };
-    
+
     // On the initial invocation of `apos.pages.move`, modify the criteria and filters
     // to ensure only the relevant locale is in play
     self.pageBeforeMove = function(req, moved, target, position, options) {
@@ -2032,7 +2040,7 @@ module.exports = {
         });
       }
       function invoke(callback) {
-        // Reinvoke apos.pages.move 
+        // Reinvoke apos.pages.move
         return async.eachSeries(_.keys(locales), function(locale, callback) {
           var _options = _.clone(info.options);
           _options.criteria = _.assign({}, info.options.criteria || {}, { workflowLocale: locale });
@@ -2046,18 +2054,18 @@ module.exports = {
     self.modulesReady = function(callback) {
       return self.ensureIndexes(callback);
     };
-    
+
     self.ensureIndexes = function(callback) {
       return self.apos.docs.db.ensureIndex({ workflowGuid: 1 }, {}, callback);
     };
-    
+
     self.loginDeserialize = function(user) {
       user._permissionsLocales = {};
       _.each(user._groups, function(group) {
         _.merge(user._permissionsLocales, group.permissionsLocales || {});
       });
     };
-    
+
     // Record the commit permanently in a MongoDB collection for later
     // examination or application as a patch to more locales. Include enough
     // information to make this useful even if the original documents
@@ -2065,7 +2073,7 @@ module.exports = {
     //
     // On success the callback receives `(null, _id)` where `_id` is
     // the unique identifier for this specific commit in the collection.
-    
+
     self.insertCommit = function(req, from, to, callback) {
       var _id = self.apos.utils.generateId();
       return self.db.insert({
@@ -2085,12 +2093,12 @@ module.exports = {
         return callback(null, _id);
       });
     };
-    
+
     // Create mongodb collection in which to permanently record each commit.
     // This is distinct from the versions collection, which becomes more sparse
     // as you move back through time and doesn't always give access to the
     // version that originally preceded a given version.
-    
+
     self.enableCollection = function(callback) {
       self.db = self.apos.db.collection('aposWorkflowCommits');
       var indexes = [
