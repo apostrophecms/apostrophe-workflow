@@ -74,7 +74,7 @@ node app apostrophe-users:add admin admin
 
 This basic configuration provides you with a live/draft toggle on the page (lower left corner). Editing is not possible in the live mode.
 
-In the draft mode editing works normally. Click "submit" to submit your work for review by someone else, or "commit" to commit it to the live version of the page yourself. 
+In the draft mode editing works normally. Click "submit" to submit your work for review by someone else, or "commit" to commit it to the live version of the page yourself.
 
 If work is submitted that you have permission to edit, you can view a list of those pages and pieces via the "Workflow" admin bar menu.
 
@@ -200,12 +200,29 @@ Content may also be pushed upwards via the export feature if you have permission
 
 TODO: it is our intention to support both of these scenarios. [See issue #28 for status.](https://github.com/punkave/apostrophe-workflow/issues/28)
 
+To enable the subdomain to drive the locale, configure `subdomains` to `true`. An example of a subdomain for the "fr" localed would be `fr.hostname.com`.
+
+```
+'apostrophe-workflow': {
+  locales: [
+    {
+      name: 'en'
+    },
+    {
+      name: 'fr'
+    }
+  ],
+  defaultLocale: 'en',
+  subdomains: true
+}
+```
+
 ## Technical approach
 
 For 2.x, the draft and live versions of a doc are completely separate docs as far as most of Apostrophe is concerned. A `workflowGuid` property ties them together. This greatly reduces the scope of changes required in the rest of Apostrophe and improves performance by removing the need to move content around on every page view or load content for locales you are not looking at.
 
 As the term locale suggests, the 2.x workflow module also implements localization of content.
-  
+
 ### Use of jsondiffpatch
 
 This module relies on `jsondiffpatch` to calculate diffs between commits and offer a patch to be applied to the drafts of other locales. `jsondiffpatch` is also used to visualize differences in the commit modal.

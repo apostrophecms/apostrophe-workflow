@@ -74,7 +74,6 @@ module.exports = {
   },
 
   construct: function(self, options) {
-    console.log("Here!");
     self.nestedLocales = options.locales || [
       {
         name: 'default'
@@ -107,6 +106,7 @@ module.exports = {
     }
 
     self.defaultLocale = options.defaultLocale || 'default';
+    self.subdomains = options.subdomains || false;
 
     self.baseExcludeProperties = options.baseExcludeProperties || [
       '_id',
@@ -1295,7 +1295,7 @@ module.exports = {
           }
           return res.redirect(req.url.replace(/\??workflowLocale=[^&]+&?/, ''));
         }
-        if (subdomain) {
+        if (self.subdomains && subdomain) {
           if (_.has(self.locales, subdomain)) {
               req.session.locale = subdomain;
             }
