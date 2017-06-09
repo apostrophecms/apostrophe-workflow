@@ -1286,6 +1286,7 @@ module.exports = {
       before: 'apostrophe-global',
       middleware: function(req, res, next) {
         var subdomain = req.absoluteUrl.match(/[http|https]:\/\/(\w{2})\./i);
+        if (subdomain) { subdomain = subdomain[1] }
 
         if (req.query.workflowLocale) {
           // Switch locale choice in session via query string, then redirect
