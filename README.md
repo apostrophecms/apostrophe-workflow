@@ -198,7 +198,28 @@ Content may also be pushed upwards via the export feature if you have permission
 
 ## Automatically switching locales via URL prefixes and subdomains
 
-TODO: it is our intention to support both of these scenarios. [See issue #28 for status.](https://github.com/punkave/apostrophe-workflow/issues/28)
+You can enable automatic locale switching based on the subdomain. Simply use subdomains that match your locale names, such as `fr.example.com`, and set the `subdomains` option to `true` when configuring this module.
+
+When you do so, URL generation for pages, pieces, etc. also gains an automatic subdomain prefix.
+
+Some locales may not be intended for public use, such as a root "default" locale from which you export changes to sublocales. For these, set `private: true` when configuring them, so they cannot be reached at all by the general public:
+
+```
+'apostrophe-workflow': {
+  subdomains: true,
+  locales: [
+    {
+      name: 'default',
+      private: true,
+      children: [ ... ]
+    }
+  ]
+}
+```      
+
+*Yes, a private locale may have public sub-locales.*
+
+TODO: it is our intention to also support URL prefix-based switching. [See issue #28 for status.](https://github.com/punkave/apostrophe-workflow/issues/28)
 
 ## Technical approach
 

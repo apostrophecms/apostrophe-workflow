@@ -99,6 +99,7 @@ module.exports = {
         newLocales[name] = locale;
         var draftLocale = _.cloneDeep(locale);
         draftLocale.name = draftLocale.name + '-draft';
+        draftLocale.private = true;
         delete draftLocale.children;
         newLocales[draftLocale.name] = draftLocale;
       });
@@ -178,6 +179,10 @@ module.exports = {
     };
     
     self.extendPermissions = function() {
+      self.apos.permissions.add({
+        value: 'private-locales',
+        label: 'View Private Locales'
+      });
       self.apos.on('can', _.partial(self.onPermissions, 'can'));
       self.apos.on('criteria', _.partial(self.onPermissions, 'criteria'));
     };
@@ -1284,19 +1289,49 @@ module.exports = {
     self.expressMiddleware = {
       before: 'apostrophe-global',
       middleware: function(req, res, next) {
+        var to, host, matches, subdomain;
         if (req.query.workflowLocale) {
           // Switch locale choice in session via query string, then redirect
           var locale = self.apos.launder.string(req.query.workflowLocale);
           if (_.has(self.locales, locale)) {
             req.session.locale = locale;
           }
-          return res.redirect(req.url.replace(/\??workflowLocale=[^&]+&?/, ''));
+          if (self.options.subdomains) {
+            // Don't let the subdomain just switch it back
+            to = req.absoluteUrl.replace(/\??workflowLocale=[^&]+&?/, '');
+            matches = to.match(/^(https?\:)?\/\/([^\.]+)/);
+            subdomain = matches[2];
+            if (subdomain) {
+              to = to.replace('//' + subdomain + '.', '//' + locale + '.');
+            }
+            return res.redirect(to);
+          } else {
+            return res.redirect(req.url.replace(/\??workflowLocale=[^&]+&?/, ''));
+          }
         }
-        req.locale = req.query.locale || req.session.locale;
-        if ((!req.locale) || (!_.has(self.locales, req.locale))) {
+        if (self.options.subdomains) {
+          host = self.getHost(req);
+          matches = host.match(/^[^\.]+/);
+          if (matches) {
+            subdomain = matches[0];
+            if (_.has(self.locales, subdomain)) {
+              req.locale = subdomain;
+              req.session.locale = req.locale;
+            }
+          }
+        }
+        req.locale = req.session.locale;
+
+        // Resort to the default locale if (1) there is no indication of what locale to use,
+        // (2) the locale isn't configured, or (3) the locale is private and we don't have
+        // permission to view private locales.
+        
+        if ((!req.locale) || (!_.has(self.locales, req.locale)) ||
+          (self.locales[req.locale].private && (!self.apos.permissions.can(req, 'private-locales')))) {
           req.locale = self.defaultLocale;
+          req.session.locale = req.locale;
         }
-        req.session.locale = req.locale;
+
         if (req.user) {
           if (req.session.workflowMode === 'draft') {
             req.locale = self.draftify(req.locale);
@@ -1305,8 +1340,13 @@ module.exports = {
             req.session.workflowMode = 'live';
           }
         }
+
         return next();
       }
+    };
+    
+    self.getHost = function(req) {
+      return req.get('Host');
     };
                 
     self.enableAddMissingLocalesTask = function() {
