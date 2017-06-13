@@ -69,6 +69,7 @@ module.exports = {
     self.extendPermissionsField();
     self.extendPermissions();
     self.extendPages();
+    self.extendWidgetControls();
     self.apos.pages.addAfterContextMenu(self.menu);
     return self.enableCollection(callback);
   },
@@ -310,6 +311,19 @@ module.exports = {
       // trash things locally. Moving pages requires permissions across
       // many locales
       self.apos.pages.options.trashInTree = true;
+    };
+    
+    self.extendWidgetControls = function() {
+      self.apos.on('widgetControlGroups', function(controlGroups) {
+        controlGroups.push({
+          controls: [
+            {
+              label: 'Force Export',
+              action: 'workflow-force-export-widget'
+            }
+          ]
+        });
+      });
     };
 
     // Every time a doc is saved, check whether its type is included in workflow. If it is,
@@ -1048,7 +1062,138 @@ module.exports = {
         }, callback);
       }
     });
-    
+
+    self.route('post', 'force-export-widget', function(req, res) {
+      if (!req.user) {
+        // Confusion to the enemy
+        return res.status(404).send('not found');
+      }
+      var id = self.apos.launder.id(req.body.id);
+      var widgetId = self.apos.launder.id(req.body.widgetId);
+      var locales = [];
+      var success = [];
+      var errors = [];
+      var drafts, original;
+      if (Array.isArray(req.body.locales)) {
+        locales = _.filter(req.body.locales, function(locale) {
+          return ((typeof(locale) === 'string') && (_.has(self.locales, locale)));
+        });
+      }
+      locales = _.map(locales, function(locale) {
+        return self.draftify(locale);
+      });
+      return async.series({
+        getOriginal,
+        applyPatches
+      }, function(err) {
+        if (err) {
+          console.error(err);
+          return res.send({ status: 'error' });
+        }
+        // Here the `errors` object has locales as keys and strings as values; these can be
+        // displayed or, since they are technical, just flagged as locales to which the patch
+        // could not be successfully applied
+        return res.send({ status: 'ok', success: success, errors: errors });
+      });
+
+      function getOriginal(callback) {
+        return self.findDocForEditing(req, id, function(err, doc) {
+          if (err) {
+            return callback(err);
+          }
+          original = self.apos.utils.clonePermanent(doc);
+          if (!original) {
+            return callback('notfound');
+          }
+          locales = _.filter(locales, function(locale) {
+            // Reapplying to source locale doesn't make sense
+            return (locale !== original.workflowLocale);
+          });
+          return callback(null);
+        });
+      }
+
+      function applyPatches(callback) {
+
+        return async.eachSeries(locales, function(locale, callback) {
+
+          var resolvedOriginal, draft;
+          
+          // Our own modifiable copy to safely pass to `resolveToDestination`
+          resolvedOriginal = _.cloneDeep(original);
+
+          return async.series([ getDraft, resolveToDestination, applyPatch, update ], callback);
+
+          function getDraft(callback) {
+            return self.apos.docs.find(req, { workflowGuid: resolvedOriginal.workflowGuid }).trash(null).published(null).workflowLocale(locale).permission('edit').areas(false).joins(false).toObject(function(err, _draft) {
+              if (err) {
+                return callback(err);
+              }
+              draft = _draft;
+              return callback(null);
+            });
+          }
+
+          // Resolve relationship ids of resolved original to point to locale
+          // we're patching
+          function resolveToDestination(callback) {
+            return self.resolveRelationships(req, resolvedOriginal, draft.workflowLocale, callback);
+          }
+
+          function applyPatch(callback) {
+
+            if (!draft) {
+              errors.push({ locale: self.liveify(locale), message: 'not found, run task' });
+              return callback(null);
+            }
+
+            var widgetInfo = self.apos.utils.findSubobjectAndDotPathById(resolvedOriginal, widgetId);
+
+            if (!widgetInfo) {
+              errors.push({ locale: self.liveify(locale), message: 'widget no longer exists in original, nothing to patch' });
+              return callback(null);
+            }
+
+            var parentDotPath = getParentDotPath(widgetInfo.dotPath);
+            if (deep(draft, parentDotPath)) {
+              deep(draft, widgetInfo.dotPath, widgetInfo.object); 
+              success.push(self.liveify(locale));
+            } else if (addMissingArea()) {
+              // Great
+              success.push(self.liveify(locale));
+            } else {
+              errors.push({ locale: self.liveify(locale), message: 'No suitable context, document is too different' });
+            }
+
+            return callback(null);
+            
+            function addMissingArea() {
+              // currently parentDotPath ends in .items
+              var areaDotPath = getParentDotPath(parentDotPath);
+              // Now it ends in, say, `body`. Go one more level and see
+              // if we're either at the root, or a valid parent path
+              var areaParentDotPath = getParentDotPath(areaDotPath);
+              if ((!areaParentDotPath.length) || (deep(areaParentDotPath))) {
+                deep(draft, areaDotPath, { type: 'area', items: [ widgetInfo.object ] });
+                return true;
+              }
+              return false;
+            }
+            
+            function getParentDotPath(dotPath) {
+              return dotPath.replace(/^[^\.]+$|\.[^\.]+$/, '');
+            }
+            
+          }
+
+          function update(callback) {
+            return self.apos.docs.update(req, draft, callback); 
+          }
+
+        }, callback);
+      }
+    });
+        
     self.deleteExcludedProperties = function(doc) {
       // console.log('before delete:');
       // console.log(JSON.stringify(doc, null, '  '));
@@ -1679,6 +1824,7 @@ module.exports = {
         // Confusion to the enemy
         return res.status(404).send('not found');
       }
+      // commit id
       var id = self.apos.launder.id(req.body.id);
       return self.findDocAndCommit(req, id, function(err, doc, commit) {
         if (err) {
@@ -1691,6 +1837,26 @@ module.exports = {
         return res.send(self.render(req, 'export-modal.html', { commit: commit, nestedLocales: self.nestedLocales }));
       });
     });
+
+    self.route('post', 'force-export-widget-modal', function(req, res) {
+      if (!req.user) {
+        // Confusion to the enemy
+        return res.status(404).send('not found');
+      }
+      // doc id
+      var id = self.apos.launder.id(req.body.id);
+      // id of widget
+      var widgetId = self.apos.launder.id(req.body.widgetId);
+      
+      return self.findDocForEditing(req, id, function(err, doc) {
+        if (err) {
+          console.error(err);
+          return res.status(500).send('error');
+        }
+        return res.send(self.render(req, 'force-export-widget-modal.html', { doc: doc, nestedLocales: self.nestedLocales, widgetId: widgetId }));
+      });
+    });
+
     
     self.route('post', 'diff', function(req, res) {
 
@@ -1814,6 +1980,7 @@ module.exports = {
       self.pushAsset('script', 'locale-picker-modal', { when: 'user' });
       self.pushAsset('script', 'pieces-editor-modal', { when: 'user' });
       self.pushAsset('script', 'pages-editor-modal', { when: 'user' });
+      self.pushAsset('script', 'force-export-widget-modal', { when: 'user' });
       self.pushAsset('script', 'schemas', { when: 'user' });
       self.pushAsset('stylesheet', 'user', { when: 'user' });
     };

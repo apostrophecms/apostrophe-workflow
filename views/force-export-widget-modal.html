@@ -1,0 +1,39 @@
+{%- extends "apostrophe-modal:base.html" -%}
+{%- import "apostrophe-modal:macros.html" as modals -%}
+{%- import "apostrophe-ui:components/buttons.html" as buttons with context -%}
+{%- import "locale-tree.html" as localeTree -%}
+
+{%- block modalClass -%}
+  apos-workflow-export-modal apos-ui-modal-no-sidebar
+{%- endblock -%}
+
+{%- block controls -%}
+  {{ buttons.minor('Skip', { action: 'cancel' }) }}
+  {{ buttons.major('Export', { action: 'save' }) }}
+{%- endblock -%}
+
+{%- block label -%}
+  {{ __('Exporting a single widget from %s (%s)', data.doc.title, data.doc.workflowLocale) }}
+{%- endblock -%}
+
+{% block instructions %}
+  <p>
+    {{ __('To force an export of this widget to additional locales, select them below, then click Export. Selecting the %s locale may still be helpful to select sub-locales.', data.doc.workflowLocale, data.doc.workflowLocale) }}
+  </p>
+{% endblock %}
+
+{%- block body -%}
+<div class="apos-workflow-export-locales">
+  {{ localeTree.tree(
+    'locales',
+    [
+      {
+        name: 'locale'
+      }
+    ],
+    data.nestedLocales)
+  }}
+</div>
+{%- endblock -%}
+
+{%- block footerContainer -%}{%- endblock -%}

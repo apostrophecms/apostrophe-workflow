@@ -5,6 +5,8 @@ apos.define('apostrophe-workflow-export-modal', {
   extend: 'apostrophe-modal',
 
   source: 'export-modal',
+  
+  verb: 'export',
 
   construct: function(self, options) {
     self.manager = options.manager;
@@ -29,12 +31,11 @@ apos.define('apostrophe-workflow-export-modal', {
         apos.notify('Select at least one locale to export to.', { type: 'error' });
         return callback('user');
       }
-      var result = {
-        // id is a commit id, not a doc id
-        id: options.body.id,
+      var data = _.assign({
         locales: locales
-      };
-      return self.api('export', result, function(result) {
+      }, options.body);
+      
+      return self.api(self.options.verb, data, function(result) {
         if (result.status !== 'ok') {
           apos.notify('An error occurred.', { type: 'error' });
           return callback(result.status);
