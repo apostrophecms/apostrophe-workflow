@@ -1591,7 +1591,7 @@ module.exports = {
     };
     
     self.getHost = function(req) {
-      return req.get('Host');
+      return req.get('Host') || '';
     };
                 
     self.enableAddMissingLocalesTask = function() {
