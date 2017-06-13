@@ -12,6 +12,7 @@ apos.define('apostrophe-workflow', {
     self.enableManageModal();
     self.addPermissionsFieldType();
     self.enableLocalePickerModal();
+    self.enableForceExport();
     self.enableForceExportWidget();
   },
 
@@ -92,6 +93,20 @@ apos.define('apostrophe-workflow', {
             body: { id: id }
           }, options)
         );
+      });
+    };
+
+    self.enableForceExport = function() {
+      apos.ui.link('apos-workflow-force-export', null, function($el, id) {
+        var docId = id;
+        return apos.areas.saveAllIfNeeded(function() {
+          return apos.create('apostrophe-workflow-force-export-modal', 
+            _.assign({
+              manager: self,
+              body: { id: docId }
+            }, options)
+          );
+        });
       });
     };
 

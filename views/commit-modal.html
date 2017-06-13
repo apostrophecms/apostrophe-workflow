@@ -1,6 +1,7 @@
 {%- extends "apostrophe-modal:base.html" -%}
 {%- import "apostrophe-modal:macros.html" as modals -%}
 {%- import "apostrophe-ui:components/buttons.html" as buttons with context -%}
+{%- import "apostrophe-ui:components/dropdowns.html" as dropdowns with context -%}
 
 {%- block modalClass -%}
   apos-workflow-commit-modal apos-ui-modal-no-sidebar
@@ -8,7 +9,18 @@
 
 {%- block controls -%}
   {{ buttons.minor('Cancel', { action: 'cancel' }) }}
-  {{ buttons.major('History', { action: 'workflow-history', value: data.doc._id }) }}
+  {{ dropdowns.base({
+      label: 'More',
+      items: [
+        { label: 'History', action: 'workflow-history', value: data.doc._id },
+        { label: 'Force Export', action: 'workflow-force-export', value: data.doc._id }
+      ]
+    }, 'button', {
+      direction: 'down',
+      class: 'arrow-down'
+    }
+  ) }}
+
   {{ buttons.major('Commit', { action: 'save' }) }}
 {%- endblock -%}
 

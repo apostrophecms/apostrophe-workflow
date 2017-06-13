@@ -1062,6 +1062,106 @@ module.exports = {
         }, callback);
       }
     });
+    
+    self.route('post', 'force-export', function(req, res) {
+      if (!req.user) {
+        // Confusion to the enemy
+        return res.status(404).send('not found');
+      }
+      var id = self.apos.launder.id(req.body.id);
+      var locales = [];
+      var success = [];
+      var errors = [];
+      var drafts, original;
+      if (Array.isArray(req.body.locales)) {
+        locales = _.filter(req.body.locales, function(locale) {
+          return ((typeof(locale) === 'string') && (_.has(self.locales, locale)));
+        });
+      }
+      locales = _.map(locales, function(locale) {
+        return self.draftify(locale);
+      });
+      return async.series({
+        getOriginal,
+        applyPatches
+      }, function(err) {
+        if (err) {
+          console.error(err);
+          return res.send({ status: 'error' });
+        }
+        // Here the `errors` object has locales as keys and strings as values; these can be
+        // displayed or, since they are technical, just flagged as locales to which the patch
+        // could not be successfully applied
+        return res.send({ status: 'ok', success: success, errors: errors });
+      });
+
+      function getOriginal(callback) {
+        return self.findDocForEditing(req, id, function(err, doc) {
+          if (err) {
+            return callback(err);
+          }
+          original = self.apos.utils.clonePermanent(doc);
+          if (!original) {
+            return callback('notfound');
+          }
+          locales = _.filter(locales, function(locale) {
+            // Reapplying to source locale doesn't make sense
+            return (locale !== original.workflowLocale);
+          });
+          return callback(null);
+        });
+      }
+
+      function applyPatches(callback) {
+
+        return async.eachSeries(locales, function(locale, callback) {
+
+          var resolvedOriginal, draft;
+          
+          // Our own modifiable copy to safely pass to `resolveToDestination`
+          resolvedOriginal = _.cloneDeep(original);
+
+          return async.series([ getDraft, resolveToDestination, applyPatch, update ], callback);
+
+          function getDraft(callback) {
+            return self.apos.docs.find(req, { workflowGuid: resolvedOriginal.workflowGuid }).trash(null).published(null).workflowLocale(locale).permission('edit').areas(false).joins(false).toObject(function(err, _draft) {
+              if (err) {
+                return callback(err);
+              }
+              draft = _draft;
+              return callback(null);
+            });
+          }
+
+          // Resolve relationship ids of resolved original to point to locale
+          // we're patching
+          function resolveToDestination(callback) {
+            return self.resolveRelationships(req, resolvedOriginal, draft.workflowLocale, callback);
+          }
+
+          function applyPatch(callback) {
+
+            if (!draft) {
+              errors.push({ locale: self.liveify(locale), message: 'not found, run task' });
+              return callback(null);
+            }
+
+            self.deleteExcludedProperties(resolvedOriginal);
+            
+            _.assign(draft, resolvedOriginal);
+            
+            return callback(null);
+                        
+          }
+
+          function update(callback) {
+            success.push(self.liveify(draft.workflowLocale));
+            return self.apos.docs.update(req, draft, callback); 
+          }
+
+        }, callback);
+      }     
+    });
 
     self.route('post', 'force-export-widget', function(req, res) {
       if (!req.user) {
@@ -1853,10 +1953,32 @@ module.exports = {
           console.error(err);
           return res.status(500).send('error');
         }
+        if (!doc) {
+          return res.status(404).send('notfound');
+        }
         return res.send(self.render(req, 'force-export-widget-modal.html', { doc: doc, nestedLocales: self.nestedLocales, widgetId: widgetId }));
       });
     });
 
+    self.route('post', 'force-export-modal', function(req, res) {
+      if (!req.user) {
+        // Confusion to the enemy
+        return res.status(404).send('not found');
+      }
+      // doc id
+      var id = self.apos.launder.id(req.body.id);
+      
+      return self.findDocForEditing(req, id, function(err, doc) {
+        if (err) {
+          console.error(err);
+          return res.status(500).send('error');
+        }
+        if (!doc) {
+          return res.status(404).send('notfound');
+        }
+        return res.send(self.render(req, 'force-export-modal.html', { doc: doc, nestedLocales: self.nestedLocales }));
+      });
+    });
     
     self.route('post', 'diff', function(req, res) {
 
@@ -1981,6 +2103,7 @@ module.exports = {
       self.pushAsset('script', 'pieces-editor-modal', { when: 'user' });
       self.pushAsset('script', 'pages-editor-modal', { when: 'user' });
       self.pushAsset('script', 'force-export-widget-modal', { when: 'user' });
+      self.pushAsset('script', 'force-export-modal', { when: 'user' });
       self.pushAsset('script', 'schemas', { when: 'user' });
       self.pushAsset('stylesheet', 'user', { when: 'user' });
     };
