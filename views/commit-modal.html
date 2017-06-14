@@ -45,7 +45,7 @@
     {% if data.doc._url %}
       <iframe class="apos-workflow-preview-iframe" src="{{ data.doc._url | build({ workflowPreview: data.doc._id }) }}"></iframe>
     {% else %}
-      <p>No preview available.</p>
+      <p class="apos-workflow-no-preview">No preview available.</p>
     {% endif %}
   </div>
 {%- endblock -%}

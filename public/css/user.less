@@ -1,15 +1,36 @@
+@addColor: #9fecb3;
+@removeColor: #f44336;
+@movedColor: #ff9800;
+
+
 @import 'schemas.less';
 @import 'menu.less';
 
-.apos-workflow-preview
+.apos-ui .apos-workflow-preview
 {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
   border: 0;
   margin: 0;
+  margin-top: -40px;
   padding: 0;
-  transform: scale(0.64);
+  transform: scale(0.8);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  box-shadow: 0 10px 190px 0 rgba(0,0,0,.25);
+  overflow: scroll;
+  &::before {
+    content: "● ● ●";
+    color: #ffffff;
+    text-align: left;
+    font-size: 1.5em;
+    background: #272727;
+    display: block;
+    padding: 6px 8px 11px 13px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
 }
 
 .apos-workflow-preview-iframe
@@ -30,44 +51,63 @@
   }
 }
 
-.apos-workflow-widget-moved::before
+.apos-workflow-widget-diff
 {
-  content: '↑↓';
-  position: static;
-  z-index: 1000;
-  color: blue;
-  font-weight: bold;
-  font-size: 24px;
+  position: relative;
+  &::before {
+    position: absolute;
+    height: 100%;
+    width: 60px;
+    z-index: 1000;
+    left: -1px;
+    top: -3px;
+    top: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: white;
+    opacity: 0.8;
+    font-family: 'FontAwesome';
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.2;
+  }
 }
 
-.apos-workflow-widget-deleted::before
-{
-  content: 'ⓧ';
-  position: static;
-  z-index: 1000;
-  color: red;
-  font-weight: bold;
-  font-size: 24px;
-}
+.apos-workflow-widget-diff--new { border: 2px solid @addColor; }
+.apos-workflow-widget-diff--new::before { content: ""}
+.apos-workflow-widget-diff--new::before,
+.apos-workflow-widget-diff--new::after { background-color: @addColor; }
 
-.apos-workflow-widget-new::before
-{
-  content: '+';
-  position: static;
-  z-index: 1000;
-  color: orange;
-  font-weight: bold;
-  font-size: 24px;
-}
+.apos-workflow-widget-diff--deleted {  border: 2px solid @removeColor; }
+.apos-workflow-widget-diff--deleted::before { content: ""; color: white; }
+.apos-workflow-widget-diff--deleted::before,
+.apos-workflow-widget-diff--deleted::after { background-color: @removeColor; }
 
-.apos-workflow-widget-changed::before
+.apos-workflow-widget-diff--moved {  border: 2px solid @movedColor; }
+.apos-workflow-widget-diff--moved::before { content: " "; color: white; }
+.apos-workflow-widget-diff--moved::before,
+.apos-workflow-widget-diff--moved::after { background-color: @movedColor; }
+
+.apos-workflow-widget-diff--changed {  border: 2px solid @movedColor; }
+.apos-workflow-widget-diff--changed::before { content: ""; color: white; }
+.apos-workflow-widget-diff--changed::before,
+.apos-workflow-widget-diff--changed::after { background-color: @movedColor; }
+
+.apos-workflow-no-preview
 {
-  content: '!';
-  position: static;
-  z-index: 1000;
-  color: orange;
-  font-weight: bold;
-  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  align-items: center;
+  font-size: 28px;
 }
 
 .apos-workflow-live-page {
