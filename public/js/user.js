@@ -69,7 +69,12 @@ apos.define('apostrophe-workflow', {
 
     self.enableCommit = function() {
       $('body').on('click', '[data-apos-workflow-commit]', function() {
-        self.commit(self.getEditableDocIds());
+        var id = $(this).attr('data-apos-workflow-commit');
+        if (id) {
+          self.commit([ id ]);
+        } else {
+          self.commit(self.getEditableDocIds());
+        }
         return false;
       });
     };
@@ -154,11 +159,27 @@ apos.define('apostrophe-workflow', {
     
     // Present commit modals for all ids in the array, one after another
     self.commit = function(ids, callback) {
-      return async.eachSeries(ids, function(id, callback) {
-        return self.launchCommitModal(id, callback);
-      }, function(err) {
-        return callback && callback(err);
-      });
+      var leadId = (apos.contextPiece && apos.contextPiece._id) || (apos.pages.page && apos.pages.page._id);
+      if (!_.contains(ids, leadId)) {
+        leadId = null;
+      }
+      if (!leadId) {
+        // Well, that's a thinker. Fall back to launching all of the commit modals in series
+        return async.eachSeries(ids, function(id, callback) {
+          return self.launchCommitModal({ id: id }, callback);
+        }, function(err) {
+          return callback && callback(err);
+        });
+      } else {
+        return self.launchCommitModal({
+          id: leadId,
+          relatedIds: _.filter(ids, function(id) {
+            return id !== leadId;
+          })
+        }, function(err) {
+          return callback && callback(err);
+        });
+      }
     };
     
     self.enableManageModal = function() {
@@ -171,12 +192,12 @@ apos.define('apostrophe-workflow', {
       return apos.create(self.__meta.name + '-manage-modal', _.assign({ manager: self }, options));
     };
     
-    self.launchCommitModal = function(id, callback) {
-      return apos.create(self.__meta.name + '-commit-modal', _.assign({
+    self.launchCommitModal = function(options, callback) {
+      return apos.create(self.__meta.name + '-commit-modal', _.assign({}, self.options, {
         manager: self,
-        body: { id: id },
+        body: options,
         after: callback
-      }, options));
+      }));
     };
     
     self.launchLocalePickerModal = function() {
