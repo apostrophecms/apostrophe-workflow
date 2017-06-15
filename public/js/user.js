@@ -3,6 +3,7 @@ apos.define('apostrophe-workflow', {
   extend: 'apostrophe-context',
 
   afterConstruct: function(self) {
+    self.enableExpand();
     self.enableWorkflowMode();
     self.enableSubmit();
     self.enableCommit();
@@ -19,6 +20,14 @@ apos.define('apostrophe-workflow', {
   construct: function(self, options) {
 
     self.locales = options.locales;
+
+    self.enableExpand = function () {
+      $('body').on('click', '[data-apos-expand-trigger]', function(e) {
+        e.preventDefault();
+        var $this = $(this);
+        $this.parent('[data-apos-expand]').toggleClass('apos-expand-list-container--open');
+      })
+    }
 
     self.enableWorkflowMode = function() {
 
@@ -302,6 +311,7 @@ apos.define('apostrophe-workflow', {
       }, function() {
         return fail();
       });
+
       function fail() {
         apos.notify('An error occurred displaying the difference between the documents.', { type: 'error' });
       }
