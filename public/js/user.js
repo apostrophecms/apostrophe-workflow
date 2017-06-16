@@ -3,6 +3,7 @@ apos.define('apostrophe-workflow', {
   extend: 'apostrophe-context',
 
   afterConstruct: function(self) {
+    self.enableExpand();
     self.enableWorkflowMode();
     self.enableSubmit();
     self.enableCommit();
@@ -19,6 +20,14 @@ apos.define('apostrophe-workflow', {
   construct: function(self, options) {
 
     self.locales = options.locales;
+
+    self.enableExpand = function () {
+      $('body').on('click', '[data-apos-expand-trigger]', function(e) {
+        e.preventDefault();
+        var $this = $(this);
+        $this.parent('[data-apos-expand]').toggleClass('apos-expand-list-container--open');
+      })
+    }
 
     self.enableWorkflowMode = function() {
 
@@ -223,12 +232,12 @@ apos.define('apostrophe-workflow', {
           $area.addClass('apos-workflow-area-changed');
           if (_.isArray(result.diff[key])) {
             // The entire area is new
-            $area.find('[data-apos-widget]').addClass('apos-workflow-widget-new');
+            $area.find('[data-apos-widget]').addClass('apos-workflow-widget-diff apos-workflow-widget-diff--new');
             return;
           }
           var items = result.diff[key].items;
           if (items._t !== 'a') {
-            $area.find('[data-apos-widget]').addClass('apos-workflow-widget-new');
+            $area.find('[data-apos-widget]').addClass('apos-workflow-widget-diff apos-workflow-widget-diff--new');
             return;
           }
           _.each(items, function(widget, offset) {
@@ -238,7 +247,7 @@ apos.define('apostrophe-workflow', {
               if (Array.isArray(widget)) {
                 if (widget[2] === 3) {
                   var id = widget[0]._id;
-                  getWidget(id).addClass('apos-workflow-widget-moved');
+                  getWidget(id).addClass('apos-workflow-widget-diff apos-workflow-widget-diff--moved');
                 } else if (widget[2] === 0) {
                   var data = widget[0];
                   
@@ -272,13 +281,13 @@ apos.define('apostrophe-workflow', {
                       } else {
                         $area.append($newWidget);
                       }
-                      $newWidget.addClass('apos-workflow-widget-deleted');
+                      $newWidget.addClass('apos-workflow-widget-diff apos-workflow-widget-diff--deleted');
                       apos.emit('enhance', $newWidget);
                     }
                   );
                 } else if (widget.length === 1) {
                   // Insert
-                  getWidget(id).addClass('apos-workflow-widget-new');
+                  getWidget(id).addClass('apos-workflow-widget-diff apos-workflow-widget-diff--new');
                 }
               }
             } else if (offset.match(/^\d+$/)) {
@@ -286,12 +295,12 @@ apos.define('apostrophe-workflow', {
                 if (widget.length === 1) {
                   // Insert
                   var id = widget[0]._id;
-                  getWidget(id).addClass('apos-workflow-widget-new');
+                  getWidget(id).addClass('apos-workflow-widget-diff apos-workflow-widget-diff--new');
                 }
               } else if (typeof(widget) === 'object') {
                 // Just a modification
                 var id = widget._id;
-                $area.findSafe('[data-apos-widget-id]', '[data-apos-area]').eq(parseInt(offset)).addClass('apos-workflow-widget-changed');
+                $area.findSafe('[data-apos-widget-id]', '[data-apos-area]').eq(parseInt(offset)).addClass('apos-workflow-widget-diff apos-workflow-widget-diff--changed');
               }
             }
           });
@@ -302,6 +311,7 @@ apos.define('apostrophe-workflow', {
       }, function() {
         return fail();
       });
+
       function fail() {
         apos.notify('An error occurred displaying the difference between the documents.', { type: 'error' });
       }
