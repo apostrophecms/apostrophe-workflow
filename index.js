@@ -368,7 +368,8 @@ module.exports = {
     // there. If the doc has the `_workflowNew` property as set by `docBeforeSave`, we can assume
     // it is new in all other locales, otherwise query to find out.
     //
-    // These newly created docs in other locales are initially unpublished.
+    // These newly created docs in other locales are initially trash so they
+    // don't clutter reorganize as "unpublished."
 
     self.docAfterSave = function(req, doc, options, callback) {
 
@@ -437,7 +438,8 @@ module.exports = {
             // be published and not trash across all locales. If the page is any other page trash it
             // in the other locales, it can be activated for those locales via reorganize
             if (_doc.slug === '/') {
-              _doc.published = false;
+              // Let it through: for chicken and egg reasons, the home page
+              // exists in published form right away in all locales
             } else if (_doc.slug === 'global') {
               // The global doc
             } else {
@@ -1568,20 +1570,23 @@ module.exports = {
         if (req.query.workflowLocale) {
           // Switch locale choice in session via query string, then redirect
           var locale = self.apos.launder.string(req.query.workflowLocale);
-          if (_.has(self.locales, locale)) {
-            req.session.locale = locale;
-          }
           if (self.options.subdomains) {
             // Don't let the subdomain just switch it back
             to = req.absoluteUrl.replace(/\??workflowLocale=[^&]+&?/, '');
             matches = to.match(/^(https?\:)?\/\/([^\.]+)/);
             subdomain = matches[2];
-            if (subdomain) {
+            if (subdomain && _.has(self.locales, subdomain)) {
               to = to.replace('//' + subdomain + '.', '//' + locale + '.');
+            } else {
+              // We can assume it is the bare domain, add the locale
+              to = to.replace('//', '//' + locale + '.');
             }
             return res.redirect(to);
           } else {
             return res.redirect(req.url.replace(/\??workflowLocale=[^&]+&?/, ''));
+          }
+          if (_.has(self.locales, locale)) {
+            req.session.locale = locale;
           }
         }
         if (self.options.subdomains) {
