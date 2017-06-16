@@ -221,6 +221,21 @@ Some locales may not be intended for public use, such as a root "default" locale
 
 TODO: it is our intention to also support URL prefix-based switching. [See issue #28 for status.](https://github.com/punkave/apostrophe-workflow/issues/28)
 
+#### One login across all subdomains
+
+Although there is just one database of accounts, by default, the session cookie used by Apostrophe is not shared across subdomains. You can address this by configuring the `apostrophe-express` module. **Just as an example**, the domain name to be shared here is `workflow.com`:
+
+```javascript
+'apostrophe-express': {
+  session: {
+    secret: 'yoursecretgoeshere',
+    cookie: {
+      domain: 'workflow.com'
+    }
+  }
+},
+````
+
 ## Technical approach
 
 For 2.x, the draft and live versions of a doc are completely separate docs as far as most of Apostrophe is concerned. A `workflowGuid` property ties them together. This greatly reduces the scope of changes required in the rest of Apostrophe and improves performance by removing the need to move content around on every page view or load content for locales you are not looking at.
