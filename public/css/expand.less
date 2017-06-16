@@ -1,0 +1,57 @@
+.apos-ui .apos-expand-list
+{
+	max-height: 0px;
+	overflow: hidden;
+	transition: all 0.4s ease;
+	font-size: 14px;
+	padding-left: 50px;
+
+	background-color: lighten(@apos-mid, 5%);
+	li {
+		margin-bottom: 5px;
+	}
+}
+
+.apos-expand-list-container--open .apos-expand-list
+{
+	max-height: 900px;
+}
+
+.apos-ui .apos-expand-info {
+	padding: 20px 20px 10px 50px;
+	&:hover { cursor: pointer; background-color: darken(@apos-mid, 5%)}
+}
+
+.apos-ui .apos-expand-list-container {
+	position: relative;
+	background-color: @apos-mid;
+	transition: all 0.3s ease;
+	p
+	{
+		font-size: 12px;
+		font-style: italic;
+	}
+	a { color: @apos-primary; }
+}
+
+.apos-ui .apos-expand-list-container--open .apos-expand-list {
+	padding: 20px 10px 20px 50px;
+}
+
+.apos-expand-trigger {
+	&::before {
+		position: absolute;
+		left: 21px;
+		top: 21px;
+		font-size: 12px;
+		font-family: "FontAwesome";
+		content: "";
+		margin-right: 0.5em;
+	}
+}
+
+.apos-expand-list-container--open .apos-expand-trigger {
+	&::before {
+		content: ""
+	}
+}

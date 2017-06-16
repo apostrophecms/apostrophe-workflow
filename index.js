@@ -318,7 +318,8 @@ module.exports = {
         controlGroups.push({
           controls: [
             {
-              label: 'Force Export',
+              tooltip: 'Force Export',
+              icon: 'sign-out',
               action: 'workflow-force-export-widget'
             }
           ]
