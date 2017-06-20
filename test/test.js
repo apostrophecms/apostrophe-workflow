@@ -376,7 +376,7 @@ describe('Workflow', function() {
   });
 
   it('is able to insert a new page in the correct order in both locales', function(done) {
-    var cursor = apos.pages.find(t.req.anon(apos), { slug: '/new-page' }).workflowLocale('default');
+    var cursor = apos.pages.find(t.req.anon(apos), { slug: '/new-page' }).workflowLocale('default').trash(null);
 
     cursor.toObject(function(err, page){
       assert.equal(page.rank, 2);
@@ -577,7 +577,7 @@ describe('Workflow', function() {
         assert(!page);
         var cursor2 = apos.pages.find(t.req.anon(apos), { _id: '1234' }).
           permission(false).trash(null).toObject(function(err, page) {
-            assert.equal(page.path, '/trash/parent');
+            assert(page.path, '/another-parent/parent');
             assert(page.trash);
             assert.equal(page.level, 2);
             return done();

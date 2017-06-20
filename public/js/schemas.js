@@ -1,3 +1,5 @@
+// Extrend schemas to accommodate workflow
+
 apos.define('apostrophe-schemas', {
   construct: function(self, options) {
     var superBeforePopulate = self.beforePopulate;
@@ -140,5 +142,60 @@ apos.define('apostrophe-schemas', {
       });
       return superAfterPopulate($el, schema, object, callback);
     };
+
+    var superEnableSlug = self.enableSlug;
+
+    // Locale-aware version of `enableSlug`. Comes into play only for pages
+    // and only when prefixes are enabled for page slugs
+
+    self.enableSlug = function($title, $slug, title, slug) {
+      if ((!apos.modules['apostrophe-workflow'].options.prefixes) || (!slug.page)) {
+        return superEnableSlug($title, $slug, title, slug);
+      }
+      if (!$title.length || !$slug.length) {
+        return;
+      }
+      // Watch the title for changes, update the slug - but only if
+      // the slug was in sync with the title to start with
+      var originalTitle = $title.val();
+      var currentSlug = $slug.val();
+      var components = currentSlug.split('/');
+      var currentSlugTitle = components.pop();
+      var workflow = apos.modules['apostrophe-workflow'];
+      var locale = workflow.locale;
+      var liveLocale = workflow.liveLocale;
+      var prefix = '/' + liveLocale;
+      $title.on('change keyup paste', function(e) {
+        var slug = $slug.val();
+        var slugWas = slug;
+        var matches;
+        // Original mechanism to sync last component of slug with title if
+        // and only if this was the case before editing began
+        if ((originalTitle === '') || (currentSlugTitle === apos.utils.slugify(originalTitle))) {
+          slug = slug.replace(/[^\/]*$/, apos.utils.slugify($title.val()));
+        }
+        
+        // Match the first component of the URL
+        matches = slug && slug.match(/^\/([^\/]+)/);
+        if (!matches) {
+          // No first component or no slug at all
+          slug = '/' + doc.workflowLocale + (slug || '/' + self.apos.utils.slugify(title));
+        } else {
+          existing = matches[1];
+          if (_.has(workflow.locales, existing)) {
+            // There is an existing locale prefix that doesn't match the
+            // doc locale, which seems unlikely, but fix it
+            slug = slug.replace(/^\/([^\/]+)/, '/' + liveLocale);
+          } else {
+            // There is no existing locale prefix
+            slug = '/' + liveLocale + slug;
+          }
+        }
+        if (slug !== slugWas) {
+          $slug.val(slug);
+        }
+      });
+    };
+
   }
 });

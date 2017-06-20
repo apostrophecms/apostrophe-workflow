@@ -196,7 +196,7 @@ Locales can be nested, creating a convenient tree from which to select them or n
 
 Content may also be pushed upwards via the export feature if you have permission to edit drafts for the higher locales in the tree, however bear in mind that the risk of divergence that makes patching difficult is decreased when working from the top down.
 
-## Automatically switching locales via URL prefixes and subdomains
+## Automatically switching locales via subdomains
 
 You can enable automatic locale switching based on the subdomain. Simply use subdomains that match your locale names, such as `fr.example.com`, and set the `subdomains` option to `true` when configuring this module.
 
@@ -219,9 +219,7 @@ Some locales may not be intended for public use, such as a root "default" locale
 
 *Yes, a private locale may have public sub-locales.*
 
-TODO: it is our intention to also support URL prefix-based switching. [See issue #28 for status.](https://github.com/punkave/apostrophe-workflow/issues/28)
-
-#### One login across all subdomains
+### One login across all subdomains
 
 Although there is just one database of accounts, by default, the session cookie used by Apostrophe is not shared across subdomains. You can address this by configuring the `apostrophe-express` module. **Just as an example**, the domain name to be shared here is `workflow.com`:
 
@@ -236,15 +234,36 @@ Although there is just one database of accounts, by default, the session cookie 
 },
 ````
 
+## Automatically switching locales via prefixes
+
+Alternatively, you can enable automatic locale switching based on the subdomain. Simply set the `prefixes` option to true.
+
+> You cannot use `subdomains` and `prefixes` at the same time.
+
+If your database already exists, you must run the following **one-time** task to prefix the slugs of existing pages:
+
+```
+node app apostrophe-workflow:add-locale-prefixes
+```
+
+You **do not** have to run this task again. It is a one-time transition.
+
+Currently there is no automated way to roll back to not having slug prefixes. However, if you disable the `prefixes` flag, the entire slug becomes editable, and so you can manually remove them.
+
 ## Technical approach
 
 For 2.x, the draft and live versions of a doc are completely separate docs as far as most of Apostrophe is concerned. A `workflowGuid` property ties them together. This greatly reduces the scope of changes required in the rest of Apostrophe and improves performance by removing the need to move content around on every page view or load content for locales you are not looking at.
 
-As the term locale suggests, the 2.x workflow module also implements localization of content.
+As the term locale suggests, the 2.x workflow module also implements localization of content by introducing paired live and draft locales for each country or culture you wish to support.
   
 ### Use of jsondiffpatch
 
-This module relies on `jsondiffpatch` to calculate diffs between commits and offer a patch to be applied to the drafts of other locales. `jsondiffpatch` is also used to visualize differences in the commit modal.
+This module relies somewhat on `jsondiffpatch` to calculate diffs between commits and offer a patch to be applied to the drafts of other locales. `jsondiffpatch` is also used to visualize differences in the commit modal.
 
 Here is [documentation of how the diff deltas work](https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md). Our code taps into this diff output format to visualize differences.
 
+As it turns out this algorithm is best suited to exporting changes to the schema fields of a doc.
+
+### Patching and exporting of widgets
+
+`jsondiffpatch` is not well suited to patching widgets and other items with globally unique ids that can be leveraged to always recognize them even if they have moved around in a document. For this reason a separate algorithm is applied first to handle exporting and patching of widgets.

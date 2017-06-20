@@ -4,14 +4,14 @@
   "description": "Workflow for Apostrophe 2.x, based on the idea of several documents that represent different versions of the same document",
   "main": "index.js",
   "dependencies": {
-    "async": "^1.0.0",
+    "async": "^1.5.2",
     "deep-get-set": "^1.1.0",
     "jsondiffpatch": "^0.2.4",
-    "lodash": "^3.0.0"
+    "lodash": "^3.10.1"
   },
   "devDependencies": {
-    "mocha": "^3.0.0",
-    "apostrophe": "^2.0.0"
+    "apostrophe": "^2.26.1",
+    "mocha": "^3.4.2"
   },
   "scripts": {
     "test": "mocha test/test.js"

@@ -63,6 +63,7 @@ module.exports = {
     self.extendCursor();
     self.extendIndexes();
     self.enableAddMissingLocalesTask();
+    self.enableAddLocalePrefixesTask();
     self.pushAssets();
     self.addToAdminBar();
     self.extendPieces();
@@ -310,7 +311,30 @@ module.exports = {
       // users lacking cross-locale permissions are not forbidden to
       // trash things locally. Moving pages requires permissions across
       // many locales
-      self.apos.pages.options.trashInTree = true;
+
+      var pages = self.apos.pages;
+
+      pages.options.trashInTree = true;
+            
+      var superRemoveTrailingSlugSlashes = pages.removeTrailingSlugSlashes;
+      pages.removeTrailingSlugSlashes = function(slug) {
+        if (!self.options.prefixes) {
+          return superRemoveTrailingSlugSlashes(slug);
+        }
+        var matches = slug.match(/^\/([^\/]+)(\/?)$/);
+        if (matches && _.has(self.locales, matches[1])) {
+          // Something like /en/, leave it alone,
+          // it's a localized homepage. However if the
+          // trailing slash *after* the locale is missing,
+          // add it and redirect
+          if (matches[2] === '') {
+            return slug + '/';
+          } else {
+            return slug;
+          }
+        }
+        return superRemoveTrailingSlugSlashes(slug);
+      };
     };
     
     self.extendWidgetControls = function() {
@@ -326,20 +350,30 @@ module.exports = {
         });
       });
     };
-
-    // Every time a doc is saved, check whether its type is included in workflow. If it is,
-    // and the doc does not yet have a `workflowLocale` property, establish one and generate
-    // the `workflowGuid` property. Set the `_workflowNew` flag for the attention of
-    // `docAfterSave`.
+    
+    // Every time a doc is saved, check whether its type is included in
+    // workflow. If so invoke `ensureWorkflowLocale` and
+    // `ensurePageSlugPrefix`.
 
     self.docBeforeSave = function(req, doc, options) {
-      if (doc._workflowPropagating) {
-        // Recursion guard
-        return;
-      }
+
       if (!self.includeType(doc.type)) {
         return;
       }
+      
+      self.ensureWorkflowLocale(req, doc);
+
+      self.ensurePageSlugPrefix(doc);
+      
+    };
+    
+    // Ensure the given doc has a `workflowLocale` property; if not
+    // supply it from `req.locale`, also creating a new `workflowGuid`
+    // and invoking `ensureWorkflowLocaleForPathIndex`. 
+    
+    self.ensureWorkflowLocale = function(req, doc) {
+      // If the doc has no locale yet, set it to the current request's
+      // locale, or the default locale
       if (!doc.workflowLocale) {
         doc.workflowLocale = req.locale || self.defaultLocale;
         if (!doc.workflowLocale.match(/\-draft$/)) {
@@ -351,6 +385,35 @@ module.exports = {
         doc.workflowGuid = self.apos.utils.generateId();
         doc._workflowNew = true;
         self.ensureWorkflowLocaleForPathIndex(doc);
+      }
+    };
+    
+    // Adjust the slug of a page to take the prefix into account.
+    // The UI and/or `pages.newChild` should have done this already, this
+    // is a failsafe invoked by `docBeforeSave` and also in tasks.
+    //
+    // If the document is not a page, or has no locale, nothing happens.
+    
+    self.ensurePageSlugPrefix = function(doc) {
+      if (!(self.options.prefixes && self.apos.pages.isPage(doc) && doc.workflowLocale)) {
+        return;
+      }
+      var prefix, matches;
+      // Match the first component of the URL
+      matches = doc.slug && doc.slug.match(/^\/([^\/]+)/);
+      if (!matches) {
+        // No first component or no slug at all
+        doc.slug = '/' + self.liveify(doc.workflowLocale) + (doc.slug || '/' + self.apos.utils.slugify(doc.title));
+      } else {
+        existing = matches[1];
+        if (_.has(self.locales, existing)) {
+          // There is an existing locale prefix that doesn't match the
+          // doc locale, which seems unlikely, but fix it
+          doc.slug = doc.slug.replace(/^\/([^\/]+)/, '/' + self.liveify(doc.workflowLocale));
+        } else {
+          // There is no existing locale prefix
+          doc.slug = '/' + self.liveify(doc.workflowLocale) + doc.slug;
+        }
       }
     };
 
@@ -430,22 +493,22 @@ module.exports = {
           delete _doc._id;
           _doc.workflowLocale = locale;
           _doc._workflowPropagating = true;
-          if (!locale.match(/\-draft$/)) {
-            // Otherwise you can make something happen in public just by creating a new doc
-            // and watching it propagate.
-            //
-            // If the doc in question is the home page unpublish it in other locales,
-            // so at least an editor can reach it. If the doc is the global doc it should
-            // be published and not trash across all locales. If the page is any other page trash it
-            // in the other locales, it can be activated for those locales via reorganize
-            if (_doc.slug === '/') {
-              // Let it through: for chicken and egg reasons, the home page
-              // exists in published form right away in all locales
-            } else if (_doc.slug === 'global') {
-              // The global doc
-            } else {
-              _doc.trash = true;
-            }
+          // Otherwise you can make something happen in public across
+          // all locales just by creating a new doc
+          // and watching it propagate.
+          //
+          // If the doc in question is the home page or global doc let it through
+          // for chicken and egg reasons. If the page is any other page trash it
+          // in the other locales, it can be activated for those locales later
+          // by removing it from the trash, or via exporting to it, which will
+          // export the fact that it is not trash.
+          if (_doc.level === 0) {
+            // Let it through: for chicken and egg reasons, the home page
+            // exists in published form right away in all locales
+          } else if (_doc.slug === 'global') {
+            // The global doc
+          } else {
+            _doc.trash = true;
           }
           self.ensureWorkflowLocaleForPathIndex(_doc);
           return async.series([
@@ -1567,7 +1630,7 @@ module.exports = {
     self.expressMiddleware = {
       before: 'apostrophe-global',
       middleware: function(req, res, next) {
-        var to, host, matches, subdomain;
+        var to, host, matches, locale, subdomain;
         if (req.query.workflowLocale) {
           // Switch locale choice in session via query string, then redirect
           var locale = self.apos.launder.string(req.query.workflowLocale);
@@ -1596,8 +1659,15 @@ module.exports = {
           if (matches) {
             subdomain = matches[0];
             if (_.has(self.locales, subdomain)) {
-              req.locale = subdomain;
-              req.session.locale = req.locale;
+              req.session.locale = subdomain;
+            }
+          }
+        } else if (self.options.prefixes) {
+          matches = req.url.match(/^\/([^\/]+)/);
+          if (matches) {
+            locale = matches[1];
+            if (_.has(self.locales, locale)) {
+              req.session.locale = locale;
             }
           }
         }
@@ -1622,6 +1692,13 @@ module.exports = {
           }
         }
 
+        if (self.options.prefixes && (req.url === '/')) {
+          // With URL prefixes in effect, the home pages for the various
+          // locales have different URLs. Redirect to the appropriate
+          // homepage
+          return res.redirect('/' + self.liveify(req.locale) + '/');
+        }
+
         return next();
       }
     };
@@ -1634,6 +1711,13 @@ module.exports = {
       self.apos.tasks.add(self.__meta.name, 'add-missing-locales',
         'Run this task after adding new locales or setting up the module for the first time.',
         self.addMissingLocalesTask
+      );
+    };
+
+    self.enableAddLocalePrefixesTask = function() {
+      self.apos.tasks.add(self.__meta.name, 'add-locale-prefixes',
+        'Run this task after turning on "prefixes: true" on an existing site.',
+        self.addLocalePrefixesTask
       );
     };
 
@@ -1718,6 +1802,16 @@ module.exports = {
           });
         }, callback);
       }
+    };
+
+    self.addLocalePrefixesTask = function(apos, argv, callback) {
+      var req = self.apos.tasks.getReq();
+      return self.apos.migrations.eachDoc({ slug: /^\// }, function(page, callback) {
+        if (!self.includeType(page.type)) {
+          return setImmediate(callback);
+        }
+        return self.apos.pages.update(req, page, { permissions: false }, callback);
+      }, callback);
     };
     
     self.route('post', 'workflow-mode', function(req, res) {
@@ -2222,7 +2316,9 @@ module.exports = {
         action: self.action,
         contextGuid: req.data.workflow.context && req.data.workflow.context.workflowGuid,
         locales: self.locales,
-        nestedLocales: self.nestedLocales
+        locale: req.locale,
+        nestedLocales: self.nestedLocales,
+        prefixes: self.options.prefixes
       };
     };
 

@@ -20,6 +20,8 @@ apos.define('apostrophe-workflow', {
   construct: function(self, options) {
 
     self.locales = options.locales;
+    self.locale = options.locale;
+    self.liveLocale = self.locale.replace(/\-draft$/, '');
 
     self.enableExpand = function () {
       $('body').on('click', '[data-apos-expand-trigger]', function(e) {
