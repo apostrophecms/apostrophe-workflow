@@ -1043,7 +1043,7 @@ module.exports = {
               objects.sort(function(a, b) {
                 if (dots[a._id] > dots[b._id]) {
                   return -1;
-                } else if (dots[a._id] > dots[b._id]) {
+                } else if (dots[a._id] < dots[b._id]) {
                   return 1;
                 } else {
                   return 0;
@@ -1100,9 +1100,10 @@ module.exports = {
             function appendObject(context, objects, path, object) {
               var array = deep(context, path);
               if (!Array.isArray(array)) {
-                return;
+                return false;
               }
               array.push(object);
+              return true;
             }
             
             function purgeObjects(context, objects) {
@@ -1140,11 +1141,16 @@ module.exports = {
                 }  
               }
               deleteObject(draft, draftObjects, value);
-              appendObject(draft, draftObjects, fromDotPath.replace(/\.\d+$/, ''), value);
-              // So we know the difference no longer exists when examining
-              // a parent object
-              deleteObject(from, fromObjects, value);
-              deleteObject(to, toObjects, value);              
+              if (appendObject(draft, draftObjects, fromDotPath.replace(/\.\d+$/, ''), value)) {
+                // So we know the difference no longer exists when examining
+                // a parent object
+                deleteObject(from, fromObjects, value);
+                deleteObject(to, toObjects, value);              
+              } else {
+                // append failed, probably because the parent object
+                // doesn't exist yet in the draft. So don't purge or
+                // we'll wind up inserting an empty parent object
+              }
             }
             
           }
