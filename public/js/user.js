@@ -6,6 +6,7 @@ apos.define('apostrophe-workflow', {
     self.enableExpand();
     self.enableWorkflowMode();
     self.enableSubmit();
+    self.enableDismiss();
     self.enableCommit();
     self.enableHistory();
     self.enableExport();
@@ -74,6 +75,13 @@ apos.define('apostrophe-workflow', {
       $('body').on('click', '[data-apos-workflow-submit]', function() {
         var ids = self.getEditableDocIds();
         self.submit(ids);
+        return false;
+      });
+    };
+
+    self.enableDismiss = function() {
+      $('body').on('click', '[data-apos-workflow-dismiss]', function() {
+        self.dismiss($(this).attr('data-apos-workflow-dismiss'));
         return false;
       });
     };
@@ -167,6 +175,14 @@ apos.define('apostrophe-workflow', {
         return callback && callback('error');
       });
     }
+    
+    self.dismiss = function(id) {
+      self.api('dismiss', { id: id }, function(result) {
+        if (result.status === 'ok') {
+          $('[data-apos-workflow-dismiss="' + id + '"]').closest('[data-apos-workflow-submission]').hide();
+        }
+      });
+    };
     
     // Present commit modals for all ids in the array, one after another
     self.commit = function(ids, callback) {

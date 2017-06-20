@@ -856,10 +856,12 @@ module.exports = {
     });
 
     self.route('post', 'export', function(req, res) {
+
       if (!req.user) {
         // Confusion to the enemy
         return res.status(404).send('not found');
       }
+
       var id = self.apos.launder.id(req.body.id);
       var locales = [];
       var success = [];
@@ -873,7 +875,9 @@ module.exports = {
       locales = _.map(locales, function(locale) {
         return self.draftify(locale);
       });
+
       var commit;
+
       return async.series({
         getCommit,
         applyPatches
@@ -887,6 +891,7 @@ module.exports = {
         // could not be successfully applied
         return res.send({ status: 'ok', success: success, errors: errors });
       });
+
       function getCommit(callback) {
         return self.findDocAndCommit(req, id, function(err, doc, _commit) {
           if (err) {
@@ -903,6 +908,7 @@ module.exports = {
           return callback(null);
         });
       }
+
       function applyPatches(callback) {
 
         return async.eachSeries(locales, function(locale, callback) {
@@ -1168,7 +1174,8 @@ module.exports = {
             return self.resolveRelationships(req, draft, draft.workflowLocale, callback);
           }
           function update(callback) {
-            return self.apos.docs.update(req, draft, callback); 
+            draft.workflowSubmitted = self.getWorkflowSubmittedProperty(req, { type: 'exported' });
+            return self.apos.docs.update(req, draft, callback);
           }
         }, callback);
       }
@@ -1542,7 +1549,8 @@ module.exports = {
         path: 1,
         rank: 1,
         type: 1,
-        tags: 1
+        tags: 1,
+        workflowSubmitted: 1
       };
     };
     
@@ -1878,13 +1886,7 @@ module.exports = {
           });
         }
         function submit(callback) {
-          var submitted = {
-            username: req.user.username,
-            name: req.user.title,
-            email: req.user.email,
-            when: new Date()
-          };
-          return self.apos.docs.db.update({ _id: id }, { $set: { workflowSubmitted: submitted } }, callback);
+          return self.apos.docs.db.update({ _id: id }, { $set: { workflowSubmitted: self.getWorkflowSubmittedProperty(req, { type: 'submit' }) } }, callback);
         }
       }, function(err) {
         if (err) {
@@ -1894,6 +1896,57 @@ module.exports = {
         return res.send({ status: 'ok' });
       });
     });
+
+    self.route('post', 'dismiss', function(req, res) {
+
+      if (!req.user) {
+        // Confusion to the enemy
+        return res.status(404).send('not found');
+      }
+
+      var id = self.apos.launder.id(req.body.id);
+
+      return async.series([
+        checkPermissions,
+        dismiss
+      ], function(err) {
+        if (err) {
+          console.error(err);
+          res.send({ status: 'error' });
+        }
+        return res.send({ status: 'ok' });
+      });
+
+      function checkPermissions(callback) {
+        return self.apos.docs.find(req, { _id: id }, { _id: 1 }).workflowLocale(null).permission('edit').trash(null).toObject(function(err, obj) {
+          if (err) {
+            return callback(err);
+          }
+          if (!obj) {
+            return callback('not found');
+          }
+          return callback(null);
+        });
+      }
+
+      function dismiss(callback) {
+        return self.apos.docs.db.update({ _id: id }, { $unset: { workflowSubmitted: 1 } }, callback);
+      }
+
+    });
+        
+    // Return an object ready for use as the `workflowSubmitted`
+    // property of a doc. If `data` is provided, any properties of
+    // `data` are added to the object.
+    
+    self.getWorkflowSubmittedProperty = function(req, data) {
+      return _.assign({
+        username: req.user.username,
+        name: req.user.title,
+        email: req.user.email,
+        when: new Date()
+      }, data || {});
+    };
     
     self.route('post', 'manage-modal', function(req, res) {
       if (!req.user) {

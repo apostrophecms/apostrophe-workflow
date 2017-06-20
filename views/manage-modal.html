@@ -26,21 +26,32 @@
       <table data-items class="apos-manage-table">
         <thead data-headings>
           <tr>
-            <th class="apos-manage-column apos-workflow-history-created-at">Page</th>
-            <th class="apos-manage-column">Last Submitted By</th>
-            <th class="apos-manage-column">Last Submitted At</th>
+            <th class="apos-manage-column apos-workflow-history-created-at">{{ __('Document') }}</th>
+            <th class="apos-manage-column">{{ __('Type') }}</th>
+            <th class="apos-manage-column">{{ __('Last Submitted By') }}</th>
+            <th class="apos-manage-column">{{ __('Last Submitted At') }}</th>
+            <th class="apos-manage-column">{{ __('Actions') }}</th>
           </tr>
         </thead>
         <tbody data-list>
           {% for doc in data.submitted %}
-            <tr data-id="{{ commit._id }}">
+            <tr data-apos-workflow-submission="{{ doc._id }}">
               {% if apos.utils.beginsWith(doc.slug, '/') %}
-                <td><a href="{{ doc._url }}">{{ doc.title }}</a></td>
+                <td><a href="{{ doc._url }}">{{ doc.title or doc.slug }}</a></td>
               {% else %}
-                <td><a href="#" data-apos-edit-{{ doc.type }}="{{ doc._id }}">{{ doc.title }}</a></td>
+                <td><a href="#" data-apos-edit-{{ doc.type }}="{{ doc._id }}">{{ doc.title or doc.slug }}</a></td>
               {% endif %}
+              <td>{{ doc.workflowSubmitted.type }}</td>
               <td>{{ doc.workflowSubmitted.name }}</td>
               <td>{{ doc.workflowSubmitted.when }}</td>
+              <td>
+                {% if apos.utils.beginsWith(doc.slug, '/') %}
+                  <a href="{{ doc._url }}">{{ __('Edit') }}</a>
+                {% else %}
+                  <a href="#" data-apos-edit-{{ doc.type }}="{{ doc._id }}">{{ __('Edit') }}</a>
+                {% endif %}
+                <a href="#" data-apos-workflow-dismiss="{{ doc._id }}">{{ __('Dismiss') }}</a>
+              </td>
             </tr>
           {% endfor %}
         </tbody>
