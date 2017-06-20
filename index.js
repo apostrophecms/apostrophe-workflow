@@ -335,6 +335,15 @@ module.exports = {
         }
         return superRemoveTrailingSlugSlashes(slug);
       };
+
+      var superPruneCurrentPageForBrowser = pages.pruneCurrentPageForBrowser;
+      pages.pruneCurrentPageForBrowser = function(page) {
+        var pruned = superPruneCurrentPageForBrowser(page);
+        pruned.workflowLocale = page.workflowLocale;
+        pruned.workflowGuid = page.workflowGuid;
+        return pruned;
+      };
+
     };
     
     self.extendWidgetControls = function() {

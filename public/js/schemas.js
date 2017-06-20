@@ -22,6 +22,7 @@ apos.define('apostrophe-schemas', {
         //
         // This is actually simpler than generating a crappy plaintext representation
         // of the same content. -Tom
+        
         return async.eachSeries(schema, function(field, callback) {
           var $draft = self.findFieldset($el, field.name);
           // The visible live version for preview purposes
@@ -33,7 +34,16 @@ apos.define('apostrophe-schemas', {
           $wrapper.append($live);
           $wrapper.append($('<div class="apos-workflow-live-field-mask"></div>'));
           $draft.after($wrapper);
-          if (!_.isEqual(object[field.name], data.doc[field.name])) {
+          var draftValue = object[field.name];
+          var liveValue = data.doc[field.name];
+          if (_.isEqual(draftValue, liveValue)) {
+            // No modification
+          } else if (!(draftValue || liveValue)) {
+            // Simple false positives like undefined vs. false
+          } else if (Array.isArray(draftValue) && (!draftValue.length) && (!liveValue)) {
+            // undefined vs. empty array
+          } else {
+            // OK, it's a modification
             $draft.addClass('apos-workflow-field-changed');
           }
 
