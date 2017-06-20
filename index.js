@@ -967,7 +967,7 @@ module.exports = {
               // Deleted
               if (!_.has(fromObjects.dotPaths, value._id)) {
                 if (_.has(draftObjects.dotPaths, value._id)) {
-                  deleteObject(draft, draftObjects, value._id);
+                  deleteObject(draft, draftObjects, value);
                 }
               }
             });
