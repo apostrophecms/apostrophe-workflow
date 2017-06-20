@@ -1584,10 +1584,10 @@ module.exports = {
             }
             return res.redirect(to);
           } else {
+            if (_.has(self.locales, locale)) {
+              req.session.locale = locale;
+            }
             return res.redirect(req.url.replace(/\??workflowLocale=[^&]+&?/, ''));
-          }
-          if (_.has(self.locales, locale)) {
-            req.session.locale = locale;
           }
         }
         if (self.options.subdomains) {
