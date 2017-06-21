@@ -35,31 +35,6 @@
       <p class="apos-workflow-hint">Also see below for content edited in context.</p>
     </div>
   {% endif %}
-  {% if data.relatedModified.length %}
-    <div class="apos-expand-list-container apos-workflow-related apos-workflow-related--modified" data-apos-expand>
-      <div class="apos-expand-trigger apos-expand-info" data-apos-expand-trigger>
-        <h3>{{ __('Modified Related Documents') }}</h3>
-        <p>{{ __('These documents also appear on the page and have uncommitted changes.') }}</p>
-      </div>
-      <ul data-apos-expand-list class="apos-expand-list">
-        {% for doc in data.relatedModified %}
-          <li><a href="#" data-apos-workflow-commit="{{ doc._id }}">{{ doc.title or doc.slug }} ({{ doc.type }})</a></li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% endif %}
-  {% if data.relatedUnmodified.length %}
-    <div class="apos-expand-list-container apos-workflow-related apos-workflow-related--unmodified" data-apos-expand>
-      <div class="apos-expand-trigger apos-expand-info" data-apos-expand-trigger>
-        <h3>{{ __('Unmodified Related Documents') }}</h3>
-        <p>{{ __('The documents are unmodified, but you might want to access their histories or force an export.') }}</p>
-      </div>
-      <ul data-apos-expand-list class="apos-expand-list">
-      {% for doc in data.relatedUnmodified %}
-        <li><a href="#" data-apos-workflow-commit="{{ doc._id }}">{{ doc.title or doc.slug }} ({{ doc.type }})</a></li>
-      {% endfor %}
-    </div>
-  {% endif %}
   <div class="apos-workflow-preview">
     {% if data.doc._url %}
       <iframe class="apos-workflow-preview-iframe" src="{{ data.doc._url | build({ workflowPreview: data.doc._id }) }}"></iframe>

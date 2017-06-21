@@ -2019,10 +2019,9 @@ module.exports = {
       var index = self.apos.launder.integer(req.body.index);
       var total = self.apos.launder.integer(req.body.total);
       var lead = self.apos.launder.boolean(req.body.lead);
-      var draft, live, modifiedFields, related, relatedModified = [], relatedUnmodified = [];
+      var draft, live, modifiedFields, related;
       return async.series([
         getDraftAndLive,
-        getRelated,
         getModifiedFields
       ], function(err) {
         if (err) {
@@ -2032,8 +2031,6 @@ module.exports = {
         return res.send(self.render(req, 'commit-modal.html', {
           doc: draft,
           modifiedFields: modifiedFields,
-          relatedModified: relatedModified,
-          relatedUnmodified: relatedUnmodified,
           index: index,
           total: total,
           lead: lead
@@ -2049,18 +2046,7 @@ module.exports = {
           return callback(err);
         });
       }
-      
-      function getRelated(callback) {
-        return self.getRelated(req, [ id ], function(err, modified, unmodified) {
-          if (err) {
-            return callback(err);
-          }
-          relatedModified = modified;
-          relatedUnmodified = unmodified;
-          return callback(null);
-        });
-      }
-            
+                  
       function getModifiedFields(callback) {
         return self.getModifiedFields(req, draft, live, function(err, _modifiedFields) {
           modifiedFields = _modifiedFields;
