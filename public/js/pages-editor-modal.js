@@ -4,7 +4,7 @@ apos.define('apostrophe-pages-editor', {
   construct: function(self, options) {
     var superBeforeShow = self.beforeShow;
     self.beforeShow = function(callback) {
-      self.link('apos-submit', function() {
+      self.link('apos-workflow-submit', function() {
         self.submitting = true;
         return self.save(function(err) {
           if (err) {
@@ -14,7 +14,7 @@ apos.define('apostrophe-pages-editor', {
           // Never reached due to redirect
         });
       });
-      self.link('apos-commit', function() {
+      self.link('apos-workflow-commit', function() {
         self.committing = true;
         return self.save(function(err) {
           if (err) {
@@ -23,6 +23,19 @@ apos.define('apostrophe-pages-editor', {
           }
           // Never reached due to redirect
         });
+      });
+      self.link('apos-workflow-force-export', function() {
+        self.forceExporting = true;
+        return self.save(function(err) {
+          if (err) {
+            self.forceExporting = false;
+            return;
+          }
+          // Never reached due to redirect
+        });
+      });
+      self.link('apos-workflow-history', function() {
+        return apos.modules['apostrophe-workflow'].history(self.page._id, callback);
       });
       return superBeforeShow(callback);
     };
@@ -33,6 +46,12 @@ apos.define('apostrophe-pages-editor', {
       }
       if (self.committing) {
         return apos.modules['apostrophe-workflow'].commit([ self.savedPage._id ], callback);
+      }
+      if (self.forceExporting) {
+        return apos.modules['apostrophe-workflow'].forceExport(self.savedPage._id, callback);
+      }
+      if (self.accessingHistory) {
+        return apos.modules['apostrophe-workflow'].history(self.page._id, callback);
       }
       return setImmediate(callback);
     };

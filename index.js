@@ -72,6 +72,7 @@ module.exports = {
     self.extendPages();
     self.extendWidgetControls();
     self.apos.pages.addAfterContextMenu(self.menu);
+    self.enableHelpers();
     return self.enableCollection(callback);
   },
 
@@ -293,28 +294,49 @@ module.exports = {
           save.label = 'Save Draft';
         }
         info.controls.push({
-          type: 'major',
-          label: 'Submit',
-          action: 'submit'
-        });
-        // TODO: if and only if they are admin of this piece type in corresponding non-draft locale
-        info.controls.push({
-          type: 'major',
-          label: 'Commit',
-          action: 'commit'
+          type: 'dropdown',
+          label: 'Workflow',
+          dropdownOptions: {
+            direction: 'down'
+          },
+          items: [
+            {
+              label: 'Submit',
+              action: 'workflow-submit'
+            },
+            {
+              // TODO: only if they have edit permission for the live version
+              label: 'Commit',
+              action: 'workflow-commit'
+            },
+            {
+              // TODO: only if preexisting object
+              label: 'History',
+              action: 'workflow-history'
+            },
+            {
+              // TODO: only if they have permissions for some other locales
+              label: 'Force Export',
+              action: 'workflow-force-export'
+            }
+          ]
         });
       }
     };
     
     self.extendPages = function() {
+
+      var pages = self.apos.pages;
+
       // Trash must be managed at each level of the page tree so that
       // users lacking cross-locale permissions are not forbidden to
       // trash things locally. Moving pages requires permissions across
       // many locales
-
-      var pages = self.apos.pages;
-
-      pages.options.trashInTree = true;
+      //
+      // This would be too late, we must fix that by making this module
+      // a theme, for now it must be configured manually
+      //
+      // docs.options.trashInSchema = true;
             
       var superRemoveTrailingSlugSlashes = pages.removeTrailingSlugSlashes;
       pages.removeTrailingSlugSlashes = function(slug) {
@@ -1875,7 +1897,7 @@ module.exports = {
           submit
         ], callback);
         function checkPermissions(callback) {
-          return self.apos.docs.find(req, { _id: id }, { _id: 1 }).workflowLocale(self.draftify(req.locale)).permission('edit').trash(null).toObject(function(err, obj) {
+          return self.apos.docs.find(req, { _id: id }, { _id: 1 }).workflowLocale(self.draftify(req.locale)).permission('edit').trash(null).published(null).toObject(function(err, obj) {
             if (err) {
               return callback(err);
             }
@@ -1891,7 +1913,7 @@ module.exports = {
       }, function(err) {
         if (err) {
           console.error(err);
-          res.send({ status: 'error' });
+          return res.send({ status: 'error' });
         }
         return res.send({ status: 'ok' });
       });
@@ -1912,13 +1934,13 @@ module.exports = {
       ], function(err) {
         if (err) {
           console.error(err);
-          res.send({ status: 'error' });
+          return res.send({ status: 'error' });
         }
         return res.send({ status: 'ok' });
       });
 
       function checkPermissions(callback) {
-        return self.apos.docs.find(req, { _id: id }, { _id: 1 }).workflowLocale(null).permission('edit').trash(null).toObject(function(err, obj) {
+        return self.apos.docs.find(req, { _id: id }, { _id: 1 }).workflowLocale(null).published(null).permission('edit').trash(null).toObject(function(err, obj) {
           if (err) {
             return callback(err);
           }
@@ -1979,7 +2001,7 @@ module.exports = {
         return res.status(404).send('not found');
       }
       var workflowGuid = self.apos.launder.id(req.body.workflowGuid);
-      return self.getLocalizations(req, workflowGuid, function(err, localizations) {
+      return self.getLocalizations(req, workflowGuid, true, function(err, localizations) {
         if (err) {
           console.error(err);
           res.status(500).send('error');
@@ -1994,7 +2016,9 @@ module.exports = {
         return res.status(404).send('not found');
       }
       var id = self.apos.launder.id(req.body.id);
-      var relatedIds = self.apos.launder.ids(req.body.relatedIds);
+      var index = self.apos.launder.integer(req.body.index);
+      var total = self.apos.launder.integer(req.body.total);
+      var lead = self.apos.launder.boolean(req.body.lead);
       var draft, live, modifiedFields, related, relatedModified = [], relatedUnmodified = [];
       return async.series([
         getDraftAndLive,
@@ -2009,7 +2033,10 @@ module.exports = {
           doc: draft,
           modifiedFields: modifiedFields,
           relatedModified: relatedModified,
-          relatedUnmodified: relatedUnmodified
+          relatedUnmodified: relatedUnmodified,
+          index: index,
+          total: total,
+          lead: lead
         }));
       });
       
@@ -2024,32 +2051,79 @@ module.exports = {
       }
       
       function getRelated(callback) {
-        return async.series([
-          getKnownRelated,
-          getJoinedRelated,
-          diffRelated
-        ], function(err) {
+        return self.getRelated(req, [ id ], function(err, modified, unmodified) {
           if (err) {
             return callback(err);
           }
+          relatedModified = modified;
+          relatedUnmodified = unmodified;
           return callback(null);
         });
-
-        function getKnownRelated(callback) {
-          if (!relatedIds.length) {
-            related = [];
-            return callback(null);
-          }
-          return self.apos.docs.find(req, { _id: { $in: relatedIds } }).published(null).areas(false).joins(false).toArray(function(err, _related) {
-            if (err) {
-              return callback(err);
-            }
-            related = _related;
-            return callback(null);
-          });
+      }
+            
+      function getModifiedFields(callback) {
+        return self.getModifiedFields(req, draft, live, function(err, _modifiedFields) {
+          modifiedFields = _modifiedFields;
+          return callback(err);
+        });
+      }
+    });
+    
+    self.route('post', 'related', function(req, res) {
+      var ids = self.apos.launder.ids(req.body.ids);
+      return self.getRelated(req, ids, function(err, modified, unmodified) {
+        if (err) {
+          console.error(err);
+          return res.send({ status: 'error' });
         }
+        return res.send({
+          status: 'ok',
+          modified: modified,
+          unmodified: unmodified
+        });
+      });
+    });
 
-        function getJoinedRelated(callback) {
+    // Given an array of doc ids, deliver `(null, modified, unmodified)`
+    // to the callback. `modified` is an array consisting of the
+    // doc ids that have been modified, including docs that are 
+    // related to the original set via joins. `unmodified` is an array
+    // consisting of the doc ids that have not been modified,
+    // including docs that are  related to the original set via joins.
+
+    self.getRelated = function(req, ids, callback) {
+
+      var related = [];
+      var relatedModified = [];
+      var relatedUnmodified = [];
+
+      return async.series([
+        getKnownRelated,
+        getJoinedRelated,
+        diffRelated
+      ], function(err) {
+        if (err) {
+          return callback(err);
+        }
+        return callback(null, relatedModified, relatedUnmodified);
+      });
+
+      function getKnownRelated(callback) {
+        if (!ids.length) {
+          return callback(null);
+        }
+        return self.apos.docs.find(req, { _id: { $in: ids } }).published(null).areas(true).joins(true).toArray(function(err, _related) {
+          if (err) {
+            return callback(err);
+          }
+          related = _related;
+          return callback(null);
+        });
+      }
+
+      function getJoinedRelated(callback) {
+        var _related = _.clone(related);
+        _.each(_related, function(draft) {
           // Also add anything that's joined into the primary doc
           var joins = self.findJoinsInDoc(draft);
           _.each(joins, function(join) {
@@ -2061,66 +2135,57 @@ module.exports = {
               related = related.concat(join.value || []);
             }
           });
-          return callback(null);
-        }
+        });
+        return callback(null);
+      }
         
-        // Some were fetched fully, others are just join projections of a doc.
-        // Get the full thing, and also the live version, so we can compare,
-        // and build a new array of the full draft docs, with `_modified`
-        // properties added where appropriate.
-        //
-        // Also, a join result might be an object with `item` and `relationship`
-        // properties. Flatten that out so we just have an array of docs.
+      // Some were fetched fully, others are just join projections of a doc.
+      // Get the full thing, and also the live version, so we can compare,
+      // and build a new array of the full draft docs, with `_modified`
+      // properties added where appropriate.
+      //
+      // Also, a join result might be an object with `item` and `relationship`
+      // properties. Flatten that out so we just have an array of docs.
 
-        function diffRelated(callback) {
-
-          return async.eachSeries(related, function(doc, callback) {
-            var draft, live;
-            return async.series([
-              getDraftAndLive,
-              resolveRelationships
-            ], function(err) {
+      function diffRelated(callback) {
+        return async.eachSeries(related, function(doc, callback) {
+          var draft, live;
+          return async.series([
+            getDraftAndLive,
+            resolveRelationships
+          ], function(err) {
+            if (err) {
+              return callback(err);
+            }
+            var _draft = self.apos.utils.clonePermanent(draft);
+            var _live = self.apos.utils.clonePermanent(live);
+            self.deleteExcludedProperties(_draft);
+            self.deleteExcludedProperties(_live);
+            if (!_.isEqual(_draft, _live)) {
+              relatedModified.push(draft);
+            } else {
+              relatedUnmodified.push(draft);
+            }
+            return callback(null);
+          });
+                     
+          function getDraftAndLive(callback) {
+            return self.getDraftAndLive(req, doc._id || doc.item._id, function(err, _draft, _live) {
               if (err) {
                 return callback(err);
               }
-              var _draft = self.apos.utils.clonePermanent(draft);
-              var _live = self.apos.utils.clonePermanent(live);
-              self.deleteExcludedProperties(_draft);
-              self.deleteExcludedProperties(_live);
-              if (!_.isEqual(_draft, _live)) {
-                relatedModified.push(draft);
-              } else {
-                relatedUnmodified.push(draft);
-              }
+              draft = _draft;
+              live = _live;
               return callback(null);
             });
-                       
-            function getDraftAndLive(callback) {
-              return self.getDraftAndLive(req, doc._id || doc.item._id, function(err, _draft, _live) {
-                if (err) {
-                  return callback(err);
-                }
-                draft = _draft;
-                live = _live;
-                return callback(null);
-              });
-            }
-            
-            function resolveRelationships(callback) {
-              self.resolveRelationships(req, draft, live.workflowLocale, callback); 
-            }
-          }, callback);
-        }
-
+          }
+          
+          function resolveRelationships(callback) {
+            self.resolveRelationships(req, draft, live.workflowLocale, callback); 
+          }
+        }, callback);
       }
-      
-      function getModifiedFields(callback) {
-        return self.getModifiedFields(req, draft, live, function(err, _modifiedFields) {
-          modifiedFields = _modifiedFields;
-          return callback(err);
-        });
-      }
-    });
+    };
     
     self.getModifiedFields = function(req, before, after, callback) {
       return self.resolveRelationships(req, before, after.workflowLocale, function(err) {
@@ -2163,7 +2228,7 @@ module.exports = {
         return callback(null, modifiedFields);
       });
     };
-
+    
     self.route('post', 'review-modal', function(req, res) {
 
       if (!req.user) {
@@ -2403,6 +2468,7 @@ module.exports = {
       self.pushAsset('script', 'force-export-widget-modal', { when: 'user' });
       self.pushAsset('script', 'force-export-modal', { when: 'user' });
       self.pushAsset('script', 'schemas', { when: 'user' });
+      self.pushAsset('script', 'global', { when: 'user' });
       self.pushAsset('stylesheet', 'user', { when: 'user' });
     };
 
@@ -2416,10 +2482,16 @@ module.exports = {
     };
     
     self.pageBeforeSend = function(req, callback) {
+      
+      // If looking at a live locale, disable inline editing
       if (req.user && (req.session.workflowMode === 'live')) {
         req.disableEditing = true;
         self.apos.templates.addBodyClass(req, 'apos-workflow-live-page');
       }
+
+      // Pass on workflow-related information to Nunjucks templates,
+      // notably `data.workflow.context` which will be the page or piece
+      // the user thinks of as the "context" for the current page rendering
 
       req.data.workflow = req.data.workflow || {};
       _.assign(req.data.workflow, _.pick(self, 'locale', 'nestedLocales'));
@@ -2429,55 +2501,79 @@ module.exports = {
       }
       req.data.workflow.locale = self.liveify(req.locale);
 
-      if (!req.user) {
-        return callback(null);
-      }
-
-      // Invoke pushCreateSingleton after we have all this groovy information,
-      // so we get options.localizations on the browser side to power the
-      // locale picker modal
-      self.pushCreateSingleton(req);
-      if (req.query.workflowPreview) {
-        req.disableEditing = true;
-        var id = self.apos.launder.id(req.query.workflowPreview);
-        self.apos.templates.addBodyClass(req, 'apos-workflow-preview-page');
-        req.browserCall('apos.modules["apostrophe-workflow"].enablePreviewIframe({ id: ? })', id);
-      }
-
-      if (!req.query.workflowReview) {
-        return callback(null);
+      return async.series([
+        getLocalizations,
+        userOnly
+      ], callback);
+      
+      function getLocalizations(callback) {
+        if (!(req.data.workflow.context && req.data.workflow.context.workflowGuid)) {
+          return callback(null);
+        }
+        return self.getLocalizations(req, req.data.workflow.context.workflowGuid, false, function(err, localizations) {
+          if (err) {
+            return callback(err);
+          }
+          req.data.workflow.localizations = localizations;
+          return callback(null);
+        });
       }
       
-      req.disableEditing = true;
-      // A commit id, not a doc id
-      var id = self.apos.launder.id(req.query.workflowReview);
-      self.apos.templates.addBodyClass(req, 'apos-workflow-preview-page');
-
-      var commit;
-
-      return async.series([
-        findDocAndCommit,
-        after        
-      ], function(err) {
-        if (err) {
-          return callback(err);
+      function userOnly(callback) {
+        // If we're not logged in, this is as far as we need to go
+        if (!req.user) {
+          return callback(null);
         }
-        // Walk recursively through req.data looking for instances of the doc of interest.
-        // Working in place, modify them to be copies of commit.from, which will be
-        // an older version of the doc
-        self.apos.docs.walk(req.data, function(o, k, v, dotPath) {
-          if (v && (typeof(v) === 'object')) {
-            if (v._id === commit.fromId) {
-              _.each(_.keys(v), function(key) {
-                delete v[key];
-              });
-              _.assign(v, commit.from);
-            }
+
+        // Invoke pushCreateSingleton after we have all this groovy information,
+        // so we get options.localizations on the browser side to power the
+        // locale picker modal
+        self.pushCreateSingleton(req);
+        if (req.query.workflowPreview) {
+          req.disableEditing = true;
+          var id = self.apos.launder.id(req.query.workflowPreview);
+          self.apos.templates.addBodyClass(req, 'apos-workflow-preview-page');
+          req.browserCall('apos.modules["apostrophe-workflow"].enablePreviewIframe({ id: ? })', id);
+        }
+
+        // If we're not reviewing an old commit, this is as far as
+        // we need to go
+
+        if (!req.query.workflowReview) {
+          return callback(null);
+        }
+        
+        req.disableEditing = true;
+        // A commit id, not a doc id
+        var id = self.apos.launder.id(req.query.workflowReview);
+        self.apos.templates.addBodyClass(req, 'apos-workflow-preview-page');
+
+        var commit;
+
+        return async.series([
+          findDocAndCommit,
+          after        
+        ], function(err) {
+          if (err) {
+            return callback(err);
           }
+          // Walk recursively through req.data looking for instances of the doc of interest.
+          // Working in place, modify them to be copies of commit.from, which will be
+          // an older version of the doc
+          self.apos.docs.walk(req.data, function(o, k, v, dotPath) {
+            if (v && (typeof(v) === 'object')) {
+              if (v._id === commit.fromId) {
+                _.each(_.keys(v), function(key) {
+                  delete v[key];
+                });
+                _.assign(v, commit.from);
+              }
+            }
+          });
+          req.browserCall('apos.modules["apostrophe-workflow"].enablePreviewIframe({ commitId: ? })', id);
+          return callback(null);
         });
-        req.browserCall('apos.modules["apostrophe-workflow"].enablePreviewIframe({ commitId: ? })', id);
-        return callback(null);
-      });
+      }
 
       function findDocAndCommit(callback) {
         return self.findDocAndCommit(req, id, function(err, _doc, _commit) {
@@ -2505,14 +2601,14 @@ module.exports = {
       return manager.find(req).after([ doc ], callback);      
     };
     
-    self.getLocalizations = function(req, workflowGuid, callback) {
+    self.getLocalizations = function(req, workflowGuid, draft, callback) {
       // Get the URLs of the context doc across locales for the locale switcher,
       // using a conservative projection for speed
       var criteria = {
         workflowGuid: workflowGuid
       };
-      // Are we interested in other draft locales, or other live locales?
-      if (req.locale.match(/\-draft$/)) {
+      // Are we interested in draft locales, or live locales?
+      if (draft) {
         criteria.workflowLocale = /\-draft$/;
       } else {
         criteria.workflowLocale = { $not: /\-draft$/ };
@@ -2523,12 +2619,17 @@ module.exports = {
         }
         var localizations = {};
         _.each(docs, function(doc) {
+          doc.label = self.locales[doc.workflowLocale] && self.locales[doc.workflowLocale].label;
           localizations[doc.workflowLocale] = doc;
         });
         return callback(null, localizations);
       });
     };
     
+    // Returns the doc that is logically thought of as
+    // the "context" for the current page rendering, i.e.
+    // a piece if on a show page, a page otherwise
+
     self.getContext = function(req) {
       return req.data.piece || req.data.page;      
     };
@@ -2738,6 +2839,20 @@ module.exports = {
       return async.eachSeries(indexes, function(index, callback) {
         return self.db.ensureIndex(index, callback);
       }, callback);
+    };
+    
+    self.enableHelpers = function() {
+      self.addHelpers({
+        localizations: function() {
+          var localizations = [];
+          _.each(self.apos.templates.contextReq.data.workflow.localizations, function(localization, locale) {
+            if (!self.locales[locale].private) {
+              localizations.push(localization);
+            }
+          });
+          return localizations;
+        }
+      });
     };
 
   }

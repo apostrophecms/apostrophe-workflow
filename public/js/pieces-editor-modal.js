@@ -4,7 +4,7 @@ apos.define('apostrophe-pieces-editor-modal', {
   construct: function(self, options) {
     var superBeforeShow = self.beforeShow;
     self.beforeShow = function(callback) {
-      self.link('apos-submit', function() {
+      self.link('apos-workflow-submit', function() {
         return self.save(function(err) {
           if (err) {
             return;
@@ -12,12 +12,26 @@ apos.define('apostrophe-pieces-editor-modal', {
           return apos.modules['apostrophe-workflow'].submit([ self.savedPiece._id ]);
         });
       });
-      self.link('apos-commit', function() {
+      self.link('apos-workflow-commit', function() {
         return self.save(function(err) {
           if (err) {
             return;
           }
           return apos.modules['apostrophe-workflow'].commit([ self.savedPiece._id ]);
+        });
+      });
+      self.link('apos-workflow-history', function() {
+        if (!self._id) {
+          return;
+        }
+        return apos.modules['apostrophe-workflow'].history(self._id);
+      });
+      self.link('apos-workflow-force-export', function() {
+        return self.save(function(err) {
+          if (err) {
+            return;
+          }
+          return apos.modules['apostrophe-workflow'].forceExport(self.savedPiece._id);
         });
       });
       return superBeforeShow(callback);

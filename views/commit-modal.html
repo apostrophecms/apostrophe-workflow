@@ -8,30 +8,24 @@
 {%- endblock -%}
 
 {%- block controls -%}
-  {{ buttons.minor('Cancel', { action: 'cancel' }) }}
-  {{ dropdowns.base({
-      label: 'More',
-      items: [
-        { label: 'History', action: 'workflow-history', value: data.doc._id },
-        { label: 'Force Export', action: 'workflow-force-export', value: data.doc._id }
-      ]
-    }, 'button', {
-      direction: 'down',
-      class: 'arrow-down'
-    }
-  ) }}
-
+  {{ buttons.minor('Cancel' if (data.total == 1) else 'Skip', { action: 'cancel' }) }}
   {{ buttons.major('Commit', { action: 'save' }) }}
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Committing %s', data.doc.title or data.doc.slug) }}
+  {{ __('[%s of %s] Committing %s', data.index, data.total, data.doc.title or data.doc.slug) }}
 {%- endblock -%}
 
 {% block instructions %}
-  <p>
-    {{ __('Click Commit to make these changes live.') }}
-  </p>
+  {% if not data.lead %}
+    <p>
+      {{ __('This related item may also be visible on the page. Please consider it first so that your final commit is more complete.') }}
+    </p>
+  {% else %}
+    <p>
+      {{ __('Click Commit to make these changes live.') }}
+    </p>
+  {% endif %}
 {% endblock %}
 
 {%- block body -%}

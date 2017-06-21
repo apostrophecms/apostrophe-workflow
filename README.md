@@ -38,7 +38,15 @@ In `app.js`, configure your module with the rest. We'll configure a single "loca
       name: 'en'
     }
   ],
-  defaultLocale: 'en'
+  defaultLocale: 'en',
+  // IMPORTANT: if you follow the examples below,
+  // be sure to set this
+  alias: 'workflow'
+},
+// For now you must separately configure this flag
+// for the `apostrophe-docs` module
+'apostrophe-docs': {
+  trashInSchema: true
 }
 ```
 
@@ -86,13 +94,18 @@ To enable localization, configure more than one locale in `app.js`:
 'apostrophe-workflow': {
   locales: [
     {
-      name: 'en'
+      name: 'en',
+      label: 'English'
     },
     {
-      name: 'fr'
+      name: 'fr',
+      label: 'French'
     }
   ],
-  defaultLocale: 'en'
+  defaultLocale: 'en',
+  // IMPORTANT: if you follow the examples below,
+  // be sure to set this
+  alias: 'workflow'
 }
 ```
 
@@ -106,34 +119,30 @@ You can now click the locale code, also in the lower left corner, to switch to t
 
 Note that a single document may have a different slug in different locales. They may also be the same.
 
-## Switching locales on the front end
+## Building a locale picker on the front end
 
-You may build locale-switching UI by adding a `workflowLocale` query parameter to any URL. However, since slugs can diverge for the ame document, you will want the rest of the URL to already be correct for the target locale. You can currently obtain this information via this method:
+Here's how to code a locale picker on the front end:
 
-```
-return apos.modules['apostrophe-workflow'].getLocalizations(
-  req, (req.data.piece || req.data.piece).workflowGuid, callback) { ... }
-);
-```
-
-Your callback will receive `(null, localizations)`, where `localizations` is an object like this:
-
-```
-{
-  en: {
-    title: 'Welcome',
-    _url: '/'
-  },
-  fr: {
-    title: 'Bienvenue',
-    _url: '/'
-  }
-}
+```markup
+{# Typically in `layout.html` #}
+<ul>
+  {% for localization in apos.workflow.localizations() %}
+    <li><a href="{{ localization._url | build({ workflowLocale: localization.workflowLocale }) }}">{{ localization.label }}</a></li>
+  {% endfor %}
+</ul>
 ```
 
-You can use these properties to build a locale switcher on the front end.
+This `ul` will populate with localized links to the current context page or piece.
 
-TODO: [this is too hard, we should do it for you. See #26 for status of an easier way.](https://github.com/punkave/apostrophe-workflow/issues/26)
+If you use `localization.label` as shown here, you'll see the labels that you set when configuring your locales.
+
+If you use `localization.title` instead, you'll see the title of the individual piece or page as it was translated or localized for that locale.
+
+This code:
+
+`| build({ workflowLocale: localization.workflowLocale })`
+
+May be omitted if you are using the `subdomains` feature or the `prefixes` feature. If you are using neither, then a query parameter is necessary as the slugs could be the same across locales. However the query parameter is automatically removed after the new locale is stored in the user's session.
 
 ## Exporting between locales
 
@@ -159,19 +168,23 @@ Locales can be nested, creating a convenient tree from which to select them or n
           name: 'eu',
           children: [
             {
-              name: 'fr'
+              name: 'fr',
+              label: 'French'
             },
             {
               name: 'ch',
               children: [
                 {
-                  name: 'ch-fr'
+                  name: 'ch-fr',
+                  label: 'Swiss French'
                 },
                 {
-                  name: 'ch-it'
+                  name: 'ch-it',
+                  label: 'Swiss Italian'
                 },
                 {
-                  name: 'ch-de'
+                  name: 'ch-de',
+                  label: 'Swiss German'
                 },
               ]
             }
@@ -181,14 +194,18 @@ Locales can be nested, creating a convenient tree from which to select them or n
           name: 'na',
           children: [
             {
-              name: 'us'
+              name: 'us',
+              label: 'United States'
             }
           ]
         }
       ]
     }
   ],
-  defaultLocale: 'default'
+  defaultLocale: 'default',
+  // IMPORTANT: if you follow the examples below,
+  // be sure to set this
+  alias: 'workflow'
 }
 ```
 
@@ -267,3 +284,25 @@ As it turns out this algorithm is best suited to exporting changes to the schema
 ### Patching and exporting of widgets
 
 `jsondiffpatch` is not well suited to patching widgets and other items with globally unique ids that can be leveraged to always recognize them even if they have moved around in a document. For this reason a separate algorithm is applied first to handle exporting and patching of widgets.
+
+### Aliasing the module
+
+By default, optional modules like `apostrophe-workflow` do not have an alias. That means you can't just type `apos.workflow` to access them.
+
+However, in the suggested examples above, we assume you have done this when enabling the module:
+
+```
+'apostrophe-workflow': {
+  locales: [
+    {
+      name: 'en'
+    }
+  ],
+  defaultLocale: 'en',
+  // IMPORTANT: if you follow the examples below,
+  // be sure to set this
+  alias: 'workflow'
+}
+```
+
+If you are using that alias for another module in your project, all of the examples above will still work. Just replace any references to `apos.workflow` with a different alias and configure that alias for the module.

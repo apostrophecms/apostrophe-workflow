@@ -71,10 +71,33 @@ apos.define('apostrophe-workflow', {
       return ids;
     };
     
+    // Obtain the editable doc ids presently on the page, then
+    // ask the server to expand that list to include related
+    // editable docs (i.e. images in slideshows via joins)
+    // and filter the whole list to include only modified docs.
+    // Modification is defined as "draft not the same as live."
+    // The callback receives `(null, ids)` on success.
+
+    self.getModifiedDocIds = function(callback) {
+      var ids = self.getEditableDocIds();
+      return self.api('related', { ids: ids }, function(result) {
+        if (result.status == 'ok') {
+          return callback(null, _.pluck(result.modified, '_id'));
+        } else {
+          return callback(result);
+        }
+      }, function(error) {
+        return callback(error);
+      });
+    };
+    
     self.enableSubmit = function() {
       $('body').on('click', '[data-apos-workflow-submit]', function() {
-        var ids = self.getEditableDocIds();
-        self.submit(ids);
+        var ids = self.getModifiedDocIds(function(err, ids) {
+          if (!err) {
+            self.submit(ids);
+          }
+        });
         return false;
       });
     };
@@ -92,7 +115,11 @@ apos.define('apostrophe-workflow', {
         if (id) {
           self.commit([ id ]);
         } else {
-          self.commit(self.getEditableDocIds());
+          return self.getModifiedDocIds(function(err, ids) {
+            if (!err) {
+              self.commit(ids);
+            }
+          });
         }
         return false;
       });
@@ -100,13 +127,17 @@ apos.define('apostrophe-workflow', {
     
     self.enableHistory = function() {
       apos.ui.link('apos-workflow-history', null, function($el, id) {
-        return apos.create('apostrophe-workflow-history-modal', 
-          _.assign({
-            manager: self,
-            body: { id: id }
-          }, options)
-        );
+        self.history(id);
       });
+    };
+    
+    self.history = function(id) {
+      return apos.create('apostrophe-workflow-history-modal', 
+        _.assign({
+          manager: self,
+          body: { id: id }
+        }, options)
+      );
     };
     
     self.enableExport = function() {
@@ -122,15 +153,18 @@ apos.define('apostrophe-workflow', {
 
     self.enableForceExport = function() {
       apos.ui.link('apos-workflow-force-export', null, function($el, id) {
-        var docId = id;
-        return apos.areas.saveAllIfNeeded(function() {
-          return apos.create('apostrophe-workflow-force-export-modal', 
-            _.assign({
-              manager: self,
-              body: { id: docId }
-            }, options)
-          );
-        });
+        self.forceExport(id);
+      });
+    };
+    
+    self.forceExport = function(id) {
+      return apos.areas.saveAllIfNeeded(function() {
+        return apos.create('apostrophe-workflow-force-export-modal', 
+          _.assign({
+            manager: self,
+            body: { id: id }
+          }, options)
+        );
       });
     };
 
@@ -190,23 +224,18 @@ apos.define('apostrophe-workflow', {
       if (!_.contains(ids, leadId)) {
         leadId = null;
       }
-      if (!leadId) {
-        // Well, that's a thinker. Fall back to launching all of the commit modals in series
-        return async.eachSeries(ids, function(id, callback) {
-          return self.launchCommitModal({ id: id }, callback);
-        }, function(err) {
-          return callback && callback(err);
-        });
-      } else {
-        return self.launchCommitModal({
-          id: leadId,
-          relatedIds: _.filter(ids, function(id) {
-            return id !== leadId;
-          })
-        }, function(err) {
-          return callback && callback(err);
-        });
+      if (leadId) {
+        ids = _.filter(ids, function(id) {
+          return id !== leadId;
+        }).concat([ leadId ]);
       }
+      var i = 0;
+      return async.eachSeries(ids, function(id, callback) {
+        i++;
+        return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId == id) }, callback);
+      }, function(err) {
+        return callback && callback(err);
+      });
     };
     
     self.enableManageModal = function() {

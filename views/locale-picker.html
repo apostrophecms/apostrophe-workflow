@@ -1,0 +1,25 @@
+{# This is an example of a public locale picker. It displays only public locales, #}
+{# in a flat list based on the original nested tree intended for editors. #}
+{# It is expected that you will override this template or write your own. #}
+
+<ul>
+{% for localization in apos.workflow.localizations() %}
+
+{%- macro tree(prefix, checkboxes, nestedLocales) -%}
+  <ul class="apos-workflow-locale-tree">
+    {%- for locale in nestedLocales -%}
+      <li>
+        {# TODO visibility toggle box working with this label #}
+        {% for checkbox in checkboxes %}
+          <input class="apos-workflow-locale-input" type="checkbox" id="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" name="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" value="1" />
+          <span class="apos-workflow-locale-checkbox-indicator"></span>
+          <label for="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" class="apos-workflow-locale-checkbox-label">{{ checkbox.label }}</label>
+        {% endfor %}
+        <span class="apos-workflow-locale-label">{{ locale.label or locale.name }}</span>
+        {%- if locale.children -%}
+          {{ tree(prefix, checkboxes, locale.children) }}
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+{%- endmacro -%}
