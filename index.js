@@ -1771,8 +1771,8 @@ module.exports = {
       
       return async.series([
         fixIndexes,
-        // noLocales,
-        // missingSomeLocales
+        noLocales,
+        missingSomeLocales
       ], function(err) {
         return callback(err);
       });
