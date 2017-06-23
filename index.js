@@ -1771,8 +1771,8 @@ module.exports = {
       
       return async.series([
         fixIndexes,
-        noLocales,
-        missingSomeLocales
+        // noLocales,
+        // missingSomeLocales
       ], function(err) {
         return callback(err);
       });
@@ -1807,7 +1807,7 @@ module.exports = {
         }
         function dropOldSlug(callback) {
           var existing =_.find(old, function(index) {
-            return index.slug && (!index.workflowLocale);
+            return index.key && index.key.slug && (!index.key.workflowLocale);
           });
           if (!existing) {
             return callback(null);
@@ -1816,7 +1816,7 @@ module.exports = {
         }
         function dropOldPath(callback) {
           var existing =_.find(old, function(index) {
-            return index.path && (!index.workflowLocaleForPathIndex);
+            return index.key && index.key.path && (!index.key.workflowLocaleForPathIndex);
           });
           if (!existing) {
             return callback(null);
