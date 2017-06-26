@@ -32,35 +32,36 @@ apos.define('apostrophe-workflow', {
       })
     }
 
+    // If there are any editable doc ids on the page, including
+    // things that would be editable if we were looking at the draft
+    // rather than the live version, display the workflow mode toggle
+    // and related controls
+
     self.enableWorkflowMode = function() {
 
-      // Initially hidden because it takes a while to initialize all the modules
-      // and during that time, clicks would be lost. Also we want to look for
-      // editable areas on the page.
+      return self.getEditableDocIds(function(err, ids) {
+        if (err || (!ids.length)) {
+          return;
+        }
+        $('body').find('[data-apos-workflow-menu]').css({'display': 'inline-block'});
 
-      if (!self.getEditableDocIds().length) {
-        return;
-      }
-
-      $('body').find('[data-apos-workflow-menu]').css({'display': 'inline-block'});
-
-      $('body').on('click', '[data-apos-workflow-mode]', function() {
-        
-        var mode = $(this).attr('data-apos-workflow-mode');
-        self.api('workflow-mode', { workflowGuid: self.options.contextGuid, mode: mode }, function(result) {
-          if (result.status === 'ok') {
-            window.location.href = result.url;
-          }
+        $('body').on('click', '[data-apos-workflow-mode]', function() {
+          
+          var mode = $(this).attr('data-apos-workflow-mode');
+          self.api('workflow-mode', { workflowGuid: self.options.contextGuid, mode: mode }, function(result) {
+            if (result.status === 'ok') {
+              window.location.href = result.url;
+            }
+          });
         });
       });
     };
 
-    // Get the ids of the docs related to the areas in the rendered HTML that are editable, or would be
-    // if we were not in live mode.
+    // Get the ids of the docs related to the areas in the rendered HTML.
 
-    self.getEditableDocIds = function() {
+    self.getDocIds = function() {
       var ids = [];
-      $('[data-apos-area][data-apos-area-edit],[data-apos-area][data-apos-area-disabled-editing]').each(function() {
+      $('[data-apos-area]').each(function() {
         var $area = $(this);
         var id = $area.attr('data-doc-id');
         if (id) {
@@ -71,18 +72,36 @@ apos.define('apostrophe-workflow', {
       return ids;
     };
     
-    // Obtain the editable doc ids presently on the page, then
+    self.getEditableDocIds = function(callback) {
+      // Obtain the doc ids presently on the page, then
+      // ask the server to expand that list to include related
+      // docs (i.e. images in slideshows via joins)
+      // and filter the whole list to include only editable docs.
+      // The callback receives `(null, ids)` on success.
+      var ids = self.getDocIds();
+      return self.api('editable', { ids: ids, related: true }, function(result) {
+        if (result.status == 'ok') {
+          return callback(null, result.modified.concat(result.unmodified));
+        } else {
+          return callback(result);
+        }
+      }, function(error) {
+        return callback(error);
+      });
+    };
+    
+    // Obtain the doc ids presently on the page, then
     // ask the server to expand that list to include related
     // editable docs (i.e. images in slideshows via joins)
-    // and filter the whole list to include only modified docs.
+    // and filter the whole list to include only editable modified docs.
     // Modification is defined as "draft not the same as live."
     // The callback receives `(null, ids)` on success.
 
     self.getModifiedDocIds = function(callback) {
-      var ids = self.getEditableDocIds();
-      return self.api('related', { ids: ids }, function(result) {
+      var ids = self.getDocIds();
+      return self.api('editable', { ids: ids, related: true }, function(result) {
         if (result.status == 'ok') {
-          return callback(null, _.pluck(result.modified, '_id'));
+          return callback(null, result.modified);
         } else {
           return callback(result);
         }

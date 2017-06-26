@@ -197,7 +197,8 @@ module.exports = {
       if (!info.type) {
         return;
       }
-      if (!self.apos.docs.getManager(info.type)) {
+      var manager = self.apos.docs.getManager(info.type);
+      if (!manager) {
         return;
       }
       if (!self.includeType(info.type)) {
@@ -217,19 +218,27 @@ module.exports = {
         // groups, which would allow them to defeat that anyway
         return;
       }
+      if (manager.isAdminOnly && manager.isAdminOnly()) {
+        info.response = info._false;
+        return;
+      }
 
       // OK, now we know this is something we're entitled to an opinion about
 
       // Rebuild the action string using the effective verb and type name
       action = info.verb + '-' + info.type;
 
-      if (!(req.user && req.user._permissionsLocales && req.user._permissionsLocales[action])) {
+      if (!(req.user && req.user._permissionsLocales)) {
         info.response = info._false;
         return;
       }
 
-      var permissionsLocales = req.user._permissionsLocales[action];
-
+      // Either 'edit' or 'edit-this-type' is acceptable
+      var permissionsLocales = _.assign({}, 
+        req.user._permissionsLocales[action] || {},
+        req.user._permissionsLocales[verb] || {}
+      );
+      
       if (_.isEmpty(permissionsLocales)) {
         info.response = info._false;
         return;
@@ -239,9 +248,12 @@ module.exports = {
         info.response = { $and: [ info.response, { workflowLocale: { $in: _.keys(permissionsLocales) } } ] };
       } else {
         var object = info.object || info.newObject;
-        if (!permissionsLocales[object ? object.workflowLocale : req.locale ]) {
+        if (object) {
+          if (!permissionsLocales[object.workflowLocale]) {
+            info.response = info._false;
+          }
+        } else if (!(permissionsLocales[req.locale] || permissionsLocales[self.draftify(req.locale)])) {          
           info.response = info._false;
-          return;
         }
       }
 
@@ -569,14 +581,14 @@ module.exports = {
         }, {
           $set: {
             'loginRequired': doc.loginRequired,
-            'viewUsersIds': doc.viewUsersIds,
-            'viewGroupsIds': doc.viewGroupsIds,
-            'editUsersIds': doc.editUsersIds,
-            'editGroupsIds': doc.editGroupsIds,
-            'viewUsersRelationships': doc.viewUsersRelationships,
-            'viewGroupsRelationships': doc.viewGroupsRelationships,
-            'editUsersRelationships': doc.editUsersRelationships,
-            'editGroupsRelationships': doc.editGroupsRelationships,
+            'viewUsersIds': doc.viewUsersIds || [],
+            'viewGroupsIds': doc.viewGroupsIds || [],
+            'editUsersIds': doc.editUsersIds || [],
+            'editGroupsIds': doc.editGroupsIds || [],
+            'viewUsersRelationships': doc.viewUsersRelationships || {},
+            'viewGroupsRelationships': doc.viewGroupsRelationships || {},
+            'editUsersRelationships': doc.editUsersRelationships || {},
+            'editGroupsRelationships': doc.editGroupsRelationships || {},
             'docPermissions': doc.docPermissions
           }
         }, {
@@ -800,42 +812,57 @@ module.exports = {
     //
     // This method will operate properly regardless of whether `req.locale` is the live locale
     // or the one with the `-draft` suffix.
+    //
+    // `id` may be the `_id` of either the draft or the live version of the doc.
+    //
+    // If `options.permission` is explicitly set to false, permissions are not
+    // checked when fetching the docs.
     
-    self.getDraftAndLive = function(req, id, callback) {
+    self.getDraftAndLive = function(req, id, options, callback) {
       var draft;
       var live;
       return async.series([
-        getDraft,
-        getLive
+        getOne,
+        getTwo
       ], function(err) {
         if (err) {
           return callback(err);
         }
         return callback(null, draft, live);
       });
-      function getDraft(callback) {
-        var locale = self.draftify(req.locale);
-        return self.apos.docs.find(req, { _id: id }).permission('edit').published(null).trash(null).workflowLocale(locale).toObject(function(err, _draft) {
+      function getOne(callback) {
+        return self.apos.docs.find(req, { _id: id }).permission((options.permission === false) ? false : 'edit').published(null).trash(null).workflowLocale(null).toObject(function(err, _one) {
           if (err) {
             return callback(err);
           }
-          draft = _draft;
-          if (!draft) {
-            return callback('draft not found');
+          if (!_one) {
+            return callback('notfound');
+          }
+          if (_one.workflowLocale && _one.workflowLocale.match(/\-draft$/)) {
+            draft = _one;
+          } else {
+            live = _one;
           }
           return callback(null);
         });
       }
-      // We don't actually need the live version (the previewing stuff happens in an iframe),
-      // but we should verify we have edit permissions there
-      function getLive(callback) {
-        return self.apos.docs.find(req, { workflowGuid: draft.workflowGuid }).trash(null).workflowLocale(self.liveify(req.locale)).permission('edit').published(null).toObject(function(err, _live) {
+      function getTwo(callback) {
+        return self.apos.docs.find(req, { workflowGuid: (draft || live).workflowGuid })
+        .trash(null)
+        .workflowLocale(draft ? self.liveify(draft.workflowLocale) : self.draftify(live.workflowLocale))
+        .permission((options.permission === false) ? false : 'edit')
+        .published(null)
+        .toObject(function(err, _two) {
           if (err) {
             return callback(err);
           }
-          live = _live;
-          if (!live) {
-            return callback('live not found');
+          if (!_two) {
+            return callback(live ? 'draft not found' : 'live not found');
+          }
+          if (draft) {
+            live = _two;
+          } else {
+            draft = _two;
           }
           return callback(null);
         });
@@ -860,7 +887,7 @@ module.exports = {
         return res.send({ status: 'ok', commitId: commitId, title: draft.title });
       });
       function getDraftAndLive(callback) {
-        return self.getDraftAndLive(req, id, function(err, _draft, _live) {
+        return self.getDraftAndLive(req, id, {}, function(err, _draft, _live) {
           if (err) {
             return callback(err);
           }
@@ -1772,7 +1799,8 @@ module.exports = {
       return async.series([
         fixIndexes,
         noLocales,
-        missingSomeLocales
+        missingSomeLocales,
+        fixPermissions
       ], function(err) {
         return callback(err);
       });
@@ -1845,6 +1873,25 @@ module.exports = {
           return self.docAfterSave(req, doc, { permissions: false }, function(err) {
             return callback(err);
           });
+        }, callback);
+      }
+      
+      function fixPermissions(callback) {
+        var fields = [ 'viewUsersIds', 'viewGroupsIds',
+          'editUsersIds', 'editGroupsIds',
+          'viewUsersRelationships', 'viewGroupsRelationships',
+          'editUsersRelationships', 'editGroupsRelationships'
+        ];
+        return async.eachSeries(fields, function(field, callback) {
+          var criteria = {};
+          criteria[field] = { $type: 10 };
+          var $set = {};
+          $set[field] = [];
+          self.apos.docs.db.update(criteria, {
+            $set: $set
+          }, {
+            multi: true
+          }, callback);
         }, callback);
       }
     };
@@ -2040,7 +2087,7 @@ module.exports = {
       function getDraftAndLive(callback) {
         // We get both the same way the commit route does, for the sake of the permissions check,
         // so it doesn't initially appear that someone can be sneaky (although they can't really)
-        return self.getDraftAndLive(req, id, function(err, _draft, _live) {
+        return self.getDraftAndLive(req, id, {}, function(err, _draft, _live) {
           draft = _draft;
           live = _live;
           return callback(err);
@@ -2055,59 +2102,87 @@ module.exports = {
       }
     });
     
-    self.route('post', 'related', function(req, res) {
+    // Given doc ids in req.body.ids, send back an object with
+    // two arrays, `modified` and `unmodified`, containing the
+    // editable, modified draft doc ids and the editable, unmodified
+    // draft doc ids respectively. Any ids that are not editable by the
+    // current user are not included in the response.
+    //
+    // If req.body.related is true, also include theids of
+    // editable documents related to those specified,
+    // via joins or widgets.
+    //
+    // For convenience, the ids sent to this method can be either
+    // live or draft.
+    
+    self.route('post', 'editable', function(req, res) {
       var ids = self.apos.launder.ids(req.body.ids);
-      return self.getRelated(req, ids, function(err, modified, unmodified) {
+      return self.getEditable(req, ids, { related: true }, function(err, modified, unmodified) {
         if (err) {
           console.error(err);
           return res.send({ status: 'error' });
         }
         return res.send({
           status: 'ok',
-          modified: modified,
-          unmodified: unmodified
+          modified: _.pluck(modified, '_id'),
+          unmodified: _.pluck(unmodified, '_id')
         });
       });
     });
 
     // Given an array of doc ids, deliver `(null, modified, unmodified)`
     // to the callback. `modified` is an array consisting of the
-    // doc ids that have been modified, including docs that are 
-    // related to the original set via joins. `unmodified` is an array
-    // consisting of the doc ids that have not been modified,
-    // including docs that are  related to the original set via joins.
+    // docs that have been modified. `unmodified` is an array
+    // consisting of the docs that have not been modified.
+    //
+    // Any doc ids not editable by the current user are not included
+    // at all in the response.
+    //
+    // If options.related is true, editable doc ids related to those provided
+    // via joins or widgets are also included in the response.
 
-    self.getRelated = function(req, ids, callback) {
+    self.getEditable = function(req, ids, options, callback) {
 
       var related = [];
+      var liveVersions = {};
       var relatedModified = [];
       var relatedUnmodified = [];
 
       return async.series([
-        getKnownRelated,
-        getJoinedRelated,
-        diffRelated
+        getKnown,
+        getJoined,
+        diff
       ], function(err) {
         if (err) {
           return callback(err);
         }
+        relatedModified = filter(relatedModified);
+        relatedUnmodified = filter(relatedUnmodified);
         return callback(null, relatedModified, relatedUnmodified);
+        function filter(docs) {
+          return _.filter(docs, { _edit: true });
+        }
       });
 
-      function getKnownRelated(callback) {
-        if (!ids.length) {
-          return callback(null);
-        }
-        return self.apos.docs.find(req, { _id: { $in: ids } }).published(null).areas(true).joins(true).toArray(function(err, _related) {
-          if (err) {
-            return callback(err);
-          }
-          related = _related;
-          return callback(null);
-        });
+      function getKnown(callback) {
+        related = [];
+        return async.eachSeries(ids, function(id, callback) {
+          return self.getDraftAndLive(req, id, { permission: false }, function(err, draft, live) {
+            if (err) {
+              return callback(err);
+            }
+            // console.log(draft, live);
+            related.push(draft);
+            liveVersions[draft.workflowGuid] = live;
+            return callback(null);
+          });
+        }, callback);
       }
 
-      function getJoinedRelated(callback) {
+      function getJoined(callback) {
+        if (!options.related) {
+          return callback(null);
+        }
         var _related = _.clone(related);
         _.each(_related, function(draft) {
           // Also add anything that's joined into the primary doc
@@ -2133,7 +2208,7 @@ module.exports = {
       // Also, a join result might be an object with `item` and `relationship`
       // properties. Flatten that out so we just have an array of docs.
 
-      function diffRelated(callback) {
+      function diff(callback) {
         return async.eachSeries(related, function(doc, callback) {
           var draft, live;
           return async.series([
@@ -2156,7 +2231,13 @@ module.exports = {
           });
                      
           function getDraftAndLive(callback) {
-            return self.getDraftAndLive(req, doc._id || doc.item._id, function(err, _draft, _live) {
+            live = liveVersions[doc._id];
+            if (live) {
+              // Already fetched it in the "known" pass
+              draft = doc;
+              return callback(null);
+            }
+            return self.getDraftAndLive(req, doc._id || doc.item._id, { permission: false }, function(err, _draft, _live) {
               if (err) {
                 return callback(err);
               }
@@ -2390,7 +2471,7 @@ module.exports = {
       }
 
       function getDraftAndLive(callback) {
-        return self.getDraftAndLive(req, id, function(err, _draft, _live) {
+        return self.getDraftAndLive(req, id, {}, function(err, _draft, _live) {
           if (err) {
             return callback(err);
           }
