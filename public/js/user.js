@@ -4,7 +4,7 @@ apos.define('apostrophe-workflow', {
 
   afterConstruct: function(self) {
     self.enableExpand();
-    self.enableWorkflowMode();
+    self.enableWorkflowControls();
     self.enableSubmit();
     self.enableDismiss();
     self.enableCommit();
@@ -37,23 +37,39 @@ apos.define('apostrophe-workflow', {
     // rather than the live version, display the workflow mode toggle
     // and related controls
 
-    self.enableWorkflowMode = function() {
-
-      return self.getEditableDocIds(function(err, ids) {
-        if (err || (!ids.length)) {
-          return;
-        }
-        $('body').find('[data-apos-workflow-menu]').css({'display': 'inline-block'});
-
-        $('body').on('click', '[data-apos-workflow-mode]', function() {
-          
-          var mode = $(this).attr('data-apos-workflow-mode');
-          self.api('workflow-mode', { workflowGuid: self.options.contextGuid, mode: mode }, function(result) {
-            if (result.status === 'ok') {
-              window.location.href = result.url;
-            }
-          });
+    self.enableWorkflowControls = function() {
+      $('body').on('click', '[data-apos-workflow-mode]', function() {
+        var mode = $(this).attr('data-apos-workflow-mode');
+        self.api('workflow-mode', { workflowGuid: self.options.contextGuid, mode: mode }, function(result) {
+          if (result.status === 'ok') {
+            window.location.href = result.url;
+          }
         });
+      });
+      self.updateWorkflowControls();
+    };
+    
+    self.updateWorkflowControls = function() {
+      var $menu = $('body').find('[data-apos-workflow-menu]');
+      var $submit = $menu.find('[data-apos-workflow-submit]');
+      var $commit = $menu.find('[data-apos-workflow-commit]');
+      var $state = $menu.find('[data-apos-workflow-mode]').closest('[data-apos-dropdown]');
+      return self.getEditable({ related: true }, function(err, result) {
+        if (err) {
+          return hide();
+        }
+        setClass($menu, 'apos-workflow-editable', result.modified.length || result.unmodified.length);
+        setClass($menu, 'apos-workflow-modified', !!result.modified.length);
+        setClass($menu, 'apos-workflow-committable', !!result.committable.length);
+        setClass($menu, 'apos-workflow-unsubmitted', !!result.unsubmitted.length);
+        setTimeout(self.updateWorkflowControls, 1000);
+        function setClass($menu, c, flag) {
+          if (flag) {
+            $menu.addClass(c);
+          } else {
+            $menu.removeClass(c);
+          }
+        }
       });
     };
 
@@ -72,49 +88,35 @@ apos.define('apostrophe-workflow', {
       return ids;
     };
     
-    self.getEditableDocIds = function(callback) {
-      // Obtain the doc ids presently on the page, then
-      // ask the server to expand that list to include related
-      // docs (i.e. images in slideshows via joins)
-      // and filter the whole list to include only editable docs.
-      // The callback receives `(null, ids)` on success.
-      var ids = self.getDocIds();
-      return self.api('editable', { ids: ids, related: true }, function(result) {
-        if (result.status == 'ok') {
-          return callback(null, result.modified.concat(result.unmodified));
-        } else {
-          return callback(result);
-        }
-      }, function(error) {
-        return callback(error);
-      });
-    };
-    
-    // Obtain the doc ids presently on the page, then
-    // ask the server to expand that list to include related
-    // editable docs (i.e. images in slideshows via joins)
-    // and filter the whole list to include only editable modified docs.
-    // Modification is defined as "draft not the same as live."
-    // The callback receives `(null, ids)` on success.
+    // Obtain the doc ids presently on the page,
+    // and filter the whole list to include only editable docs.
+    // The callback receives `(null, result)` on success.
+    // `result` has `modified`, `unmodified`, and `committable`
+    // properties, which are arrays of ids of draft documents,
+    // all of which are editable and may in some way appear
+    // on the current page.
+    //
+    // If `options.related` is truthy then related documents,
+    // i.e. related via joins or widgets, are also included.
 
-    self.getModifiedDocIds = function(callback) {
+    self.getEditable = function(options, callback) {
       var ids = self.getDocIds();
-      return self.api('editable', { ids: ids, related: true }, function(result) {
+      return self.api('editable', _.assign({ ids: ids }, options), function(result) {
         if (result.status == 'ok') {
-          return callback(null, result.modified);
+          return callback(null, result);
         } else {
-          return callback(result);
+          return callback(result.status);
         }
       }, function(error) {
         return callback(error);
       });
     };
-    
+      
     self.enableSubmit = function() {
       $('body').on('click', '[data-apos-workflow-submit]', function() {
-        var ids = self.getModifiedDocIds(function(err, ids) {
+        return self.getEditable({ related: true }, function(err, result) {
           if (!err) {
-            self.submit(ids);
+            self.submit(result.modified);
           }
         });
         return false;
@@ -134,9 +136,9 @@ apos.define('apostrophe-workflow', {
         if (id) {
           self.commit([ id ]);
         } else {
-          return self.getModifiedDocIds(function(err, ids) {
+          return self.getEditable({ related: true }, function(err, result) {
             if (!err) {
-              self.commit(ids);
+              self.commit(_.intersection(result.committable, result.modified));
             }
           });
         }
@@ -215,6 +217,9 @@ apos.define('apostrophe-workflow', {
 
     // Submit the docs with the specified ids for approval and notify the user.
     self.submit = function(ids, callback) {
+      if (!ids.length) {
+        return apos.notify('No modifications to submit.', { type: 'warn' });
+      }
       self.api('submit', { ids: ids }, function(result) {
         if (result.status !== 'ok') {
           apos.notify('An error occurred submitting the document for approval.', { type: 'error' });
@@ -239,6 +244,9 @@ apos.define('apostrophe-workflow', {
     
     // Present commit modals for all ids in the array, one after another
     self.commit = function(ids, callback) {
+      if (!ids.length) {
+        return apos.notify('No modifications to commit.', { type: 'warn' });
+      }
       var leadId = (apos.contextPiece && apos.contextPiece._id) || (apos.pages.page && apos.pages.page._id);
       if (!_.contains(ids, leadId)) {
         leadId = null;

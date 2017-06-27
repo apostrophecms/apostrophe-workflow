@@ -2103,12 +2103,20 @@ module.exports = {
     });
     
     // Given doc ids in req.body.ids, send back an object with
-    // two arrays, `modified` and `unmodified`, containing the
+    // array properties, `modified` and `unmodified`, containing the
     // editable, modified draft doc ids and the editable, unmodified
     // draft doc ids respectively. Any ids that are not editable by the
     // current user are not included in the response.
     //
-    // If req.body.related is true, also include theids of
+    // The `committable` array contains the ids that are
+    // committable by the current user.
+    //
+    // The `unsubmitted` array contains the ids that are
+    // modified and can be newly submitted by the current user
+    // (the last submitter was someone else, or they are not
+    // currently in a submitted state).
+    //
+    // If req.body.related is true, also include the ids of
     // editable documents related to those specified,
     // via joins or widgets.
     //
@@ -2116,8 +2124,11 @@ module.exports = {
     // live or draft.
     
     self.route('post', 'editable', function(req, res) {
+      if (!req.user) {
+        res.status(404).send('notfound');
+      }
       var ids = self.apos.launder.ids(req.body.ids);
-      return self.getEditable(req, ids, { related: true }, function(err, modified, unmodified) {
+      return self.getEditable(req, ids, { related: true }, function(err, modified, unmodified, committable) {
         if (err) {
           console.error(err);
           return res.send({ status: 'error' });
@@ -2125,21 +2136,30 @@ module.exports = {
         return res.send({
           status: 'ok',
           modified: _.pluck(modified, '_id'),
-          unmodified: _.pluck(unmodified, '_id')
+          unmodified: _.pluck(unmodified, '_id'),
+          committable: _.pluck(committable, '_id'),
+          unsubmitted: _.pluck(_.filter(modified, function(doc) {
+            return ((!doc.workflowSubmitted) || (doc.workflowSubmitted.username !== req.user.username));
+          }))
         });
       });
     });
 
-    // Given an array of doc ids, deliver `(null, modified, unmodified)`
+    // Given an array of doc ids, deliver `(null, modified, unmodified, committable)`
     // to the callback. `modified` is an array consisting of the
     // docs that have been modified. `unmodified` is an array
     // consisting of the docs that have not been modified.
+    // And `committable` consists of the docs that the current user
+    // can commit (they have edit access to the corresponding live versions).
     //
     // Any doc ids not editable by the current user are not included
     // at all in the response.
     //
-    // If options.related is true, editable doc ids related to those provided
-    // via joins or widgets are also included in the response.
+    // If options.related is true, editable doc ids related to those
+    // provided via joins or widgets are also included in the response.
+    //
+    // The ids modified may be draft or live. The returned ids are
+    // always draft.
 
     self.getEditable = function(req, ids, options, callback) {
 
@@ -2158,7 +2178,16 @@ module.exports = {
         }
         relatedModified = filter(relatedModified);
         relatedUnmodified = filter(relatedUnmodified);
-        return callback(null, relatedModified, relatedUnmodified);
+        var byId = {};
+        var committable = [];
+        _.each(relatedModified.concat(relatedUnmodified), function(doc) {
+          if (_.has(liveVersions, doc._id)) {
+            if (liveVersions[doc._id]._edit) {
+              committable.push(doc);
+            }
+          }
+        });
+        return callback(null, relatedModified, relatedUnmodified, committable);
         function filter(docs) {
           return _.filter(docs, { _edit: true });
         }
@@ -2243,6 +2272,7 @@ module.exports = {
               }
               draft = _draft;
               live = _live;
+              liveVersions[draft._id] = live;
               return callback(null);
             });
           }

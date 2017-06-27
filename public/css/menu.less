@@ -1,9 +1,34 @@
 .apos-workflow-menu
 {
-  // Shown by JavaScript when the UI code is ready to deal with it
-  display: none;
+  display: inline-block;
   margin-left: 20px;
-  .apos-button { margin-left: 5px; }
+  .apos-button
+  {
+    margin-left: 5px;
+  }
+  .apos-workflow-state, [data-apos-workflow-submit], [data-apos-workflow-commit]
+  {
+    display: none;
+  }
+  &.apos-workflow-editable
+  {
+    .apos-workflow-state
+    {
+      display: inline-block;
+    }
+  }
+  &.apos-workflow-modified.apos-workflow-committable
+  {
+    [data-apos-workflow-commit] {
+      display: inline-block;
+    }
+  }
+  &.apos-workflow-unsubmitted
+  {
+    [data-apos-workflow-submit] {
+      display: inline-block;
+    }
+  }
 }
 
 .apos-ui .apos-workflow-state
