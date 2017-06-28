@@ -306,3 +306,26 @@ However, in the suggested examples above, we assume you have done this when enab
 ```
 
 If you are using that alias for another module in your project, all of the examples above will still work. Just replace any references to `apos.workflow` with a different alias and configure that alias for the module.
+
+### Previewing piece types without an index page
+
+The preview iframe displayed by the commit and history review modals works with regular pages and also with pieces that can be displayed on a page via a pieces index page, such as a blog.
+
+For other doc types, or pieces that will never have an index page, you may optionally implement a `workflowPreview` method. Here is the implementation for `apostrophe-images`:
+
+```javascript
+self.workflowPreview = function(req, before, after) {
+  return self.render(req, 'workflowPreview', { image: after });
+};
+```
+
+And the `workflowPreview.html` template:
+
+```markdown
+<img
+  class="apos-workflow-preview-image"
+  src="{{ apos.attachments.url(data.image.attachment, { size: 'one-half' }) }}"
+/>
+```
+
+If you do not supply an implementation, a message indicating that no preview is available will be displayed. A list of modified fields will still be offered to help the user understand what has changed.
