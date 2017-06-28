@@ -55,9 +55,6 @@ apos.define('apostrophe-workflow', {
       var $commit = $menu.find('[data-apos-workflow-commit]');
       var $state = $menu.find('[data-apos-workflow-mode]').closest('[data-apos-dropdown]');
       return self.getEditable({ related: true }, function(err, result) {
-        if (err) {
-          return hide();
-        }
         setClass($menu, 'apos-workflow-editable', result.modified.length || result.unmodified.length);
         setClass($menu, 'apos-workflow-modified', !!result.modified.length);
         setClass($menu, 'apos-workflow-committable', !!result.committable.length);

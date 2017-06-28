@@ -158,23 +158,6 @@ describe('Workflow', function() {
     });
   });
 
-  it('parked trash can exists', function(done) {
-    return apos.pages.find(t.req.admin(apos), { slug: '/trash' }).published(null).trash(null).toObject(function(err, trash) {
-      assert(!err);
-      assert(trash);
-      assert(trash.slug === '/trash');
-      assert(trash.path === '/trash');
-      assert(trash.type === 'trash');
-      assert(trash.parked);
-      assert(!trash.published);
-      // Verify that clonePermanent did its
-      // job and removed properties not meant
-      // to be stored in mongodb
-      assert(!trash._children);
-      done();
-    });
-  });
-
   it('should be able to use db to insert documents', function(done){
     var testItems = [
       { _id: '1234',
@@ -562,7 +545,7 @@ describe('Workflow', function() {
 
   });
 
-  it('is able to move parent to the trash', function(done) {
+  it('is able to "move" parent to the trash', function(done) {
     apos.pages.moveToTrash(t.req.admin(apos), '1234', function(err) {
       if (err) {
         console.log(err);
