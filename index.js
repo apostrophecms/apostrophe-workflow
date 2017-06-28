@@ -9,7 +9,8 @@ var modules = [
   'apostrophe-workflow-pages',
   'apostrophe-workflow-permissions',
   'apostrophe-workflow-pieces',
-  'apostrophe-workflow-schemas'
+  'apostrophe-workflow-schemas',
+  'apostrophe-workflow-images'
 ];
 
 // ## Options

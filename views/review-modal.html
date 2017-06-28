@@ -32,7 +32,9 @@
     </div>
   {% endif %}
   <div class="apos-workflow-preview">
-    {% if data.doc._url %}
+    {% if data.preview %}
+      {{ data.preview }}
+    {% elseif data.doc._url %}
       <iframe class="apos-workflow-preview-iframe" src="{{ data.doc._url | build({ workflowReview: data.commit._id }) }}"></iframe>
     {% else %}
       <p class="apos-workflow-no-preview">No preview available.</p>
