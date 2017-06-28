@@ -1,10 +1,10 @@
 {%- import "apostrophe-schemas:macros.html" as schemas -%}
-{%- import "locale-tree.html" as localeTree -%}
+{%- import "apostrophe-workflow:locale-tree.html" as localeTree -%}
 
 {%- macro body(field) -%}
   {%- for choice in field.choices -%}
     <div class="apos-workflow-permissions">
-      {# This can't be label because there are nexted checkboxes #}
+      {# This can't be label because there are nested checkboxes #}
       <div class="apos-workflow-permissions-label apos-text-small" data-apos-permission="{{ choice.value }}">
         <input class="apos-workflow-permissions-input" type="checkbox" name="{{ field.name }}" value="{{ choice.value }}" id="{{ field.name }}-{{ choice.value }}"/>
         <span class="apos-workflow-permissions--checkbox-indicator"></span>

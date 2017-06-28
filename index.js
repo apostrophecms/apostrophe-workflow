@@ -1,6 +1,17 @@
 var async = require('async');
 var _ = require('lodash');
 
+var modules = [
+  'apostrophe-workflow-areas',
+  'apostrophe-workflow-docs',
+  'apostrophe-workflow-global',
+  'apostrophe-workflow-groups',
+  'apostrophe-workflow-pages',
+  'apostrophe-workflow-permissions',
+  'apostrophe-workflow-pieces',
+  'apostrophe-workflow-schemas'
+];
+
 // ## Options
 // 
 // `includeTypes: [ 'my-blog-post', 'my-event' ]`
@@ -39,20 +50,18 @@ var _ = require('lodash');
 
 module.exports = {
 
+  moogBundle: {
+    modules: modules,
+    directory: 'lib/modules'
+  },
+
   afterConstruct: function(self, callback) {
     self.composeLocales();
     self.composeOptions();
-    self.extendCursor();
-    self.extendIndexes();
     self.enableAddMissingLocalesTask();
     self.enableAddLocalePrefixesTask();
     self.pushAssets();
     self.addToAdminBar();
-    self.extendPieces();
-    self.extendPermissionsField();
-    self.extendPermissions();
-    self.extendPages();
-    self.extendWidgetControls();
     self.apos.pages.addAfterContextMenu(self.menu);
     self.enableHelpers();
     return self.enableCollection(callback);
@@ -61,7 +70,6 @@ module.exports = {
   construct: function(self, options) {
     require('./lib/implementation.js')(self, options);
     require('./lib/api.js')(self, options);
-    require('./lib/overrides.js')(self, options);
     require('./lib/callAll.js')(self, options);
     require('./lib/browser.js')(self, options);
     require('./lib/permissions-schema-field.js')(self, options);
