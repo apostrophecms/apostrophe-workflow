@@ -39,3 +39,18 @@
 		margin-left: 0;
 	}
 }
+
+// Modal case: page settings or pieces editor modal, where
+// we already know we can edit the draft, and the only question
+// is whether we can perform commit-related actions
+
+[data-modal] {
+  [data-apos-workflow-commit], [data-apos-workflow-history], [data-apos-workflow-force-export] {
+    display: none;
+  }
+  &.apos-workflow-committable {
+    [data-apos-workflow-commit], [data-apos-workflow-history], [data-apos-workflow-force-export] {
+      display: list-item;
+    }
+  }
+}
