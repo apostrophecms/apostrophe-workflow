@@ -1,16 +1,25 @@
-{%- macro tree(prefix, checkboxes, nestedLocales) -%}
+{%- macro tree(prefix, controls, nestedLocales) -%}
   <ul class="apos-workflow-locale-tree">
     {%- for locale in nestedLocales -%}
       <li{% if locale.disabled %} class="apos-workflow-locale-input--disabled"{% endif %}>
         {# TODO visibility toggle box working with this label #}
-        {% for checkbox in checkboxes %}
-          <input{% if locale.disabled %} disabled{% endif %} class="apos-workflow-locale-input" type="checkbox" id="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" name="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" value="1" />
-          <span class="apos-workflow-locale-checkbox-indicator"></span>
-          <label for="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" class="apos-workflow-locale-checkbox-label">{{ checkbox.label }}</label>
+        {% for control in controls %}
+          {% if control.type == 'select' %}
+            <select{% if locale.disabled %} disabled{% endif %} name="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]" id="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]">
+              {% for choice in control.choices %}
+                <option value="{{ choice.value }}">{{ choice.label }}</option>
+              {% endfor %}
+            </select>
+          {% else %}
+            {# Checkbox is default control type #}
+            <input{% if locale.disabled %} disabled{% endif %} class="apos-workflow-locale-input" type="checkbox" id="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]" name="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]" value="1" />
+            <span class="apos-workflow-locale-checkbox-indicator"></span>
+            <label for="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]" class="apos-workflow-locale-control-label">{{ control.label }}</label>
+          {% endif %}
         {% endfor %}
         <span class="apos-workflow-locale-label">{{ locale.label or locale.name }}</span>
         {%- if locale.children -%}
-          {{ tree(prefix, checkboxes, locale.children) }}
+          {{ tree(prefix, controls, locale.children) }}
         {%- endif -%}
       </li>
     {%- endfor -%}

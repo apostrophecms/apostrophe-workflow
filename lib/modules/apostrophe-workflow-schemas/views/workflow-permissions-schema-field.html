@@ -11,18 +11,24 @@
         <label for="{{ field.name }}-{{ choice.value }}" class="apos-workflow-permissions-label">{{ __(choice.label | d('')) }}</label>
         {% if not choice.exempt %}
           {{ localeTree.tree(
-            field.name + 'Locales' + '[' + choice.value + ']',
-            [
-              {
-                name: 'draft',
-                label: 'Draft',
-                suffix: '-draft'
-              },
-              {
-                name: 'live',
-                label: 'Live'
-              }
-            ],
+            field.name + 'Locales' + '[' + choice.value + ']', [
+            {
+              type: 'select',
+              choices: [
+                {
+                  label: 'None',
+                  value: ''
+                },
+                {
+                  label: 'Edit',
+                  value: 'edit'
+                },
+                {
+                  label: 'Commit',
+                  value: 'commit'
+                }
+              ]
+            } ],
             field.nestedLocales)
           }}
         {% endif %}

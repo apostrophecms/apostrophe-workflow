@@ -12,7 +12,6 @@ apos.define('apostrophe-workflow', {
     self.enableExport();
     self.enableReview();
     self.enableManageModal();
-    self.addPermissionsFieldType();
     self.enableLocalePickerModal();
     self.enableForceExport();
     self.enableForceExportWidget();
@@ -409,70 +408,6 @@ apos.define('apostrophe-workflow', {
       }
     };
     
-    self.addPermissionsFieldType = function() {
-      apos.schemas.addFieldType({
-        name: 'apostrophe-workflow-permissions',
-        populate: self.permissionsPopulate,
-        convert: self.permissionsConvert
-      });
-    };
-    
-    self.findPermissionsCheckbox = function($fieldset, name, val) {
-      return $fieldset.find('input[name="' + name + '"][value="' + val + '"]');
-    };
-    
-    self.findPermissionsLocaleCheckbox = function($fieldset, name, val, locale) {
-      return $fieldset.find('input[name="' + name + 'Locales[' + val + '][' + locale + ']"]');
-    };
-
-    self.permissionsPopulate = function(object, name, $field, $el, field, callback) {
-      var $fieldset = apos.schemas.findFieldset($el, name);
-      _.each(object[name] || [], function(val) {
-        self.findPermissionsCheckbox($fieldset, name, val).prop('checked', true);
-      });
-      _.each(object[name + 'Locales'] || {}, function(locales, permission) {
-        _.each(locales, function(locale, localeName) {
-          self.findPermissionsLocaleCheckbox($fieldset, name, permission, localeName).prop('checked', true);
-        });
-      });
-      reflect();
-      $fieldset.on('change', 'input[type="checkbox"]', function() {
-        reflect();
-      });
-      function reflect() {
-        _.each(field.choices, function(choice) {
-          var $choice = $fieldset.find('[data-apos-permission="' + choice.value + '"]');
-          var $tree = $choice.find('.apos-workflow-locale-tree');
-          if ($choice.find('[value="' + choice.value + '"]:checked').length) {
-            $tree.show();
-          } else {
-            $tree.hide();
-          }
-        });
-      }
-      return setImmediate(callback);
-    };
-
-    self.permissionsConvert = function(data, name, $field, $el, field, callback) {
-      var $fieldset = apos.schemas.findFieldset($el, name);
-      data[name] = [];
-      data[name + 'Locales'] = {};
-      _.each(field.choices, function(choice) {
-        if (self.findPermissionsCheckbox($fieldset, name, choice.value).prop('checked')) {
-          data[name].push(choice.value);
-          if (!data[name + 'Locales'][choice.value]) {
-            data[name + 'Locales'][choice.value] = {};
-          }
-          _.each(field.locales, function(locale, localeName) {
-            if (self.findPermissionsLocaleCheckbox($fieldset, name, choice.value, localeName).prop('checked')) {
-              data[name + 'Locales'][choice.value][localeName] = true;
-            }
-          });
-        }
-      });
-      return setImmediate(callback);
-    };      
-
     self.enableLocalePickerModal = function() {
       apos.adminBar.link(self.__meta.name + '-locale-picker-modal', function() {
         self.launchLocalePickerModal();
