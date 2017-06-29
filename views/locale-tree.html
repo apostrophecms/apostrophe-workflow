@@ -1,10 +1,10 @@
 {%- macro tree(prefix, checkboxes, nestedLocales) -%}
   <ul class="apos-workflow-locale-tree">
     {%- for locale in nestedLocales -%}
-      <li>
+      <li{% if locale.disabled %} class="apos-workflow-locale-input--disabled"{% endif %}>
         {# TODO visibility toggle box working with this label #}
         {% for checkbox in checkboxes %}
-          <input class="apos-workflow-locale-input" type="checkbox" id="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" name="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" value="1" />
+          <input{% if locale.disabled %} disabled{% endif %} class="apos-workflow-locale-input" type="checkbox" id="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" name="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" value="1" />
           <span class="apos-workflow-locale-checkbox-indicator"></span>
           <label for="{{ prefix }}[{{ locale.name }}{{ checkbox.suffix }}]" class="apos-workflow-locale-checkbox-label">{{ checkbox.label }}</label>
         {% endfor %}
