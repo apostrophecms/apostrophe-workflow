@@ -55,10 +55,31 @@ apos.define('apostrophe-workflow', {
       var $commit = $menu.find('[data-apos-workflow-commit]');
       var $state = $menu.find('[data-apos-workflow-mode]').closest('[data-apos-dropdown]');
       return self.getEditable({ related: true }, function(err, result) {
+        if (err) {
+          return;
+        }
         setClass($menu, 'apos-workflow-editable', result.modified.length || result.unmodified.length);
         setClass($menu, 'apos-workflow-modified', !!result.modified.length);
         setClass($menu, 'apos-workflow-committable', !!result.committable.length);
         setClass($menu, 'apos-workflow-unsubmitted', !!result.unsubmitted.length);
+        
+        // Show/hide the widget level force export buttons based on whether
+        // their doc is committable (it's preexisting and we have permission
+        // to write to the live version of it)
+        var $docs = $('[data-doc-id]');
+        $docs.each(function() {
+          var $doc = $(this);
+          var id = $doc.attr('data-doc-id');
+          if (!id) {
+            $doc.removeClass('apos-workflow-committable');
+          }
+          if (_.contains(result.committable, id)) {
+            $doc.addClass('apos-workflow-committable');
+          } else {
+            $doc.removeClass('apos-workflow-committable');
+          }
+        });
+
         setTimeout(self.updateWorkflowControls, 1000);
         function setClass($menu, c, flag) {
           if (flag) {
