@@ -64,8 +64,18 @@ node app apostrophe-db:reset
 
 Or, to add workflow support to an existing project database:
 
+1. **BACK UP YOUR DATABASE,** In case you decide this module is not for you, or decide you should have used the `--live` option as seen below. Currently there is no task to stop using workflow. You should initially experiment with this module with a *local* copy of your site, not your live production content.
+
+2. Execute this task:
+
 ```
 node app apostrophe-workflow:add-missing-locales
+```
+
+By default, docs will be considered trash in their "live" version, as opposed to the draft version, until they are committed for the first time. If you prefer that that they be immediately live in the "live" version, use:
+
+```
+node app apostrophe-workflow:add-missing-locales --live
 ```
 
 **You should not have to do this more than once,** except when adding new locales (see "localization" below).
@@ -113,6 +123,12 @@ Now ask Apostrophe to add the new locales to all existing docs in the database:
 
 ```
 node app apostrophe-workflow:add-missing-locales
+```
+
+By default, docs copied to new locales via this task will be considered trash in all locales except for the draft version of the default locale, until they are committed for each locale for the first time. If you prefer that that they be immediately live everywhere, even though they are not translated yet, use:
+
+```
+node app apostrophe-workflow:add-missing-locales --live
 ```
 
 You can now click the locale code, also in the lower left corner, to switch to the other locale. Each locale has live and draft modes. Every doc automatically exists in all locales, however it may or may not be published in any given locale. [TODO: see ]
