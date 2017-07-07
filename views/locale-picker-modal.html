@@ -2,14 +2,17 @@
   <ul class="apos-workflow-locale-picker-items">
     {%- for locale in nestedLocales -%}
       {%- set localization = localizations[locale.name] or localizations[locale.name + '-draft'] -%}
-      {%- if localization -%}
-        <li>
+      <li>
+        {%- if localization -%}
           <a href="{{ localization._url | build({ workflowLocale: locale.name }) }}">{{ locale.label or locale.name }}</a>
-          {%- if locale.children -%}
-            {{ picker(localizations, locale.children) }}
-          {%- endif -%}
-        </li>
-      {%- endif -%}
+        {%- else -%}
+          {# Still need tree visualization and access to kids #}
+          <span class="apos-workflow-locale-unavailable">{{ locale.label or locale.name }}</span>
+        {%- endif -%}
+        {%- if locale.children -%}
+          {{ picker(localizations, locale.children) }}
+        {%- endif -%}
+      </li>
     {%- endfor -%}
   </ul>
 {%- endmacro -%}
