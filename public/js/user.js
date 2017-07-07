@@ -235,18 +235,18 @@ apos.define('apostrophe-workflow', {
     // Submit the docs with the specified ids for approval and notify the user.
     self.submit = function(ids, callback) {
       if (!ids.length) {
-        return apos.notify('No modifications to submit.', { type: 'warn' });
+        return apos.notify('No modifications to submit.', { type: 'warn', dismiss: true });
       }
       self.api('submit', { ids: ids }, function(result) {
         if (result.status !== 'ok') {
-          apos.notify('An error occurred submitting the document for approval.', { type: 'error' });
+          apos.notify('An error occurred submitting the document for approval.', { type: 'error', dismiss: true });
           return callback && callback('error');
         } else {
-          apos.notify('Your submission will be reviewed.', { type: 'success' });
+          apos.notify('Your submission will be reviewed.', { type: 'success', dismiss: true });
           return callback && callback(null);
         }
       }, function() {
-        apos.notify('An error occurred.', { type: 'error' });
+        apos.notify('An error occurred.', { type: 'error', dismiss: true });
         return callback && callback('error');
       });
     }
@@ -262,7 +262,7 @@ apos.define('apostrophe-workflow', {
     // Present commit modals for all ids in the array, one after another
     self.commit = function(ids, callback) {
       if (!ids.length) {
-        return apos.notify('No modifications to commit.', { type: 'warn' });
+        return apos.notify('No modifications to commit.', { type: 'warn', dismiss: true });
       }
       var leadId = (apos.contextPiece && apos.contextPiece._id) || (apos.pages.page && apos.pages.page._id);
       if (!_.contains(ids, leadId)) {
@@ -404,7 +404,7 @@ apos.define('apostrophe-workflow', {
       });
 
       function fail() {
-        apos.notify('An error occurred displaying the difference between the documents.', { type: 'error' });
+        apos.notify('An error occurred displaying the difference between the documents.', { type: 'error', dismiss: true });
       }
     };
     
