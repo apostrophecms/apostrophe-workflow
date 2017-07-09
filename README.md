@@ -359,7 +359,7 @@ The "Edit: Global" permission exists because the global document is technically 
 
 #### "Admin: Pages": total control of pages
 
-If you give this permission to a group, members of the group can edit all of the pages on the site.
+If you give this permission to a group, members of the group can edit all of the pages on the site, subject to locale restrictions, as we'll see in a moment.
 
 #### "Edit: Pages": candidates to edit pages
 
