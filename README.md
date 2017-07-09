@@ -489,6 +489,16 @@ Commit changes to make them live for the home page, and you'll see that as a log
 
 After you commit a change, such as on the home page, you'll be offered the usual option to export the change. And, as "fr-committer", you will be able to check the box to export to "en" (English). However, if any other locales are present, you will not be able to check those boxes. That's because we did not give the "fr-committers" group "edit" access to those locales for pages.
 
+### Accessing newly created pages in other locales
+
+Often a page or piece is created solely for use in a single locale. Technically, the page or piece exists in *every* locale. However, to avoid clutter, it is initially "trash" in other locales. So how do we make those pieces and pages live in other locales when we wish to?
+
+For pieces, it is straightforward to switch locales, click to edit that type of piece, and pick "Yes" from the "Trash" dropdown to see the pieces that are currently considered trash. Just click to edit the piece in question, and change "Trash" to "No."
+
+For pages, it is almost as straightforward. Click on "Pages" in the admin bar to access the "reorganize" view. Here you can locate a page in the trash at any level. Just locate its parent page, then click on the trash can displayed at that level in the tree to open the trash and find the page you want.
+
+As with pieces, change "Trash" to "No." The "Trash" field will be located right after the "Published" field. When you click save, the page will be live in this locale.
+
 ## Technical approach
 
 For 2.x, the draft and live versions of a doc are completely separate docs as far as most of Apostrophe is concerned. A `workflowGuid` property ties them together. This greatly reduces the scope of changes required in the rest of Apostrophe and improves performance by removing the need to move content around on every page view or load content for locales you are not looking at.
