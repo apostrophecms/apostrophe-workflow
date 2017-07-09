@@ -1,6 +1,6 @@
 ## Status
 
-Functional, but very much a work in progress.
+Rapidly maturing. The technical approach has been locked down. Some minor refactoring is still in progress. We expect to publish it as 2.0.0 soon.
 
 ## Installation
 
