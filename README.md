@@ -561,3 +561,17 @@ And the `workflowPreview.html` template:
 ```
 
 If you do not supply an implementation, a message indicating that no preview is available will be displayed. A list of modified fields will still be offered to help the user understand what has changed.
+
+## Legacy task: cleaning up duplicate homepages
+
+If you experimented with the Apostrophe 2.x version of this module before its publication to npm, and before 2017-07-26, you may need to clean up duplicate homepages created by the parked page mechanism before it was made locale-aware. If you suffer from this problem you will likely see that the "reorganize" view does not show any children of the home page.
+
+**No one else should ever need this task for any reason, and you should only need it once.**
+
+You can fix the issue with this command line task:
+
+```
+node app apostrophe-workflow:remove-numbered-parked-pages
+```
+
+**This task will permanently remove all "parked" pages with a slug that ends in one or more digits**. By default the only parked pages are `/` and `/trash`, neither of which should ever end in a digit. If your custom configuration of parked pages includes pages with slugs that *should* end in a digit, this task is not suitable for you as written. But again, you almost certainly do not need it, unless you were a user of this module prior to 2017-07-26.

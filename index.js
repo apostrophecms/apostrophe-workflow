@@ -62,6 +62,7 @@ module.exports = {
     self.composeOptions();
     self.enableAddMissingLocalesTask();
     self.enableAddLocalePrefixesTask();
+    self.enableRemoveNumberedParkedPagesTask();
     self.pushAssets();
     self.addToAdminBar();
     self.apos.pages.addAfterContextMenu(self.menu);
