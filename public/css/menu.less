@@ -2,6 +2,10 @@
 {
   display: inline-block;
   margin-left: 20px;
+  .apos-button--group
+  {
+    border: 0px;
+  }
   .apos-button
   {
     margin-left: 5px;
@@ -22,12 +26,20 @@
   }
   &.apos-workflow-modified.apos-workflow-committable
   {
+    .apos-button--group
+    {
+      border: 2px solid;
+    }
     [data-apos-workflow-commit] {
       display: inline-block;
     }
   }
   &.apos-workflow-unsubmitted
   {
+    .apos-button--group
+    {
+      border: 2px solid;
+    }
     [data-apos-workflow-submit] {
       display: inline-block;
     }
