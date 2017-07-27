@@ -312,92 +312,69 @@ apos.define('apostrophe-workflow', {
         if (result.status !== 'ok') {
           return fail();
         }
-        var keys = _.keys(result.diff);
         var id = result.id;
-        // https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
-        _.each(keys, function(key) {
-          var $area = $('[data-doc-id="' + id + '"][data-dot-path="' + key + '"]');
+        _.each(result.diff, function(change) {
+          var $widget = $('[data-apos-widget-id="' + change._id + '"]');
+          if (!$widget.length) {
+            if (change.change === 'removed') {
+              removed(change);
+            }
+          } else {
+            if (change.change === 'added') {
+              $widget.addClass('apos-workflow-widget-diff apos-workflow-widget-diff--new');
+            } else if (change.change === 'moved') {
+              $widget.addClass('apos-workflow-widget-diff apos-workflow-widget-diff--moved');
+            } else if (change.change === 'modified') {
+              $widget.addClass('apos-workflow-widget-diff apos-workflow-widget-diff--changed');
+            }
+          }
+        });
+
+        function removed(change) {
+  
+          $area = $('[data-doc-id="' + id + '"][data-dot-path="' + change.dotPath.replace(/\.items\.\d+$/, '') + '"]');
+
+          var matches = change.dotPath.match(/\d+$/);
+          if (!matches) {
+            return;
+          }
+          var index = matches[0];
+
           if (!$area.length) {
             return;
           }
-          $area.addClass('apos-workflow-area-changed');
-          if (_.isArray(result.diff[key])) {
-            // The entire area is new
-            $area.find('[data-apos-widget]').addClass('apos-workflow-widget-diff apos-workflow-widget-diff--new');
-            return;
-          }
-          var items = result.diff[key].items;
-          if (items._t !== 'a') {
-            $area.find('[data-apos-widget]').addClass('apos-workflow-widget-diff apos-workflow-widget-diff--new');
-            return;
-          }
-          _.each(items, function(widget, offset) {
-            var matches = offset.match(/^_(\d+)$/);
-            if (matches) {
-              // Moves and deletions are done with a reference to the old offset
-              if (Array.isArray(widget)) {
-                if (widget[2] === 3) {
-                  var id = widget[0]._id;
-                  getWidget(id).addClass('apos-workflow-widget-diff apos-workflow-widget-diff--moved');
-                } else if (widget[2] === 0) {
-                  var data = widget[0];
-                  
-                  // TODO: more of what follows ought to be shared by
-                  // the area editor and this module, probably by factoring
-                  // it into a method of the areas module that is easy to call
-                  // without being the area editor
-                  //
-                  // TODO: this would generate a lot of API requests if a lot
-                  // of things were deleted, might be worth serializing them
-                  // in an orderly fashion
+          
+          var data = change.value;
 
-                  var areaOptions = JSON.parse($area.attr('data-options'));
-                  return $.jsonCall(apos.areas.options.action + '/render-widget',
-                    {
-                      dataType: 'html'
-                    },
-                    {
-                      data: data,
-                      options: areaOptions.widgets[data.type] || {},
-                      type: data.type
-                    }, function(html) {
-                      // This rather intense code works around
-                      // various situations in which jquery is
-                      // picky about HTML
-                      var $newWidget = $($.parseHTML($.trim(html), null, true));
-                      var offset = matches[1];
-                      var $before = $area.findSafe('[data-apos-widget-wrapper]', '[data-apos-area]').eq(offset);
-                      if ($before.length) {
-                        $before.before($newWidget);
-                      } else {
-                        $area.append($newWidget);
-                      }
-                      $newWidget.addClass('apos-workflow-widget-diff apos-workflow-widget-diff--deleted');
-                      apos.emit('enhance', $newWidget);
-                    }
-                  );
-                } else if (widget.length === 1) {
-                  // Insert
-                  getWidget(id).addClass('apos-workflow-widget-diff apos-workflow-widget-diff--new');
-                }
+          // TODO: this would generate a lot of API requests if a lot
+          // of things were deleted, might be worth serializing them
+          // in an orderly fashion
+
+          var areaOptions = JSON.parse($area.attr('data-options'));
+          return $.jsonCall(apos.areas.options.action + '/render-widget',
+            {
+              dataType: 'html'
+            },
+            {
+              data: data,
+              options: areaOptions.widgets[data.type] || {},
+              type: data.type
+            }, function(html) {
+              // This rather intense code works around
+              // various situations in which jquery is
+              // picky about HTML
+              var $newWidget = $($.parseHTML($.trim(html), null, true));
+              var offset = matches[1];
+              var $before = $area.findSafe('[data-apos-widget-wrapper]', '[data-apos-area]').eq(index);
+              if ($before.length) {
+                $before.before($newWidget);
+              } else {
+                $area.append($newWidget);
               }
-            } else if (offset.match(/^\d+$/)) {
-              if (Array.isArray(widget)) {
-                if (widget.length === 1) {
-                  // Insert
-                  var id = widget[0]._id;
-                  getWidget(id).addClass('apos-workflow-widget-diff apos-workflow-widget-diff--new');
-                }
-              } else if (typeof(widget) === 'object') {
-                // Just a modification
-                var id = widget._id;
-                $area.findSafe('[data-apos-widget-id]', '[data-apos-area]').eq(parseInt(offset)).addClass('apos-workflow-widget-diff apos-workflow-widget-diff--changed');
-              }
+              $newWidget.addClass('apos-workflow-widget-diff apos-workflow-widget-diff--deleted');
+              apos.emit('enhance', $newWidget);
             }
-          });
-        });
-        function getWidget(id) {
-          return $('[data-apos-widget-id="' + id + '"]');
+          );
         }
       }, function() {
         return fail();
