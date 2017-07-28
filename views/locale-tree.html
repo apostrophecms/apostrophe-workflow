@@ -14,10 +14,19 @@
             {# Checkbox is default control type #}
             <input{% if locale.disabled %} disabled{% endif %} class="apos-workflow-locale-input" type="checkbox" id="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]" name="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]" value="1" />
             <span class="apos-workflow-locale-checkbox-indicator"></span>
-            <label for="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]" class="apos-workflow-locale-control-label">{{ control.label }}</label>
+            {%- if locale.name === control.commitLocale %}
+              <label for="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]" class="apos-workflow-locale-control-label apos-workflow-locale-control-label--committed">
+                {{ control.label }}
+                <span class="apos-workflow-locale-label">{{ locale.label or locale.name }}&nbsp;<small>(committed)</small></span>
+              </label>
+            {%- else %}
+              <label for="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]" class="apos-workflow-locale-control-label">
+                {{ control.label }}
+                <span class="apos-workflow-locale-label">{{ locale.label or locale.name }}</span>
+              </label>
+            {%- endif %}
           {% endif %}
         {% endfor %}
-        <span class="apos-workflow-locale-label">{{ locale.label or locale.name }}</span>
         {%- if locale.children -%}
           {{ tree(prefix, controls, locale.children) }}
         {%- endif -%}
