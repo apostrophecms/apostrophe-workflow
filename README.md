@@ -16,14 +16,13 @@ Read on for instructions that should suffice when starting from an existing or n
 
 ### Packages
 
-For now, add the 2.x branch as a git dependency in `package.json`. You currently must also add the relevant branch of Apostrophe:
+For now, add the 2.x branch as a git dependency in `package.json`.
 
 ```
-  "apostrophe": "punkave/apostrophe#workflow-accommodations-1",
   "apostrophe-workflow": "punkave/apostrophe-workflow#2.x"
 ```
 
-This is very temporary; these branches will be merged to master and published to npm as the APIs stabilize.
+This is branch will be merged shortly and published to npm. **The old `workflow-accommodations-1` branch of the `apostrophe` module has already been merged, published and retired. Do not depend on it in `package.json`.**
 
 Run `npm install` after adding the dependencies.
 
