@@ -10,6 +10,7 @@
                 <option value="{{ choice.value }}">{{ choice.label }}</option>
               {% endfor %}
             </select>
+            <span class="apos-workflow-locale-label">{{ locale.label or locale.name }}</span>
           {% else %}
             {# Checkbox is default control type #}
             <input{% if locale.disabled %} disabled{% endif %} class="apos-workflow-locale-input" type="checkbox" id="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]" name="{{ prefix }}[{{ locale.name }}{{ control.suffix }}]" value="1" />
