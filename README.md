@@ -1,77 +1,38 @@
-## Status
+## Overview
 
-Rapidly maturing. The technical approach has been locked down. Some minor refactoring is still in progress. We expect to publish it as 2.0.0 soon.
+The `apostrophe-workflow` module adds powerful workflow and localization capabilities to Apostrophe. As a workflow system it provides for a draft version of every document, so that changes do not immediately "go live." As a localization system it provides for documents to exist in several locales, allowing for easy internationalization.
 
-## Installation
+We'll begin with the steps needed simply to add workflow to your project. Then we'll examine the changes needed for localization (also known as internationalization).
 
-First, try starting with this branch of our sandbox project:
-
-```
-git clone -b workflow-2 https://github.com/punkave/apostrophe-sandbox
-```
-
-This will give you a test project with correctly configured dependencies and settings for various locales immediately.
-
-Read on for instructions that should suffice when starting from an existing or new project.
-
-### Packages
-
-For now, add the 2.x branch as a git dependency in `package.json`.
+## npm
 
 ```
-  "apostrophe-workflow": "punkave/apostrophe-workflow#2.x"
+npm install --save apostrophe-workflow
 ```
 
-This is branch will be merged shortly and published to npm. **The old `workflow-accommodations-1` branch of the `apostrophe` module has already been merged, published and retired. Do not depend on it in `package.json`.**
+## app.js
 
-Run `npm install` after adding the dependencies.
-
-### app.js
-
-In `app.js`, configure your module with the rest. We'll configure a single "locale" for our English-language site:
+In `app.js`, configure the `apostrophe-workflow` module with the rest. We'll start with a simple configuration just providing workflow:
 
 ```
 'apostrophe-workflow': {
-  locales: [
-    {
-      name: 'en'
-    }
-  ],
-  defaultLocale: 'en',
   // IMPORTANT: if you follow the examples below,
-  // be sure to set this
+  // be sure to set this so the templates work
   alias: 'workflow'
-},
-// For now you must separately configure this flag
-// for the `apostrophe-docs` module
-'apostrophe-docs': {
-  trashInSchema: true
 }
 ```
 
-Behind the scenes, Apostrophe will automatically create a second "locale," `en-draft`, used for draft copies of each doc. This "draft" locale is not publicly accessible.
+## Adding workflow to your database
 
-*If you don't configure `locale` and `defaultLocale`, a locale named `default` is created.* However, this doesn't give you the best upgrade path if you add localization to your project later and don't wish to have a top-level "default" locale that is never public. So we recommend a locale name that reflects the language of the site, unless you plan on a nested tree of locales with a "default" at the top (see below for examples).
+Odds are, you already have a database. Either from an existing project, or for a new one, since Apostrophe creates the database on the very first run. So, follow these steps to add workflow to your database.
 
-## Reset your database or run the appropriate task
+1. **FOR EXISTING PROJECTS, BACK UP YOUR DATABASE,** In case you decide this module is not for you, or decide you should have used the `--live` option as seen below. Currently there is no command to stop using workflow once you start.
 
-If you are starting from scratch but may have accidentally typed `node app` before enabling workflow, you might want to erase your database and start over (DO NOT DO THIS IN PRODUCTION EVER):
+You should initially experiment with this module with a *local* copy of your site, not your live production content.
 
-```
-node app apostrophe-db:reset
-```
-
-Or, to add workflow support to an existing project database:
-
-1. **BACK UP YOUR DATABASE,** In case you decide this module is not for you, or decide you should have used the `--live` option as seen below. Currently there is no task to stop using workflow. You should initially experiment with this module with a *local* copy of your site, not your live production content.
+You can back up your database easily with the `mongodump` command line utility.
 
 2. Execute this task:
-
-```
-node app apostrophe-workflow:add-missing-locales
-```
-
-By default, docs will be considered trash in their "live" version, as opposed to the draft version, until they are committed for the first time. If you prefer that that they be immediately live in the "live" version, use:
 
 ```
 node app apostrophe-workflow:add-missing-locales --live
@@ -79,23 +40,39 @@ node app apostrophe-workflow:add-missing-locales --live
 
 **You should not have to do this more than once,** except when adding new locales (see "localization" below).
 
-If you have not added an admin user yet, do it in the usual way:
+Once you run this task, all of your documents will exist in both draft and live versions. Editors will be able to the draft version while in "draft" mode. Everyone else, and editors in "live" mode, will see the live version and will not be able to edit it directly. The only way to make new content live is to "commit" the changes that have been made to the document.
+
+If you have not added an admin user yet, you can do it now in the usual way:
 
 ```
 node app apostrophe-users:add admin admin
 ```
 
-*Workflow permissions for less privileged users are a work in progress.*
-
 ## Using Workflow
 
-This basic configuration provides you with a live/draft toggle on the page (lower left corner). Editing is not possible in the live mode.
+This basic configuration provides you with a live/draft toggle on the page (lower left corner). Editing is not possible in the live mode. You will not see most types of pieces in the admin bar, and you will not see editing controls on the page. This is normal.
 
-In the draft mode editing works normally. Click "submit" to submit your work for review by someone else, or "commit" to commit it to the live version of the page yourself. 
+In the draft mode, editing works in a familiar way. Your changes are constantly saved, just like before, but they are only saved to the draft version of the document.
+
+When you are satisfied, click "submit" to submit your work for review by someone else, or "commit" to commit it to the live version of the page yourself. 
 
 If work is submitted that you have permission to edit, you can view a list of those pages and pieces via the "Workflow" admin bar menu.
 
-## Using Localization
+## "Why am I asked to commit so many things?"
+
+When you click "Commit" on the page, all of the documents that make up what you see on the page need to be committed in order to go live on the site. That includes the images in a slideshow, the blog posts in a blog widget, and so on. It may seem like a lot of work the first time. Just remember that you won't be asked to commit them again unless their drafts have been updated.
+
+## Workflow for pieces
+
+"Pieces," like blog posts or events, work just like before. However, just make sure you enter "draft" mode; until you do that most piece types won't show up on the admin bar, because you can only edit the draft version directly.
+
+When you are finished editing a piece, use the "workflow" menu in the upper right corner of the dialog box to select "submit" or "commit."
+
+## Workflow for page settings
+
+Workflow also applies to page settings, such as the title. You can easily toggle between displaying the draft and live versions of the title while in the page settings dialog box. And, you can submit or commit via the workflow dropdown menu in the upper right corner of the dialog box.
+
+## Localizing and internationalizing websites
 
 To enable localization, configure more than one locale in `app.js`:
 
@@ -103,36 +80,57 @@ To enable localization, configure more than one locale in `app.js`:
 'apostrophe-workflow': {
   locales: [
     {
-      name: 'en',
-      label: 'English'
+      name: 'default',
+      label: 'Default',
+      private: true,
+      children: [
+        {
+          name: 'en-gb',
+          label: 'England'
+        },
+        {
+          name: 'en-us',
+          label: 'United States'
+        },
+        {
+          name: 'fr',
+          label: 'France'
+        }
+      ]
     },
-    {
-      name: 'fr',
-      label: 'French'
-    }
   ],
-  defaultLocale: 'en',
+  defaultLocale: 'default',
   // IMPORTANT: if you follow the examples below,
   // be sure to set this
   alias: 'workflow'
 }
 ```
 
-Now ask Apostrophe to add the new locales to all existing docs in the database:
+If you have worked with localization before you will recognize locale names like `en-gb`. These are arbitrary; you may choose any name. However, if you plan to use URL prefixes to distinguish between locales (see below), you must choose a hyphenated, lower-case name without punctuation. So we suggest that you always do that.
+
+> "What about the `default` locale? What does `private` do?" Private locales cannot actually be accessed by the public. Although it isn't mandatory, we recommend setting up a private `default` locale for the "master copy" of your content, written in your team's most familiar language, and then exporting content to child locales.
+>
+> Note that if you do not have a locale named `default`, you must set the `defaultLocale` option to the name of a locale you do have. Also note that if you started out with no locales for simple workflow, Apostrophe already created a `default` locale implicitly. Leaving that out of your locale configuration would give you no way to access the existing content.
+>
+> The parent-child relationship between locales is just a convenience for quickly exporting content to them, as you'll see below. You can nest `children` as many levels deep as you wish.
+
+Now let's ask Apostrophe to add the new locales to all of the existing docs in the database:
 
 ```
 node app apostrophe-workflow:add-missing-locales
 ```
 
-By default, docs copied to new locales via this task will be considered trash in all locales except for the draft version of the default locale, until they are committed for each locale for the first time. If you prefer that that they be immediately live everywhere, even though they are not translated yet, use:
+By default, docs copied to new locales via this task will be considered trash in all locales except for the draft version of the default locale, until an editor chooses to clear the "trash" checkbox and then commit that change. If you prefer that that they be immediately live everywhere, use this command instead:
 
 ```
 node app apostrophe-workflow:add-missing-locales --live
 ```
 
-You can now click the locale code, also in the lower left corner, to switch to the other locale. Each locale has live and draft modes. Every doc automatically exists in all locales, however it may or may not be published in any given locale. [TODO: see ]
+Now access the site as an administrator. You will be able to click on the current locale name to switch to other locales.
 
-Note that a single document may have a different slug in different locales. They may also be the same.
+> Every document automatically exists in all locales, however it may or may not be published or in the trash in any given locale. This is useful since it allows you to have pages that are "only for France," for instance.
+
+Note that a single document may have a different slug in different locales. The slugs may also be the same, but you'll typically want to enable either prefix-based or subdomain-based locale detection as described below.
 
 ## Building a locale picker on the front end
 
@@ -147,11 +145,11 @@ Here's how to code a locale picker on the front end:
 </ul>
 ```
 
-This `ul` will populate with localized links to the current context page or piece.
+This `ul` will populate with localized links to the current context page or piece. If the page or piece is unpublished or considered trash in a locale, there won't be a link for that locale.
 
 If you use `localization.label` as shown here, you'll see the labels that you set when configuring your locales.
 
-If you use `localization.title` instead, you'll see the title of the individual piece or page as it was translated or localized for that locale.
+If you use `localization.title` instead, you'll see the title of the individual piece or page as it was translated or localized for that locale. The former is usually less confusing.
 
 This code:
 
@@ -165,68 +163,19 @@ After committing a change, you will be invited to export that change to other lo
 
 This allows for editors fluent in the other locale to complete any necessary translation tasks before finally committing the changes for that locale.
 
-### Not all patches can be applied
+### Not all patches can be exported
 
 If the page has been altered greatly in structure, for example if the rich text widget on a page has been removed and replaced, making it effectively a separate widget altogether, then an edit to that widget will not take effect as a patch. It is a best practice to initially create all content in a "default" locale and then export it to others.
 
-## Nested locales
+## Forcing exports
 
-Locales can be nested, creating a convenient tree from which to select them or navigate among them. Here is a more complex configuration with many child locales:
+If you need to, you can force an export of a document so that it is copied directly to the draft version in other locales. To do that, choose "Force Export" from the dialog box for the piece in question, or from the "Page Settings" dialog box for a page.
 
-```
-'apostrophe-workflow': {
-  locales: [
-    {
-      name: 'default',
-      children: [
-        {
-          name: 'eu',
-          children: [
-            {
-              name: 'fr',
-              label: 'French'
-            },
-            {
-              name: 'ch',
-              children: [
-                {
-                  name: 'ch-fr',
-                  label: 'Swiss French'
-                },
-                {
-                  name: 'ch-it',
-                  label: 'Swiss Italian'
-                },
-                {
-                  name: 'ch-de',
-                  label: 'Swiss German'
-                },
-              ]
-            }
-          ]
-        },
-        {
-          name: 'na',
-          children: [
-            {
-              name: 'us',
-              label: 'United States'
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  defaultLocale: 'default',
-  // IMPORTANT: if you follow the examples below,
-  // be sure to set this
-  alias: 'workflow'
-}
-```
+> Even a forced export only alters the draft version of the other locales. Work must still be reviewed and committed there.
 
-**In the final implementation, only locales without children will ever be publicly visible.** Higher nodes in the tree should be used to create draft content with a consistent structure and push it downwards toward the leaf nodes for localization and review. [See #25 for status of implementation.](https://github.com/punkave/apostrophe-workflow/issues/25)
+## Forcing export of one widget
 
-Content may also be pushed upwards via the export feature if you have permission to edit drafts for the higher locales in the tree, however bear in mind that the risk of divergence that makes patching difficult is decreased when working from the top down.
+You can also force the export of a single widget. You can do that via the new export button, displayed along with the up and down arrows, edit pencil and trash icon. This will always push that widget to the draft version of the document in other locales, as long as it can be found there.
 
 ## Automatically switching locales via subdomains
 
@@ -234,45 +183,30 @@ You can enable automatic locale switching based on the subdomain. Simply use sub
 
 When you do so, URL generation for pages, pieces, etc. also gains an automatic subdomain prefix.
 
-Some locales may not be intended for public use, such as a root "default" locale from which you export changes to sublocales. For these, set `private: true` when configuring them, so they cannot be reached at all by the general public:
-
-```
-'apostrophe-workflow': {
-  subdomains: true,
-  locales: [
-    {
-      name: 'default',
-      private: true,
-      children: [ ... ]
-    }
-  ]
-}
-```      
-
-*Yes, a private locale may have public sub-locales.*
+Of course, your webserver must be configured to send traffic for those subdomains to your Apostrophe site.
 
 ### One login across all subdomains
 
-Although there is just one database of accounts, by default, the session cookie used by Apostrophe is not shared across subdomains. You can address this by configuring the `apostrophe-express` module. **Just as an example**, the domain name to be shared here is `workflow.com`:
+Although there is just one database of accounts, by default, the session cookie used by Apostrophe **is not** shared across subdomains. You can address this by configuring the `apostrophe-express` module. **Just as an example**, the domain name to be shared here is `example.com`:
 
 ```javascript
 'apostrophe-express': {
   session: {
     secret: 'yoursecretgoeshere',
     cookie: {
-      domain: 'workflow.com'
+      domain: 'example.com'
     }
   }
 },
-````
+```
 
 ## Automatically switching locales via prefixes
 
-Alternatively, you can enable automatic locale switching based on the subdomain. Simply set the `prefixes` option to true.
+Alternatively, you can enable automatic locale switching based on a prefix applied to every URL. Simply set the `prefixes` option to true.
 
 > You cannot use `subdomains` and `prefixes` at the same time.
 
-If your database already exists, you must run the following **one-time** task to prefix the slugs of existing pages:
+If your database already exists, you must run the following **one-time** task to prefix the slugs of existing pages. **Back up your database first,** as this cannot be conveniently reversed.
 
 ```
 node app apostrophe-workflow:add-locale-prefixes
@@ -280,9 +214,11 @@ node app apostrophe-workflow:add-locale-prefixes
 
 You **do not** have to run this task again. It is a one-time transition.
 
-Currently there is no automated way to roll back to not having slug prefixes. However, if you disable the `prefixes` flag, the entire slug becomes editable, and so you can manually remove them.
+Currently there is no automated way to roll back to not having slug prefixes. However, if you disable the `prefixes` flag, the entire slug becomes editable again, and so you can manually remove them.
 
-## Workflow with permissions
+*The editor may appear to allow removing the prefix from the slug, but it is always restored on save.*
+
+## Workflow with permissions: limiting who can do what
 
 The workflow module supports permissions. This tutorial breaks down how to go about setting up a site with permissions and then creating permissions groups for particular locales. We'll then add new users to each of those groups and experiment with what they can and can't do.
 
@@ -395,6 +331,8 @@ If you set it to "edit," then members of the group can perform that action for *
 If you set it to "commit," then members of the group can *both* edit the draft *and* commit it and make it live.
 
 > "Admin: All" and a few other permissions, like "view private locales" and "upload and crop," do not present a choice of locales because they are not locale-specific.
+
+> If you are only using this module for workflow and have not set up multiple locales, you will still need to set the dropdown for the "default" locale to "edit" or "commit" for each permission.
 
 ### Permissions tutorial
 
@@ -563,7 +501,7 @@ If you do not supply an implementation, a message indicating that no preview is 
 
 ## Legacy task: cleaning up duplicate homepages
 
-If you experimented with the Apostrophe 2.x version of this module before its publication to npm, and before 2017-07-26, you may need to clean up duplicate homepages created by the parked page mechanism before it was made locale-aware. If you suffer from this problem you will likely see that the "reorganize" view does not show any children of the home page.
+If you experimented with the pre-npm-publication Apostrophe 2.x version of this module before 2017-07-26, you may need to clean up duplicate homepages created by the parked page mechanism before it was made locale-aware. If you suffer from this problem you will likely see that the "reorganize" view does not show any children of the home page.
 
 **No one else should ever need this task for any reason, and you should only need it once.**
 

@@ -1,7 +1,9 @@
 {%- import 'apostrophe-ui:components/buttons.html' as buttons -%}
 
 <div class="apos-workflow-menu" data-apos-workflow-menu>
-	{{ buttons.normal('Locale: ' + data.workflow.locale, { action: 'admin-bar-item', value: 'apostrophe-workflow-locale-picker-modal' }, 'apos-workflow-locale-button' ) }}
+  {% if data.localized %}
+  	{{ buttons.normal('Locale: ' + data.workflow.locale, { action: 'admin-bar-item', value: 'apostrophe-workflow-locale-picker-modal' }, 'apos-workflow-locale-button' ) }}
+  {% endif %}
 
 	<div class="apos-dropdown apos-dropdown--button apos-dropdown--up apos-workflow-state" data-apos-dropdown="up" data-apos-actionable="">
 		<a class="apos-button apos-workflow-state-toggle" data-apos-dropdown-button-label="" style="padding-right: 20px;">
