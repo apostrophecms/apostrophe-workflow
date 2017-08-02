@@ -44,7 +44,7 @@ apos.define('apostrophe-workflow-export-modal', {
           apos.notify('%s: ' + error.message, error.locale, { type: 'error' });
         });
         if (result.success.length) {
-          apos.notify('Successfully exported to: %s', result.success.join(', '), { type: 'success' });
+          apos.notify('Successfully exported to: %s', result.success.join(', '), { type: 'success', dismiss: true });
         }
         return callback(null);
       }, function(err) {

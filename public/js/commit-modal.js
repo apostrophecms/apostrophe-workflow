@@ -18,9 +18,9 @@ apos.define('apostrophe-workflow-commit-modal', {
           return callback(result.status);
         }
         if (result.title) {
-          apos.notify('%s was committed successfully.', result.title, { type: 'success' });
+          apos.notify('%s was committed successfully.', result.title, { type: 'success', dismiss: true });
         } else {
-          apos.notify('The document was committed successfully.', { type: 'success' });
+          apos.notify('The document was committed successfully.', { type: 'success', dismiss: true });
         }
         if (_.keys(self.manager.locales).length > 2) {
           // We have more than two locales (more than default and default-draft),
