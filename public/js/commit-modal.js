@@ -14,7 +14,7 @@ apos.define('apostrophe-workflow-commit-modal', {
     self.saveContent = function(callback) {
       return self.api('commit', { id: options.body.id }, function(result) {
         if (result.status !== 'ok') {
-          apos.notify('An error occurred.', { type: 'error' });
+          apos.notify('An error occurred.', { type: 'error', dismiss: true });
           return callback(result.status);
         }
         if (result.title) {

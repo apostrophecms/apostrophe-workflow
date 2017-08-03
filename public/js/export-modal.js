@@ -28,7 +28,7 @@ apos.define('apostrophe-workflow-export-modal', {
         }
       });
       if (!locales.length) {
-        apos.notify('Select at least one locale to export to.', { type: 'error' });
+        apos.notify('Select at least one locale to export to.', { type: 'error', dismiss: true });
         return callback('user');
       }
       var data = _.assign({
@@ -37,7 +37,7 @@ apos.define('apostrophe-workflow-export-modal', {
       
       return self.api(self.options.verb, data, function(result) {
         if (result.status !== 'ok') {
-          apos.notify('An error occurred.', { type: 'error' });
+          apos.notify('An error occurred.', { type: 'error', dismiss: true });
           return callback(result.status);
         }
         _.each(result.errors, function(error) {

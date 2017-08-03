@@ -239,14 +239,14 @@ apos.define('apostrophe-workflow', {
       }
       self.api('submit', { ids: ids }, function(result) {
         if (result.status !== 'ok') {
-          apos.notify('An error occurred submitting the document for approval.', { type: 'error' });
+          apos.notify('An error occurred submitting the document for approval.', { type: 'error', dismiss: true });
           return callback && callback('error');
         } else {
           apos.notify('Your submission will be reviewed.', { type: 'success', dismiss: true });
           return callback && callback(null);
         }
       }, function() {
-        apos.notify('An error occurred.', { type: 'error' });
+        apos.notify('An error occurred.', { type: 'error', dismiss: true });
         return callback && callback('error');
       });
     }
@@ -381,7 +381,7 @@ apos.define('apostrophe-workflow', {
       });
 
       function fail() {
-        apos.notify('An error occurred displaying the difference between the documents.', { type: 'error' });
+        apos.notify('An error occurred displaying the difference between the documents.', { type: 'error', dismiss: true });
       }
     };
     
