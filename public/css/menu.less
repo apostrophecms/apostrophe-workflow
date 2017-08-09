@@ -13,7 +13,7 @@
   // .apos-workflow-state is visible by default because we need
   // to get to draft mode to access admin bar functionality in
   // a way that isn't extremely difficult to debug
-  [data-apos-workflow-submit], [data-apos-workflow-commit]
+  [data-apos-workflow-submit], [data-apos-workflow-commit], [data-apos-workflow-submitted],
   {
     display: none;
   }
@@ -30,7 +30,7 @@
     {
       border: 2px solid;
     }
-    [data-apos-workflow-commit] {
+    [data-apos-workflow-commit], [data-apos-workflow-submitted] {
       display: inline-block;
     }
   }
@@ -42,6 +42,12 @@
     }
     [data-apos-workflow-submit] {
       display: inline-block;
+    }
+  }
+  &.apos-workflow-modified.apos-workflow-committable.apos-workflow-unsubmitted
+  {
+    [data-apos-workflow-submitted] {
+      display: none;
     }
   }
 }
