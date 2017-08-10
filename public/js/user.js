@@ -131,7 +131,9 @@ apos.define('apostrophe-workflow', {
       
     self.enableSubmit = function() {
       $('body').on('click', '[data-apos-workflow-submit]', function() {
+        apos.ui.globalBusy(true);
         return self.getEditable({ related: true }, function(err, result) {
+          apos.ui.globalBusy(false);
           if (!err) {
             self.submit(result.modified);
           }
@@ -153,7 +155,9 @@ apos.define('apostrophe-workflow', {
         if (id) {
           self.commit([ id ]);
         } else {
+          apos.ui.globalBusy(true);
           return self.getEditable({ related: true }, function(err, result) {
+            apos.ui.globalBusy(false);
             if (!err) {
               self.commit(_.intersection(result.committable, result.modified));
             }
@@ -237,7 +241,9 @@ apos.define('apostrophe-workflow', {
       if (!ids.length) {
         return apos.notify('No modifications to submit.', { type: 'warn', dismiss: true });
       }
+      apos.ui.globalBusy(true);
       self.api('submit', { ids: ids }, function(result) {
+        apos.ui.globalBusy(false);
         if (result.status !== 'ok') {
           apos.notify('An error occurred submitting the document for approval.', { type: 'error' });
           return callback && callback('error');
@@ -252,7 +258,9 @@ apos.define('apostrophe-workflow', {
     }
     
     self.dismiss = function(id) {
+      apos.ui.globalBusy(true);
       self.api('dismiss', { id: id }, function(result) {
+        apos.ui.globalBusy(false);
         if (result.status === 'ok') {
           $('[data-apos-workflow-dismiss="' + id + '"]').closest('[data-apos-workflow-submission]').hide();
         }
