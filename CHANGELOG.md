@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.2
+
+All tests passing.
+
+* Use new accommodations for unit tests of related modules in Apostrophe.
+* Better feedback about the submitted state of the page.
+* Use global busy mechanism to avoid race conditions.
+
 ## 2.0.1
 
 All tests passing.
