@@ -19,9 +19,10 @@
   </div>
 
   {% if data.workflowMode == 'draft' %}
-		<div class="apos-button apos-button--group">
-	    {{ buttons.inGroup('Submit', { action: 'workflow-submit' }) }}
-    	{{ buttons.inGroup('Commit', { action: 'workflow-commit' }) }}
-		</div>
+    <div class="apos-button apos-button--group">
+      {{ buttons.disabled('Submitted', { action: 'workflow-submitted' }) }}
+      {{ buttons.inGroup('Submit', { action: 'workflow-submit' }) }}
+      {{ buttons.inGroup('Commit', { action: 'workflow-commit' }) }}
+    </div>
   {% endif %}
 </div>
