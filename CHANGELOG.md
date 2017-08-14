@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.3
+
+All tests passing.
+
+* Fixed a bug that caused joined documents, such as images, not to be displayed in previews of old commits. This bug has been addressed, however previews of commits that predate the fix will still not show joined content.
+
+Note that since any joined document can unexpectedly be missing, for instance because the joined document has been moved to the trash, your templates must always test for or otherwise tolerate this situation in any case. Not doing so could result in a template error on the actual page, not just on a preview of the older commit.
+
 ## 2.0.2
 
 All tests passing.
