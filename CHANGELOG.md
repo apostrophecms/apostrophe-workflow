@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.4
+
+All tests passing.
+
+* Previously the locale picker code assumed that localizations of a given document always had a `_url` property which led to crashes in the `build` filter. Now, if there is no `_url` property available, no link is available for that locale in the locale picker.
+
 ## 2.0.3
 
 All tests passing.
