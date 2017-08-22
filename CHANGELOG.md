@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.7
+
+All tests passing.
+
+* Subwidgets were being lost in the export process in the event that the parent widget also had some property changes of its own. This has been fixed. If the parent widget has changed properties that are *not* subwidgets, the entire parent widget is exported, including all subwidgets. Fine-grained patching is of course still done if the only modifications are to subwidgets. At some point in the future fine-grained patching of schema fields within widgets may also be performed, however this requires further consideration.
+
 ## 2.0.6
 
 All tests passing.
