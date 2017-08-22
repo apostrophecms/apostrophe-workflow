@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.5
+
+All tests passing.
+
+* The locale picker modal now can link to valid URLs for pieces. Previously an insufficiently generous mongo projection left out the `type`.
+
 ## 2.0.4
 
 All tests passing.
