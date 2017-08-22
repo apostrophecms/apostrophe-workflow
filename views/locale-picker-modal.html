@@ -4,7 +4,7 @@
       {%- set localization = localizations[locale.name] or localizations[locale.name + '-draft'] -%}
       <li>
         {%- if localization and localization._url -%}
-          <a href="{{ localization._url | build({ workflowLocale: locale.name }) }}">{{ locale.label or locale.name }}</a>
+          <a href="{{ localization._url }}">{{ locale.label or locale.name }}</a>
         {%- else -%}
           {# Still need tree visualization and access to kids #}
           <span class="apos-workflow-locale-unavailable">{{ locale.label or locale.name }}</span>
