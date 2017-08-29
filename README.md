@@ -130,7 +130,7 @@ Now access the site as an administrator. You will be able to click on the curren
 
 > Every document automatically exists in all locales, however it may or may not be published or in the trash in any given locale. This is useful since it allows you to have pages that are "only for France," for instance.
 
-Note that a single document may have a different slug in different locales. The slugs may also be the same, but you'll typically want to enable either prefix-based or subdomain-based locale detection as described below.
+Note that a single document may have a different slug in different locales. The slugs may also be the same, but you'll typically want to enable locale-specific prefixes, locale-specific domain names or a combination of the two as described below.
 
 ## Building a locale picker on the front end
 
@@ -177,40 +177,94 @@ If you need to, you can force an export of a document so that it is copied direc
 
 You can also force the export of a single widget. You can do that via the new export button, displayed along with the up and down arrows, edit pencil and trash icon. This will always push that widget to the draft version of the document in other locales, as long as it can be found there.
 
-## Automatically switching locales via subdomains
+## Switching locales via custom hostnames and/or prefixes
 
-You can enable automatic locale switching based on the subdomain. Simply use subdomains that match your locale names, such as `fr.example.com`, and set the `subdomains` option to `true` when configuring this module.
+You'll want URLs to be different between locales so that there is no ambiguity when a user shares them.
 
-When you do so, URL generation for pages, pieces, etc. also gains an automatic subdomain prefix.
+You can do so by setting the `hostnames` and/or `prefixes` options. Notice that these are separate from the main `locales` array. This is done to make it easier to differentiate the hostnames between development, staging and production environments using a `data/local.js` file that is present only in the proper environment. Apostrophe merges the contents of that file with your main `app.js` Apostrophe configuration using `_.merge()`, which works best with objects and properties.
 
-Of course, your webserver must be configured to send traffic for those subdomains to your Apostrophe site.
+Notice that **a hostname is specified for every locale, and if a hostname is shared by two or more locales, all of those locales must specify prefixes.**
 
-### One login across all subdomains
+*There does not have to be any similarity between the hostnames.* They can be completely different.
 
-Although there is just one database of accounts, by default, the session cookie used by Apostrophe **is not** shared across subdomains. You can address this by configuring the `apostrophe-express` module. **Just as an example**, the domain name to be shared here is `example.com`:
+Two locales may have the same prefix, as long as they have different hostnames, and vice versa.
 
 ```javascript
-'apostrophe-express': {
-  session: {
-    secret: 'yoursecretgoeshere',
-    cookie: {
-      domain: 'example.com'
+    'apostrophe-workflow': {
+      hostnames: {
+        'fr': 'exemple.fr',
+        'default': 'example.com',
+        'us': 'example.com',
+        'us-en': 'example.com',
+        'us-es': 'example.com'
+      },
+      prefixes: {
+        // Even private locales must be distinguishable by hostname and/or prefix
+        'default': '/default',
+        'us': '/us',
+
+        'us-en': '/en',
+        'us-es': '/es',
+        // We don't need prefixes for fr because
+        // that hostname is not shared with other
+        // locales
+      },
+      locales: [
+        {
+          name: 'default',
+          label: 'Default',
+          private: true,
+          children: [
+            {
+              name: 'fr'
+            },
+            {
+              name: 'us',
+              private: true,
+              children: [
+                {
+                  name: 'us-en'
+                },
+                {
+                  name: 'us-es'
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      defaultLocale: 'default',
+      // IMPORTANT: if you follow the examples below,
+      // be sure to set this
+      alias: 'workflow'
     }
-  }
-},
 ```
 
-## Automatically switching locales via prefixes
+### Adding prefixes to an existing database
 
-Alternatively, you can enable automatic locale switching based on a prefix applied to every URL. Simply set the `prefixes` option to true.
-
-> You cannot use `subdomains` and `prefixes` at the same time.
-
-If your database already exists, you must run the following **one-time** task to prefix the slugs of existing pages. **Back up your database first,** as this cannot be conveniently reversed.
+Apostrophe does not automatically add prefixes to existing slugs in your database when you enable prefixes for locales. You can do so with this command line task:
 
 ```
 node app apostrophe-workflow:add-locale-prefixes
 ```
+
+This is a one-time action.
+
+There is currently no task to remove prefixes if you choose to stop using them. However, after the prefix configuration is removed, it becomes possible to edit the slug fully and remove the prefix by hand.
+
+### If you only care about subdomains
+
+As a convenience, if *all* of your locales use subdomains which *match the name of the locale*, you may set `subdomains: true` and skip the `hostnames` option.
+
+### If you only care about prefixes
+
+Similarly, if all of your locales use prefixes which match the name of the locale, you may set `prefixes: true` rather than passing an object that spells out the prefixes for each locale.
+
+> Of course, if you use the `hostnames` or `subdomains` option, your front end proxy must actually be configured to forward traffic for those hostnames.
+
+### One login across all hostnames
+
+The workflow module provides single sign-on across all of the hostnames, provided that you use the locale picker provided by Apostrophe's editing interface to switch between them. The user's session cookie is transferred to the other hostname as part of following that link.
 
 You **do not** have to run this task again. It is a one-time transition.
 
