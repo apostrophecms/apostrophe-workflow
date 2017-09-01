@@ -409,7 +409,6 @@ apos.define('apostrophe-workflow', {
     self.enableCrossDomainSessionToken = function() {
       $('body').on('click', 'a[data-apos-cross-domain-session-token]', function(event) {
         var $link = $(this);
-        console.log(self.options);
         if (!self.options.hostnames) {
           return;
         }
@@ -418,8 +417,6 @@ apos.define('apostrophe-workflow', {
         var token = $link.attr('data-apos-cross-domain-session-token');
         var href = window.location.protocol + '//';
         href += self.options.hostnames[$link.attr('data-apos-locale')];
-        console.log(href);
-        console.log($link[0]);
         href += ':' + window.location.port;
         href += $link.attr('href');
         if (href.indexOf('/') === -1) {
@@ -429,7 +426,6 @@ apos.define('apostrophe-workflow', {
         }
         href += 'workflowCrossDomainSessionToken=' + token;
         href += '&cb=' + Math.random().toString().replace('.', '');
-        console.log('redirecting to ' + href);
         window.location.href = href;
       });
     };
