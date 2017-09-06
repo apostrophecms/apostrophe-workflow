@@ -67,7 +67,7 @@ module.exports = {
     self.addToAdminBar();
     self.apos.pages.addAfterContextMenu(self.menu);
     self.enableHelpers();
-    self.enablecrossDomainSessionCache();
+    self.enableCrossDomainSessionCache();
     return self.enableCollection(callback);
   },
 
