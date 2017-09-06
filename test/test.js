@@ -4,10 +4,9 @@ var async = require('async');
 var request = require('request');
 var fs = require('fs');
 
-var apos;
+describe('Workflow Core', function() {
 
-
-describe('Workflow', function() {
+  var apos;
 
   this.timeout(5000);
 
@@ -527,4 +526,138 @@ describe('Workflow', function() {
       });
     });
   });
+});
+
+describe('Workflow Subdomains and Prefixes', function() {
+
+  var apos;
+
+  this.timeout(5000);
+
+  after(function() {
+    apos.db.dropDatabase();
+  });
+
+  //////
+  // EXISTENCE
+  //////
+
+  it('should be a property of the apos object', function(done) {
+    apos = require('apostrophe')({
+      testModule: true,
+      
+      modules: {
+        'apostrophe-pages': {
+          park: [],
+          types: [
+            {
+              name: 'home',
+              label: 'Home'
+            },
+            {
+              name: 'testPage',
+              label: 'Test Page'
+            }
+          ]
+        },
+        'apostrophe-workflow': {
+          hostnames: {
+            'fr': 'exemple.fr',
+            'default': 'example.com',
+            'us': 'example.com',
+            'us-en': 'example.com',
+            'us-es': 'example.com'
+          },
+          prefixes: {
+            // Even private locales must be distinguishable by hostname and/or prefix
+            'default': '/default',
+            'us': '/us',
+
+            'us-en': '/en',
+            'us-es': '/es',
+            // We don't need prefixes for fr because
+            // that hostname is not shared with other
+            // locales
+          },
+          locales: [
+            {
+              name: 'default',
+              label: 'Default',
+              private: true,
+              children: [
+                {
+                  name: 'fr'
+                },
+                {
+                  name: 'us',
+                  private: true,
+                  children: [
+                    {
+                      name: 'us-en'
+                    },
+                    {
+                      name: 'us-es'
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          defaultLocale: 'default'
+        }
+      },
+      afterInit: function(callback) {
+        assert(apos.modules['apostrophe-workflow']);
+        // Should NOT have an alias!
+        assert(!apos.workflow);
+        return callback(null);
+      },
+      afterListen: function(err) {
+        done();
+      }
+    });
+  });
+
+  function tryMiddleware(url, after) {
+    var req = apos.tasks.getAnonReq();
+    req.absoluteUrl = url;
+    var parsed = require('url').parse(req.absoluteUrl);
+    req.url = parsed.path;
+    req.session = {};
+    req.get = function(propName) {
+      return {
+        Host: parsed.host
+      }[propName];
+    };
+
+    var workflow = apos.modules['apostrophe-workflow'];
+    assert(workflow);
+    var middleware = workflow.expressMiddleware.middleware;
+
+    middleware(req, req.res, function() {
+      after(req);
+    });
+  }
+  
+  it('can find a hostname-determined locale via middleware', function(done) {
+    tryMiddleware('http://exemple.fr', function(req) {
+      assert(req.locale === 'fr');
+      done();
+    });
+  });
+
+  it('can find a jointly-determined locale via middleware', function(done) {
+    tryMiddleware('http://example.com/es', function(req) {
+      assert(req.locale === 'us-es');
+      done();
+    });
+  });
+
+  it('can default the locale reasonably', function(done) {
+    tryMiddleware('http://whoknows.com/whatever', function(req) {
+      assert(req.locale === 'default');
+      done();
+    });
+  });
+
 });

@@ -15,6 +15,7 @@ apos.define('apostrophe-workflow', {
     self.enableLocalePickerModal();
     self.enableForceExport();
     self.enableForceExportWidget();
+    self.enableCrossDomainSessionToken();
   },
 
   construct: function(self, options) {
@@ -403,6 +404,30 @@ apos.define('apostrophe-workflow', {
       return apos.create(self.__meta.name + '-locale-picker-modal',
         _.assign({ manager: self, body: { workflowGuid: options.contextGuid } }, options)
       );
+    };
+    
+    self.enableCrossDomainSessionToken = function() {
+      $('body').on('click', 'a[data-apos-cross-domain-session-token]', function(event) {
+        var $link = $(this);
+        if (!self.options.hostnames) {
+          return;
+        }
+        event.stopPropagation();
+        event.preventDefault();
+        var token = $link.attr('data-apos-cross-domain-session-token');
+        var href = window.location.protocol + '//';
+        href += self.options.hostnames[$link.attr('data-apos-locale')];
+        href += ':' + window.location.port;
+        href += $link.attr('href');
+        if (href.indexOf('/') === -1) {
+          href += '?';
+        } else if (href.indexOf('=') !== -1) {
+          href += '&';
+        }
+        href += 'workflowCrossDomainSessionToken=' + token;
+        href += '&cb=' + Math.random().toString().replace('.', '');
+        window.location.href = href;
+      });
     };
     
   }
