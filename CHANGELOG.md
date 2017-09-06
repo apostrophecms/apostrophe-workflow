@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* You can now configure your own mapping of locales to URL prefixes and hostnames. You may use any combination of the two, as long as it is always possible to determine exactly which locale is intended. For instance, if a hostname is not shared by two locales, then that locale does not need a URL prefix, while another hostname might have three locales and thus require prefixes for all three. The `subdomains` and `prefixes` options are still supported for simpler cases.
+* Single sign-on is provided for sites using multiple hostnames for different locales. As long as you use the provided locale switcher button to change locales, your login session will be carried through to the other locale.
+* A bug was fixed which could cause the generation of superfluous copies of parked pages at startup in certain circumstances involving prefixes. These can be removed via the command line task `node app apostrophe-workflow:remove-numbered-parked-pages`. This is a one-time correction.
+
 ## 2.0.7
 
 All tests passing.
