@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* When exporting a widget, all properties are now exported via the smallest "diff" possible, avoiding unnecessary overwrites of other properties that were not changed in the commit. Previously this was only true for subwidgets.
+* Joins nested in array schemas now participate properly in the `add-missing-locales` task and related mechanisms.
+* After a doc is exported, an invitation is offered to export any related docs (such as the images in a slideshow) that have never been exported to the locales in question and are not yet live in those locales.
+* If the "force export" button for an individual widget is used, and the widget is nested deeply in a context that doesn't exist in the destination locale (such as a nested area), an informational error is reported and no crash occurs.
+
 ## 2.1.0
 
 Unit tests passing.

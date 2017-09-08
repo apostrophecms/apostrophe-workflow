@@ -1,7 +1,7 @@
 {
   "name": "apostrophe-workflow",
-  "version": "2.1.0",
-  "description": "Workflow for Apostrophe 2.x, based on the idea of several documents that represent different versions of the same document",
+  "version": "2.1.1",
+  "description": "Workflow, approvals, localization and internationalization for Apostrophe 2.x",
   "main": "index.js",
   "dependencies": {
     "async": "^1.5.2",
