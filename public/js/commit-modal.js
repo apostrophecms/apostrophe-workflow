@@ -25,13 +25,7 @@ apos.define('apostrophe-workflow-commit-modal', {
         if (_.keys(self.manager.locales).length > 2) {
           // We have more than two locales (more than default and default-draft),
           // so exporting is a logical feature to offer
-          return apos.create('apostrophe-workflow-export-modal', 
-            _.assign({
-              manager: self.manager,
-              body: { id: result.commitId },
-              after: callback
-            }, self.manager.options)
-          );
+          return self.manager.export(result.commitId, callback);
         }
         return callback(null);
       }, function(err) {

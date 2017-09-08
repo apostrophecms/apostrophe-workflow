@@ -13,7 +13,7 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Exporting changes from %s (%s)', data.commit.to.title, data.commit.locale) }}
+  {{ __('Exporting changes from %s (%s)', data.commit.to.title or data.commit.to.slug, data.commit.locale) }}
 {%- endblock -%}
 
 {% block instructions %}
