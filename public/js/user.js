@@ -120,7 +120,19 @@ apos.define('apostrophe-workflow', {
     self.getEditable = function(options, callback) {
       var ids = self.getDocIds();
       return self.api('editable', _.assign({ ids: ids }, options), function(result) {
-        if (result.status == 'ok') {
+        if (result.status === 'ok') {
+          return callback(null, result);
+        } else {
+          return callback(result.status);
+        }
+      }, function(error) {
+        return callback(error);
+      });
+    };
+    
+    self.getRelatedUnexported = function(params, callback) {
+      return self.api('related-unexported', params, function(result) {
+        if (result.status === 'ok') {
           return callback(null, result);
         } else {
           return callback(result.status);
@@ -185,13 +197,24 @@ apos.define('apostrophe-workflow', {
     
     self.enableExport = function() {
       apos.ui.link('apos-workflow-export', null, function($el, id) {
-        return apos.create('apostrophe-workflow-export-modal', 
-          _.assign({
-            manager: self,
-            body: { id: id }
-          }, options)
-        );
+        self.export(id);
       });
+    };
+    
+    // id is a commit id, not a doc id
+
+    self.export = function(id, callback) {
+      return self.launchExportModal({ id: id }, callback);
+    };
+    
+    self.launchExportModal = function(options, callback) {
+      return apos.create('apostrophe-workflow-export-modal', 
+        _.assign({}, self.options, {
+          manager: self,
+          body: options,
+          after: callback
+        }, options)
+      );
     };
 
     self.enableForceExport = function() {
@@ -270,6 +293,7 @@ apos.define('apostrophe-workflow', {
     
     // Present commit modals for all ids in the array, one after another
     self.commit = function(ids, callback) {
+      self.commitOffered = {};
       if (!ids.length) {
         return apos.notify('No modifications to commit.', { type: 'warn', dismiss: true });
       }
@@ -284,9 +308,11 @@ apos.define('apostrophe-workflow', {
       }
       var i = 0;
       return async.eachSeries(ids, function(id, callback) {
+        self.commitOffered[id] = true;
         i++;
         return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId == id) }, callback);
       }, function(err) {
+        self.commitOffered = null;
         return callback && callback(err);
       });
     };
