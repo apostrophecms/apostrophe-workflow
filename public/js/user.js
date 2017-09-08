@@ -293,7 +293,6 @@ apos.define('apostrophe-workflow', {
     
     // Present commit modals for all ids in the array, one after another
     self.commit = function(ids, callback) {
-      self.commitOffered = {};
       if (!ids.length) {
         return apos.notify('No modifications to commit.', { type: 'warn', dismiss: true });
       }
@@ -308,11 +307,9 @@ apos.define('apostrophe-workflow', {
       }
       var i = 0;
       return async.eachSeries(ids, function(id, callback) {
-        self.commitOffered[id] = true;
         i++;
         return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId == id) }, callback);
       }, function(err) {
-        self.commitOffered = null;
         return callback && callback(err);
       });
     };

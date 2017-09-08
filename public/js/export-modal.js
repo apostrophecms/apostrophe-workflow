@@ -66,12 +66,7 @@ apos.define('apostrophe-workflow-export-modal', {
         if (err) {
           return callback(err);
         }
-        // Ignore the related-unexported rule if we already did our best
-        // to invite the user to export this thing in the present
-        // sequence of commit operations
-        var ids = _.filter(result.ids, function(id) {
-          return (!_.has(self.manager.commitOffered || {}, id));
-        });
+        var ids = result.ids;
         return async.eachSeries(ids, function(id, callback) {
           return self.manager.launchExportModal({ id: id }, callback);
         }, function(err) {
