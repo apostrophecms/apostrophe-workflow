@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.2
+
+Unit tests passing.
+
+Regression tests passing.
+
+* The commit preview now displays deleted widgets properly when they have child widgets. Prior to this fix any subwidgets were absent from the preview, which was confusing and caused crashes in cases where templates were not tolerant of this situation.
+
+* Beginning in version 2.1.0 a crash was possible after exporting a document if related documents were joined without `type` in the projection. This has been fixed.
+
 ## 2.1.1
 
 Unit tests passing.
