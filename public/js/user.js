@@ -47,6 +47,15 @@ apos.define('apostrophe-workflow', {
         });
       });
       self.updateWorkflowControls();
+      apos.on('areaEdited', function() {
+        self.updateWorkflowControls();
+      });
+      apos.on('workflowCommitted', function() {
+        self.updateWorkflowControls();
+      });
+      apos.on('workflowSubmitted', function() {
+        self.updateWorkflowControls();
+      });
     };
     
     self.updateWorkflowControls = function() {
@@ -80,7 +89,6 @@ apos.define('apostrophe-workflow', {
           }
         });
 
-        setTimeout(self.updateWorkflowControls, 1000);
         function setClass($menu, c, flag) {
           if (flag) {
             $menu.addClass(c);
@@ -273,6 +281,7 @@ apos.define('apostrophe-workflow', {
           apos.notify('An error occurred submitting the document for approval.', { type: 'error' });
           return callback && callback('error');
         } else {
+          return apos.emit('workflowSubmitted', ids);
           apos.notify('Your submission will be reviewed.', { type: 'success', dismiss: true });
           return callback && callback(null);
         }
@@ -311,6 +320,9 @@ apos.define('apostrophe-workflow', {
         i++;
         return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId == id) }, callback);
       }, function(err) {
+        if (!err) {
+          return apos.emit('workflowCommitted', ids);
+        }
         return callback && callback(err);
       });
     };
