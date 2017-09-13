@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.1.3
+
+Unit tests passing.
+
+Regression tests passing.
+
+* If an object that is modified in the exported commit does not exist at all in the draft being patched, don't crash; just disregard it.
+* Always show live content in live mode.
+* Update the submit and commit buttons only at page load and after actual changes to areas. This significantly reduces unnecessary server load due to polling.
+* Refactored to ensure the invitation to export after a commit, etc. works for contextual pieces that eventually refresh the page on save.
+* Eliminated false positive change detections caused by the `advisoryLock` property.
+
 ## 2.1.2
 
 Unit tests passing.
