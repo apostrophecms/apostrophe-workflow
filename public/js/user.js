@@ -180,9 +180,9 @@ apos.define('apostrophe-workflow', {
       });
     };
     
-    self.enableHistory = function() {
+    self.enableHistory = function(callback) {
       apos.ui.link('apos-workflow-history', null, function($el, id) {
-        self.history(id);
+        self.history(id, callback);
       });
     };
     
@@ -223,12 +223,13 @@ apos.define('apostrophe-workflow', {
       });
     };
     
-    self.forceExport = function(id) {
+    self.forceExport = function(id, callback) {
       return apos.areas.saveAllIfNeeded(function() {
         return apos.create('apostrophe-workflow-force-export-modal', 
           _.assign({
             manager: self,
-            body: { id: id }
+            body: { id: id },
+            after: callback
           }, options)
         );
       });
