@@ -272,7 +272,8 @@ apos.define('apostrophe-workflow', {
     // Submit the docs with the specified ids for approval and notify the user.
     self.submit = function(ids, callback) {
       if (!ids.length) {
-        return apos.notify('No modifications to submit.', { type: 'warn', dismiss: true });
+        apos.notify('No modifications to submit.', { type: 'warn', dismiss: true });
+        return callback && callback(null);
       }
       apos.ui.globalBusy(true);
       self.api('submit', { ids: ids }, function(result) {
@@ -281,7 +282,7 @@ apos.define('apostrophe-workflow', {
           apos.notify('An error occurred submitting the document for approval.', { type: 'error' });
           return callback && callback('error');
         } else {
-          return apos.emit('workflowSubmitted', ids);
+          apos.emit('workflowSubmitted', ids);
           apos.notify('Your submission will be reviewed.', { type: 'success', dismiss: true });
           return callback && callback(null);
         }
@@ -321,7 +322,7 @@ apos.define('apostrophe-workflow', {
         return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId == id) }, callback);
       }, function(err) {
         if (!err) {
-          return apos.emit('workflowCommitted', ids);
+          apos.emit('workflowCommitted', ids);
         }
         return callback && callback(err);
       });
