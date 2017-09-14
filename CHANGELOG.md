@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.4
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Performance and accuracy improvements to the mechanism that decides whether to display the "submit" and "commit" buttons, eliminating false positives and reducing the amount of server work required.
+
+* Attempts to force-export a nested widget whose parent does not exist in the receiving locale should fail; however this was not producing a clear error message in certain cases and it was also possible to be left with the modal still on the page. Fixed.
+
 ## 2.1.3
 
 Unit tests passing.
