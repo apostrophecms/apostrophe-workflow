@@ -10,6 +10,8 @@ Regression tests passing.
 
 * Attempts to force-export a nested widget whose parent does not exist in the receiving locale should fail; however this was not producing a clear error message in certain cases and it was also possible to be left with the modal still on the page. Fixed.
 
+* Added the `apostrophe-workflow:resolve-join-ids` task, which can be used to resolve join ids pointing to the wrong locale. This should never happen, but did happen prior to certain recent fixes re: joins in array fields. It should be a one-time fix but can safely be run more than once.
+
 ## 2.1.3
 
 Unit tests passing.
