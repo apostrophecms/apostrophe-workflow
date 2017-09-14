@@ -63,6 +63,7 @@ module.exports = {
     self.enableAddMissingLocalesTask();
     self.enableAddLocalePrefixesTask();
     self.enableRemoveNumberedParkedPagesTask();
+    self.enableResolveJoinIdsTask();
     self.pushAssets();
     self.addToAdminBar();
     self.apos.pages.addAfterContextMenu(self.menu);
