@@ -246,7 +246,8 @@ apos.define('apostrophe-workflow', {
     self.enableForceExportWidget = function() {
       apos.ui.link('apos-workflow-force-export-widget', null, function($el) {
         var widgetId = $el.closest('[data-apos-widget-id]').attr('data-apos-widget-id');
-        var docId = $el.closest('[data-doc-id]').attr('data-doc-id');
+        // Skip up to the enclosing area with a real doc id, not a virtual or widget one
+        var docId = $el.closest('[data-doc-id^="c"]').attr('data-doc-id');
         return apos.areas.saveAllIfNeeded(function() {
           return apos.create('apostrophe-workflow-force-export-widget-modal', 
             _.assign({
