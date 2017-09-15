@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.1.5
+
+Unit tests passing.
+
+Task-relevant regression tests passing.
+
+* Do not park pages when running the `apostrophe-workflow:add-missing-locales` task, this prevents duplication and an apparent loss of pages (it is actually a duplicate home page without children that you are seeing).
+
+If you were affected by this, there is a task that can be used as a one-time cleanup:
+
+`node app apostrophe-workflow:remove-numbered-parked-pages`
+
 ## 2.1.4
 
 Unit tests passing.
