@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.0
+
+Unit tests passing.
+
+Task-relevant regression tests passing.
+
 ## 2.1.5
 
 Unit tests passing.

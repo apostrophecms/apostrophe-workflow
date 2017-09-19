@@ -490,24 +490,6 @@ For pages, it is almost as straightforward. Click on "Pages" in the admin bar to
 
 As with pieces, change "Trash" to "No." The "Trash" field will be located right after the "Published" field. When you click save, the page will be live in this locale.
 
-## Technical approach
-
-For 2.x, the draft and live versions of a doc are completely separate docs as far as most of Apostrophe is concerned. A `workflowGuid` property ties them together. This greatly reduces the scope of changes required in the rest of Apostrophe and improves performance by removing the need to move content around on every page view or load content for locales you are not looking at.
-
-As the term locale suggests, the 2.x workflow module also implements localization of content by introducing paired live and draft locales for each country or culture you wish to support.
-  
-### Use of jsondiffpatch
-
-This module relies somewhat on `jsondiffpatch` to calculate diffs between commits and offer a patch to be applied to the drafts of other locales. `jsondiffpatch` is also used to visualize differences in the commit modal.
-
-Here is [documentation of how the diff deltas work](https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md). Our code taps into this diff output format to visualize differences.
-
-As it turns out this algorithm is best suited to exporting changes to the schema fields of a doc.
-
-### Patching and exporting of widgets
-
-`jsondiffpatch` is not well suited to patching widgets and other items with globally unique ids that can be leveraged to always recognize them even if they have moved around in a document. For this reason a separate algorithm is applied first to handle exporting and patching of widgets.
-
 ### Aliasing the module
 
 By default, optional modules like `apostrophe-workflow` do not have an alias. That means you can't just type `apos.workflow` to access them.
@@ -552,6 +534,71 @@ And the `workflowPreview.html` template:
 ```
 
 If you do not supply an implementation, a message indicating that no preview is available will be displayed. A list of modified fields will still be offered to help the user understand what has changed.
+
+## Command line tasks and workflow
+
+By default, command line tasks that use Apostrophe's `find`, `insert` and `update` methods see and modify the content of the default locale (not the draft version of it).
+
+You can change this by adding the `--workflow-locale` option to your command line:
+
+```
+node app my-module:my-task --workflow-locale=en
+node app my-module:my-task --workflow-locale=en-draft
+```
+    
+Note that you *must add the `-draft` suffix* if you want to target draft content, not live content.
+
+## Direct MongoDB access and workflow
+
+Code that bypasses Apostrophe's `find`, `insert` and `update` methods in favor of directly modifying the `apos.docs.db` MongoDB collection will not automatically restrict itself to the current locale.
+
+Usually, this is perfectly fine. Many command line tasks and migrations should operate on all docs, regardless of whether they are part of a particular locale. And many direct uses of `apos.docs.db` in project-level code are already limiting an `update` operation to a specific `_id`, which will already be specific to a locale.
+
+However, if you need to work directly with MongoDB while respecting a specific locale, you can check the `workflowLocale` property as part of your MongoDB query. The values of `workflowLocale` will match the locale name, except that *docs in draft locales will have a `-draft` suffix* appended to the locale name you were expecting.
+
+**Since not all doc types are subject to workflow,** you may need to build your criteria like this:
+
+```javascript
+{
+  $and: [
+    {
+      $or: [
+        {
+          workflowLocale: 'en'
+        },
+        {
+          workflowLocale: { $exists: 0 }
+        }
+      ]
+    },
+    {
+      // YOUR OWN CRITERIA GO HERE
+    }
+  ]
+}
+```
+
+**Again, this is often unnecessary.** Code that is already operating on specific docs as specified by `_id` will already touch only one locale, because docs are replicated across locales with different `_id` properties. The localized versions of each doc will have **different `_id` properties, but the same `workflowGuid` property.**
+
+In general, you should use Apostrophe's own methods rather than direct MongoDB access unless you have a compelling reason, such as access to `$set` or `$inc`.
+
+## Technical approach
+
+For 2.x, the draft and live versions of a doc are completely separate docs as far as most of Apostrophe is concerned. A `workflowGuid` property ties them together. This greatly reduces the scope of changes required in the rest of Apostrophe and improves performance by removing the need to move content around on every page view or load content for locales you are not looking at.
+
+As the term locale suggests, the 2.x workflow module also implements localization of content by introducing paired live and draft locales for each country or culture you wish to support.
+  
+### Use of jsondiffpatch
+
+This module relies somewhat on `jsondiffpatch` to calculate diffs between commits and offer a patch to be applied to the drafts of other locales. `jsondiffpatch` is also used to visualize differences in the commit modal.
+
+Here is [documentation of how the diff deltas work](https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md). Our code taps into this diff output format to visualize differences.
+
+As it turns out this algorithm is best suited to exporting changes to the schema fields of a doc.
+
+### Patching and exporting of widgets
+
+`jsondiffpatch` is not well suited to patching widgets and other items with globally unique ids that can be leveraged to always recognize them even if they have moved around in a document. For this reason a separate algorithm is applied first to handle exporting and patching of widgets.
 
 ## Legacy task: cleaning up duplicate homepages
 
