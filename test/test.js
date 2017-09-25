@@ -659,5 +659,147 @@ describe('Workflow Subdomains and Prefixes', function() {
       done();
     });
   });
+  
+  it('can patch a draft with a modification to a widget', function(done) {
+    var to = {
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            content: 'One',
+            _id: '1',
+          },
+          {
+            type: 'apostrophe-rich-text',
+            content: 'Two',
+            _id: '2'
+          },
+          {
+            type: 'apostrophe-rich-text',
+            content: 'Three',
+            _id: '3'
+          },
+        ]
+      }
+    };
+    var from = _.cloneDeep(to);
+    from.body.items[1].content = 'Modified';
+    var draft = _.cloneDeep(to);
+    draft.body.items[0].content = 'Localized One';
+    apos.modules['apostrophe-workflow'].applyPatch(to, from, draft, function(err) {
+      assert(draft.body.items[0].content === 'Localized One');
+      assert(draft.body.items[1].content === 'Modified');
+      assert(draft.body.items[2].content === 'Three');
+      assert(!err);
+      done();
+    });
+  });
 
+  it('can apply a patch that moves a widget without altering it', function(done) {
+    var to = {
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            content: 'One',
+            _id: '1',
+          },
+          {
+            type: 'apostrophe-rich-text',
+            content: 'Two',
+            _id: '2'
+          },
+          {
+            type: 'apostrophe-rich-text',
+            content: 'Three',
+            _id: '3'
+          },
+        ]
+      }
+    };
+    var from = _.cloneDeep(to);
+    var tmp = from.body.items[1];
+    from.body.items[1] = from.body.items[0];
+    from.body.items[0] = tmp;
+    var draft = _.cloneDeep(to);
+    draft.body.items[0].content = 'Localized One';
+    draft.body.items[1].content = 'Localized Two';
+    draft.body.items[2].content = 'Localized Three';
+    apos.modules['apostrophe-workflow'].applyPatch(to, from, draft, function(err) {
+      assert(draft.body.items[0].content === 'Localized Two');
+      assert(draft.body.items[1].content === 'Localized One');
+      assert(draft.body.items[2].content === 'Localized Three');
+      assert(!err);
+      done();
+    });
+  });
+
+  it('order comes out right in patch when swapping just two', function(done) {
+    var to = {
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            content: 'One',
+            _id: '1',
+          },
+          {
+            type: 'apostrophe-rich-text',
+            content: 'Two',
+            _id: '2'
+          }
+        ]
+      }
+    };
+    var from = _.cloneDeep(to);
+    var tmp = from.body.items[1];
+    from.body.items[1] = from.body.items[0];
+    from.body.items[0] = tmp;
+    var draft = _.cloneDeep(to);
+    draft.body.items[0].content = 'Localized One';
+    draft.body.items[1].content = 'Localized Two';
+    apos.modules['apostrophe-workflow'].applyPatch(to, from, draft, function(err) {
+      assert(draft.body.items[0].content === 'Localized Two');
+      assert(draft.body.items[1].content === 'Localized One');
+      assert(!err);
+      done();
+    });
+  });
+  it('order comes out right in patch when adding a widget with subwidgets', function(done) {
+    var from = {
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'singleton',
+            _id: '1',
+            items: [
+              {
+                type: 'apostrophe-rich-text',
+                content: 'One',
+                _id: '1a',
+              },
+              {
+                type: 'apostrophe-rich-text',
+                content: 'Two',
+                _id: '1b'
+              }
+            ]
+          }
+        ]
+      }
+    };
+    var to = _.cloneDeep(from);
+    to.body.items[0].items = [];
+    var draft = _.cloneDeep(to);
+    apos.modules['apostrophe-workflow'].applyPatch(to, from, draft, function(err) {
+      assert(draft.body.items[0].items[0].content === 'One');
+      assert(draft.body.items[0].items[1].content === 'Two');
+      assert(!err);
+      done();
+    });
+  });
 });
