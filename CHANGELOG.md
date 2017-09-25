@@ -1,10 +1,20 @@
 # Changelog
 
+## 2.2.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* When exporting, reordering widgets should export only the change in ordering; it should not erase localizations performed on those widgets in the target locale.
+
 ## 2.2.0
 
 Unit tests passing.
 
 Task-relevant regression tests passing.
+
+* `workflow-locale` command line option for tasks. Also new documentation on the subject of workflow and how it interacts with tasks.
 
 ## 2.1.5
 
