@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.2
+
+Unit tests passing.
+
+Regression tests passing.
+
+* When exporting, moves should be handled from the top down (parent widgets first). Otherwise nested widgets can be lost.
+* New unit tests covering this.
+
 ## 2.2.1
 
 Unit tests passing.

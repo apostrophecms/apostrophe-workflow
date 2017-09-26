@@ -802,4 +802,167 @@ describe('Workflow Subdomains and Prefixes', function() {
       done();
     });
   });
+
+  it('order change at top level does not delete subwidgets', function(done) {
+    var to = {
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'panel',
+            _id: '1',
+            'headline': {
+              items: [
+                {
+                  _id: '1a',
+                  type: 'apostrophe-rich-text',
+                  content: 'Test Headline'
+                }
+              ]
+            }
+          },
+          {
+            type: 'apostrophe-rich-text',
+            _id: '2',
+            content: 'Two'
+          },
+          {
+            type: 'apostrophe-rich-text',
+            _id: '3',
+            content: 'Three'
+          },
+        ]
+      }
+    };
+    
+    var from = _.cloneDeep(to);
+    var draft = _.cloneDeep(to);
+    draft.body.items[0].headline.items[0].content = 'Localized Headline';
+    draft.body.items[1].content = 'Localized Two';
+    draft.body.items[2].content = 'Localized Three';
+    assert(draft.body.items[0].headline.items.length === 1);
+    var tmp = from.body.items[1];
+    from.body.items[1] = from.body.items[0];
+    from.body.items[0] = tmp;
+    apos.modules['apostrophe-workflow'].applyPatch(to, from, draft, function(err) {
+      assert(!err);
+      assert(draft.body.items[0].type === 'apostrophe-rich-text');
+      assert(draft.body.items[0].content === 'Localized Two');
+      assert(draft.body.items[1].type === 'panel');
+      assert(draft.body.items[1].headline);
+      assert(draft.body.items[1].headline.items.length === 1);
+      assert(draft.body.items[1].headline.items[0].content === 'Localized Headline');
+      assert(draft.body.items[2].type === 'apostrophe-rich-text');
+      assert(draft.body.items[2].content === 'Localized Three');
+      done();
+    });
+  });
+  it('addition at top level works properly in the middle', function(done) {
+    var to = {
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'panel',
+            _id: '1',
+            'headline': {
+              items: [
+                {
+                  _id: '1a',
+                  type: 'apostrophe-rich-text',
+                  content: 'Test Headline'
+                }
+              ]
+            }
+          },
+          {
+            type: 'apostrophe-rich-text',
+            _id: '2',
+            content: 'Two'
+          },
+          {
+            type: 'apostrophe-rich-text',
+            _id: '3',
+            content: 'Three'
+          },
+        ]
+      }
+    };
+    
+    var from = _.cloneDeep(to);
+    var draft = _.cloneDeep(to);
+    draft.body.items[0].headline.items[0].content = 'Localized Headline';
+    draft.body.items[1].content = 'Localized Two';
+    draft.body.items[2].content = 'Localized Three';
+    assert(draft.body.items[0].headline.items.length === 1);
+    var tmp = from.body.items[1];
+    from.body.items[1] = from.body.items[0];
+    from.body.items[0] = tmp;
+    from.body.items.splice(1, 0, {
+      type: 'apostrophe-rich-text',
+      _id: '11',
+      content: 'Added'
+    });
+    apos.modules['apostrophe-workflow'].applyPatch(to, from, draft, function(err) {
+      assert(!err);
+      assert(draft.body.items[0].type === 'apostrophe-rich-text');
+      assert(draft.body.items[0].content === 'Localized Two');
+      assert(draft.body.items[1].type === 'apostrophe-rich-text');
+      assert(draft.body.items[1].content === 'Added');
+      assert(draft.body.items[2].type === 'panel');
+      assert(draft.body.items[2].headline);
+      assert(draft.body.items[2].headline.items.length === 1);
+      assert(draft.body.items[2].headline.items[0].content === 'Localized Headline');
+      assert(draft.body.items[3].type === 'apostrophe-rich-text');
+      assert(draft.body.items[3].content === 'Localized Three');
+      done();
+    });
+  });
+  it('append produces the right order with 2 items', function(done) {
+    var to = {
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            _id: '1',
+            content: 'one'
+          },
+          {
+            type: 'apostrophe-rich-text',
+            _id: '2',
+            content: 'two'
+          },
+          {
+            type: 'apostrophe-rich-text',
+            _id: '3',
+            content: 'three'
+          }
+        ]
+      }
+    };
+    var from = _.cloneDeep(to);
+    from.body.items = from.body.items.concat([
+      {
+        type: 'apostrophe-rich-text',
+        _id: '4',
+        content: 'four'
+      },
+      {
+        type: 'apostrophe-rich-text',
+        _id: '5',
+        content: 'five'
+      }
+    ]);
+    var draft = _.cloneDeep(to);
+    apos.modules['apostrophe-workflow'].applyPatch(to, from, draft, function(err) {
+      assert(!err);
+      assert(draft.body.items.length === 5);
+      var i;
+      for (i = 0; (i < 5); i++) {
+        assert(draft.body.items[i]._id === (i + 1).toString());
+      }
+      done();
+    });
+  });
 });
