@@ -857,7 +857,7 @@ describe('Workflow Subdomains and Prefixes', function() {
       done();
     });
   });
-  it('addition at top level works properly', function(done) {
+  it('addition at top level works properly in the middle', function(done) {
     var to = {
       body: {
         type: 'area',
@@ -915,6 +915,53 @@ describe('Workflow Subdomains and Prefixes', function() {
       assert(draft.body.items[2].headline.items[0].content === 'Localized Headline');
       assert(draft.body.items[3].type === 'apostrophe-rich-text');
       assert(draft.body.items[3].content === 'Localized Three');
+      done();
+    });
+  });
+  it('append produces the right order with 2 items', function(done) {
+    var to = {
+      body: {
+        type: 'area',
+        items: [
+          {
+            type: 'apostrophe-rich-text',
+            _id: '1',
+            content: 'one'
+          },
+          {
+            type: 'apostrophe-rich-text',
+            _id: '2',
+            content: 'two'
+          },
+          {
+            type: 'apostrophe-rich-text',
+            _id: '3',
+            content: 'three'
+          }
+        ]
+      }
+    };
+    var from = _.cloneDeep(to);
+    from.body.items = from.body.items.concat([
+      {
+        type: 'apostrophe-rich-text',
+        _id: '4',
+        content: 'four'
+      },
+      {
+        type: 'apostrophe-rich-text',
+        _id: '5',
+        content: 'five'
+      }
+    ]);
+    var draft = _.cloneDeep(to);
+    apos.modules['apostrophe-workflow'].applyPatch(to, from, draft, function(err) {
+      assert(!err);
+      assert(draft.body.items.length === 5);
+      var i;
+      for (i = 0; (i < 5); i++) {
+        assert(draft.body.items[i]._id === (i + 1).toString());
+      }
       done();
     });
   });
