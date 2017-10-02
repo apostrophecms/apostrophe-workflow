@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Introduced `setPropertiesAcrossLocales` method, which is convenient for programmatically updating many properties of a doc across some or all locales.
+
 ## 2.2.2
 
 Unit tests passing.

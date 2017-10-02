@@ -965,4 +965,241 @@ describe('Workflow Subdomains and Prefixes', function() {
       done();
     });
   });
+  
+  it('getCriteriaAcrossLocales throws exception if doc has no workflowGuid', function() {
+    var w = apos.modules['apostrophe-workflow'];
+    var req = apos.tasks.getReq();
+    var error;
+    try {
+      return w.getCriteriaAcrossLocales(req, {
+        _id: 'foo',
+        type: 'bar'
+      }, [ 'en', 'fr' ], {});
+    } catch (e) {
+      error = e;
+    }
+    assert(error);
+  });
+
+  it('getCriteriaAcrossLocales produces nice response with workflowGuid', function() {
+    var w = apos.modules['apostrophe-workflow'];
+    var req = apos.tasks.getReq();
+    var error;
+    var criteria;
+    try {
+      criteria = w.getCriteriaAcrossLocales(req, {
+        _id: 'foo',
+        type: 'bar',
+        workflowGuid: 'baz'
+      }, [ 'fr', 'us' ], {});
+    } catch (e) {
+      error = e;
+    }
+    assert(!error);
+    assert(criteria);
+    assert(criteria.$and);
+    assert(criteria.$and.length === 2);
+    assert(criteria.$and[0].workflowGuid === 'baz');
+    var $in = criteria.$and[0].workflowLocale.$in;
+    assert($in);
+    assert($in[0] === 'fr');
+    assert($in[1] === 'us');
+    assert(!$in[2]);
+  });
+
+  it('getCriteriaAcrossLocales respects mode === "both"', function() {
+    var w = apos.modules['apostrophe-workflow'];
+    var req = apos.tasks.getReq();
+    var error;
+    var criteria;
+    try {
+      criteria = w.getCriteriaAcrossLocales(req, {
+        _id: 'foo',
+        type: 'bar',
+        workflowGuid: 'baz'
+      }, [ 'fr', 'us' ], { mode: 'both' });
+    } catch (e) {
+      error = e;
+    }
+    assert(!error);
+    assert(criteria);
+    assert(criteria.$and);
+    assert(criteria.$and.length === 2);
+    assert(criteria.$and[0].workflowGuid === 'baz');
+    var $in = criteria.$and[0].workflowLocale.$in;
+    assert($in);
+    assert($in[0] === 'fr');
+    assert($in[1] === 'us');
+    assert($in[2] === 'fr-draft');
+    assert($in[3] === 'us-draft');
+    assert(!$in[4]);
+  });
+
+  it('getCriteriaAcrossLocales respects mode === "draft"', function() {
+    var w = apos.modules['apostrophe-workflow'];
+    var req = apos.tasks.getReq();
+    var error;
+    var criteria;
+    try {
+      criteria = w.getCriteriaAcrossLocales(req, {
+        _id: 'foo',
+        type: 'bar',
+        workflowGuid: 'baz'
+      }, [ 'fr', 'us' ], { mode: 'draft' });
+    } catch (e) {
+      error = e;
+    }
+    assert(!error);
+    assert(criteria);
+    assert(criteria.$and);
+    assert(criteria.$and.length === 2);
+    assert(criteria.$and[0].workflowGuid === 'baz');
+    var $in = criteria.$and[0].workflowLocale.$in;
+    assert($in);
+    assert($in[0] === 'fr-draft');
+    assert($in[1] === 'us-draft');
+    assert(!$in[2]);
+  });
+
+  it('getCriteriaAcrossLocales respects mode === "live"', function() {
+    var w = apos.modules['apostrophe-workflow'];
+    var req = apos.tasks.getReq();
+    var error;
+    var criteria;
+    try {
+      criteria = w.getCriteriaAcrossLocales(req, {
+        _id: 'foo',
+        type: 'bar',
+        workflowGuid: 'baz'
+      }, [ 'fr-draft', 'us' ], { mode: 'live' });
+    } catch (e) {
+      error = e;
+    }
+    assert(!error);
+    assert(criteria);
+    assert(criteria.$and);
+    assert(criteria.$and.length === 2);
+    assert(criteria.$and[0].workflowGuid === 'baz');
+    var $in = criteria.$and[0].workflowLocale.$in;
+    assert($in);
+    assert($in[0] === 'fr');
+    assert($in[1] === 'us');
+    assert(!$in[2]);
+  });
+
+  it('getCriteriaAcrossLocales respects locales === "all"', function() {
+    var w = apos.modules['apostrophe-workflow'];
+    var req = apos.tasks.getReq();
+    var error;
+    var criteria;
+    try {
+      criteria = w.getCriteriaAcrossLocales(req, {
+        _id: 'foo',
+        type: 'bar',
+        workflowGuid: 'baz'
+      }, 'all', {});
+    } catch (e) {
+      error = e;
+    }
+    assert(!error);
+    assert(criteria);
+    assert(criteria.$and);
+    assert(criteria.$and.length === 2);
+    assert(criteria.$and[0].workflowGuid === 'baz');
+    var $in = criteria.$and[0].workflowLocale.$in;
+    assert($in);
+    var locales = [ 
+      'default', 
+      'default-draft', 
+      'fr', 
+      'fr-draft', 
+      'us', 
+      'us-draft', 
+      'us-en', 
+      'us-en-draft', 
+      'us-es', 
+      'us-es-draft'
+    ];
+    assert(_.isEqual(locales, $in));
+  });
+
+  it('getCriteriaAcrossLocales respects permissions', function() {
+    var w = apos.modules['apostrophe-workflow'];
+    var req = apos.tasks.getAnonReq();
+    var error;
+    var criteria;
+    try {
+      criteria = w.getCriteriaAcrossLocales(req, {
+        _id: 'foo',
+        type: 'bar',
+        workflowGuid: 'baz'
+      }, 'all', {});
+    } catch (e) {
+      error = e;
+    }
+    assert(!error);
+    assert(criteria);
+    assert(criteria.$and);
+    assert(criteria.$and.length === 2);
+    assert(criteria.$and[0].workflowGuid === 'baz');
+    // We are looking for the stub criteria the permissions module uses when
+    // it sees that an anon user should never be able to do something
+    assert(criteria.$and[1]._iNeverMatch === true);
+  });
+  
+  it('setPropertiesAcrossLocales works', function(done) {
+    var results;
+    var w = apos.modules['apostrophe-workflow'];
+    var req = apos.tasks.getReq();
+    var home;
+    return async.series([
+      fetch,
+      set,
+      fetchResults,
+      fetchUnrelated
+    ], function(err) {
+      assert(!err);
+      done();
+    });
+    function fetch(callback) {
+      return apos.pages.find(req, { type: 'home' }).toObject(function(err, _home) {
+        assert(!err);
+        assert(_home);
+        home = _home;
+        return callback(null);
+      });
+    }
+    function set(callback) {
+      return w.setPropertiesAcrossLocales(req, home, { age: 50 }, [ 'us', 'fr' ], {}, function(err) {
+        assert(!err);
+        return callback(null);
+      });
+    }
+    function fetchResults(callback) {
+      return apos.docs.db.find({ workflowGuid: home.workflowGuid }).toArray(function(err, docs) {
+        assert(!err);
+        var us = _.find(docs, { workflowLocale: 'us' });
+        assert(us);
+        assert(us.age === 50);
+        var fr = _.find(docs, { workflowLocale: 'fr' });
+        assert(fr);
+        assert(fr.age === 50);
+        var usDraft = _.find(docs, { workflowLocale: 'us-draft' });
+        assert(usDraft);
+        assert(usDraft.age !== 50);
+        return callback(null);
+      });
+    }
+    function fetchUnrelated(callback) {
+      // Make sure that pages other than the desired page were unaffected
+      return apos.docs.db.find({ workflowGuid: { $ne: home.workflowGuid, $exists: 1 } }).toArray(function(err, docs) {
+        assert(!err);
+        var us = _.find(docs, { workflowLocale: 'us' });
+        assert(us);
+        assert(us.age !== 50);
+        return callback(null);
+      });
+    }
+  });
+
 });

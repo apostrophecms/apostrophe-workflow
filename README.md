@@ -580,7 +580,67 @@ However, if you need to work directly with MongoDB while respecting a specific l
 
 **Again, this is often unnecessary.** Code that is already operating on specific docs as specified by `_id` will already touch only one locale, because docs are replicated across locales with different `_id` properties. The localized versions of each doc will have **different `_id` properties, but the same `workflowGuid` property.**
 
-In general, you should use Apostrophe's own methods rather than direct MongoDB access unless you have a compelling reason, such as access to `$set` or `$inc`.
+In general, you should use Apostrophe's own methods rather than direct MongoDB access unless you have a compelling reason, such as access to `$set` or `$inc`. See also `setPropertiesAcrossLocales`, below, for a convenient way to access `$set`.
+
+## `setPropertiesAcrossLocales`: modifying a document programmatically across locales
+
+The `setPropertiesAcrossLocales` method can quickly update properties of a doc across some or all locales:
+
+```javascript
+var workflow = self.apos.modules['apostrophe-workflow'];
+// `doc` is a doc we already fetched normally for the current locale
+return workflow.setPropertiesAcrossLocales(req, doc,
+  { age: 50 },
+  [ 'us', 'fr' ],
+  {},
+callback);
+```
+
+This call will set the `age` property to `50` in both the `us` and `fr` locales, which must be configured in the workflow module.
+
+This affects only these two live locales. To affect both live and draft locales, write:
+
+```
+return workflow.setPropertiesAcrossLocales(req, doc,
+  { age: 50 },
+  [ 'us', 'fr' ],
+  { mode: 'both' },
+callback);
+```
+
+To affect only draft locales, write:
+
+```
+return workflow.setPropertiesAcrossLocales(req, doc,
+  { age: 50 },
+  [ 'us', 'fr' ],
+  { mode: 'draft' },
+callback);
+```
+
+To affect *all* locales:
+
+```
+return workflow.setPropertiesAcrossLocales(req, doc,
+  { age: 50 },
+  'all',
+  {},
+callback);
+```
+
+To affect all locales, but live docs only, not drafts:
+
+```
+return workflow.setPropertiesAcrossLocales(req, doc,
+  { age: 50 },
+  'all',
+  { mode: 'live' },
+callback);
+```
+
+*This method bypasses the `excludeProperties` option* and also does not invoke `docAfterSave`, etc.
+
+"What about inserting a new doc?" A newly inserted doc is pushed to all locales, however its `trash` flag is true in all of them except the current locale. If you want the new doc to be instantly available in all locales, then after the insert is complete, you can use `setPropertiesAcrossLocales` to set the `trash` property to `false`.
 
 ## Technical approach
 
