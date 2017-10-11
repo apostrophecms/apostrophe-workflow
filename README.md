@@ -272,6 +272,12 @@ Currently there is no automated way to roll back to not having slug prefixes. Ho
 
 *The editor may appear to allow removing the prefix from the slug, but it is always restored on save.*
 
+## Tags and localization: we recommend using joins instead
+
+Tags in Apostrophe follow the typical MongoDB approach of a simple array property containing strings. They are localized like other fields. Thus if they are used to select content for display it is important to be consistent when translating tags to a particular locale.
+
+When working with localization it may be preferable to avoid tags in favor of joins. A `joinByOne` or `joinByArray` relationship can be used to relate a document to various "categories," which are localized documents in their own right and therefore behave consistently across locales. `apostrophe-workflow` will ensure that exported joins referencing a category in one locale are correctly adjusted to point to the equivalent category in the other locale.
+
 ## Workflow with permissions: limiting who can do what
 
 The workflow module supports permissions. This tutorial breaks down how to go about setting up a site with permissions and then creating permissions groups for particular locales. We'll then add new users to each of those groups and experiment with what they can and can't do.
