@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.3.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Even if `--live` is not specified, the `add-missing-locales` task still helps you out by making sure docs don't start out in the trash in draft locales; very confusing otherwise.
+* Many instances of the "commit" button appearing needlessly were eliminated by normalizing the difference between the trash property being `false` and the trash property being nonexistent.
+* Documentation note regarding tags and localization.
+
 ## 2.3.0
 
 Unit tests passing.
