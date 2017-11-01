@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.3.3
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Safely ignore widgets with no manager.
+* When autoconfiguring the `hostnames` feature based on the legacy `subdomains` setting, keep port numbers unless they are `80` or `443`.
+* Override `getBaseUrl` method of `apostrophe-pages` to push out the right absolute URLs based on the hostnames option.
+
+## 2.3.2
+
+Unit tests passing.
+
+Regression tests passing.
+
+* If an area is present in live but absent in draft, remove it during a commit, unless it is excluded from workflow. Presents the commit button from appearing where it shouldn't if an area has been removed from the template.
+
 ## 2.3.1
 
 Unit tests passing.
