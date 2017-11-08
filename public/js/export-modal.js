@@ -20,7 +20,7 @@ apos.define('apostrophe-workflow-export-modal', {
       return callback(null);
     };
 
-    self.saveContent = function(callback) {
+    self.getLocales = function() {
       var locales = [];
       var $checkboxes = self.$el.find('input[type="checkbox"]:checked');
       $checkboxes.each(function() {
@@ -30,6 +30,12 @@ apos.define('apostrophe-workflow-export-modal', {
           locales.push(matches[1]);
         }
       });
+      return locales;
+    };
+
+    self.saveContent = function(callback) {
+      var locales = self.getLocales();
+
       if (!locales.length) {
         apos.notify('Select at least one locale to export to.', { type: 'error' });
         return callback('user');
@@ -48,17 +54,21 @@ apos.define('apostrophe-workflow-export-modal', {
             apos.notify('An error occurred.', { type: 'error' });
             return callback(result.status);
           }
-          _.each(result.errors, function(error) {
-            apos.notify('%s: ' + error.message, error.locale, { type: 'error' });
-          });
-          if (result.success.length) {
-            apos.notify('Successfully exported to: %s', result.success.join(', '), { type: 'success', dismiss: true });
-          }
+          self.presentResult(result);
           return callback(null);
         }, function(err) {
           return callback(err);
         });
       });
+    };
+    
+    self.presentResult = function(result) {
+      _.each(result.errors, function(error) {
+        apos.notify('%s: ' + error.message, error.locale, { type: 'error' });
+      });
+      if (result.success.length) {
+        apos.notify('Successfully exported to: %s', result.success.join(', '), { type: 'success', dismiss: true });
+      }
     };
     
     self.exportRelatedUnexported = function(locales, callback) {

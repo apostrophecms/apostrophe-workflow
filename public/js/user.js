@@ -215,8 +215,38 @@ apos.define('apostrophe-workflow', {
       return self.launchExportModal({ id: id }, callback);
     };
     
-    self.launchExportModal = function(options, callback) {
+    // ids are commit ids, not doc ids
+
+    self.batchExport = function(ids, callback) {
+      return self.launchBatchExportModal({ ids: ids }, callback);
+    };
+    
+    self.batchForceExportGetLocales = function(data, callback) {
+      return self.launchBatchForceExportModal(data, callback);
+    };
+
+    self.launchExportModal = function(data, callback) {
       return apos.create('apostrophe-workflow-export-modal', 
+        _.assign({}, self.options, {
+          manager: self,
+          body: data,
+          after: callback
+        }, options)
+      );
+    };
+
+    self.launchBatchExportModal = function(options, callback) {
+      return apos.create('apostrophe-workflow-batch-export-modal', 
+        _.assign({}, self.options, {
+          manager: self,
+          body: options,
+          after: callback
+        }, options)
+      );
+    };
+
+    self.launchBatchForceExportModal = function(options, callback) {
+      return apos.create('apostrophe-workflow-batch-force-export-modal', 
         _.assign({}, self.options, {
           manager: self,
           body: options,
@@ -242,6 +272,17 @@ apos.define('apostrophe-workflow', {
         );
       });
     };
+
+    self.launchBatchForceExportModal = function(options, callback) {
+      return apos.create('apostrophe-workflow-batch-force-export-modal', 
+        _.assign({}, self.options, {
+          manager: self,
+          body: options,
+          after: callback
+        }, options)
+      );
+    };
+
 
     self.enableForceExportWidget = function() {
       apos.ui.link('apos-workflow-force-export-widget', null, function($el) {
@@ -442,6 +483,28 @@ apos.define('apostrophe-workflow', {
       return apos.create(self.__meta.name + '-locale-picker-modal',
         _.assign({ manager: self, body: { workflowGuid: options.contextGuid } }, options)
       );
+    };
+    
+    self.presentBatchExportResult = function(result) {
+      var errors = 0;
+      var success = 0;
+      _.each(result.results, function(result, key) {
+        if (result.errors.length) {
+          errors++;
+        }
+        if (result.success.length) {
+          success++;
+        }
+      });
+      if (errors) {
+        apos.notify('Errors were encountered for some locales while exporting %s of the documents.', errors, { type: 'error' });
+      }
+      if (success) {
+        apos.notify('%s documents were successfully exported to one or more locales.', success, { type: 'success' });
+      }
+      if (!(errors || success)) {
+        apos.notify('No documents were exported.');
+      }
     };
     
     self.enableCrossDomainSessionToken = function() {
