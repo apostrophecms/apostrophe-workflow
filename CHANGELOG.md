@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.4.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Fixed a bug that generated duplicate pages in certain cases when new locales were encountered in the configuration at startup.
+* Batch operations on pieces for workflow: submit, commit (with an optional export step), and force export. Since these are batch operations, they do not display a preview and a confirmation modal for each and every document, so they should be used only when you know a large volume of documents are "ready to go."
+* Factored a javascript API up from the routes for easier programmatic use.
+* Facilitate local dev testing of hostnames feature by accommodating the port number of the original request when generating cross-locale links.
+* Do not park pages when running `add-locale-prefixes`.
+
 ## 2.3.3
 
 Unit tests passing.
