@@ -488,7 +488,7 @@ apos.define('apostrophe-workflow', {
     self.presentBatchExportResult = function(result) {
       var errors = 0;
       var success = 0;
-      _.each(result.results, function(result, key) {
+      _.each(result, function(result, key) {
         if (result.errors.length) {
           errors++;
         }
