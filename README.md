@@ -543,6 +543,8 @@ If you do not supply an implementation, a message indicating that no preview is 
 
 ## Command line tasks and workflow
 
+### Using the `--workflow-locale` option
+
 By default, command line tasks that use Apostrophe's `find`, `insert` and `update` methods see and modify the content of the default locale (not the draft version of it).
 
 You can change this by adding the `--workflow-locale` option to your command line:
@@ -553,6 +555,24 @@ node app my-module:my-task --workflow-locale=en-draft
 ```
     
 Note that you *must add the `-draft` suffix* if you want to target draft content, not live content.
+
+### Setting the current locale programmatically
+
+You can also choose a locale programmatically when creating a `req` object for use in a task.
+
+Here's a way to get an "admin" `req` object that can do anything and "sees" docs in the `default` locale:
+
+```
+self.apos.tasks.getReq({ locale: 'fr' })
+```
+
+And here's a way to get an "anonymous" `req` object that can only see what the logged-out public sees:
+
+```
+self.apos.tasks.getAnonReq({ locale: 'fr' })
+```
+
+As usual, these can be used with any Apostrophe method that expects a `req` object.
 
 ## Direct MongoDB access and workflow
 
