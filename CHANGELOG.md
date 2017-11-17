@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.4.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Do not fetch areas and joins when simply checking whether an individual related doc has been changed (we already fetched areas and joins on the original page, this is about those related to it). We were not using the information and it made the check for committable related docs very expensive and slow.
+* Reject invalid slug prefixes (those not beginning with /) and those not currently implemented (those with more than one /). Without this check an accidentally left out `/` can result in many duplicate parked pages.
+* Leverage the new `apostrophe-jobs` module for long-running batch operations on pieces with progress display.
+
 ## 2.4.0
 
 Unit tests passing.
