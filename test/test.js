@@ -87,8 +87,7 @@ describe('Workflow Core', function() {
   it('parked homepage exists in default-draft locale', function(done) {
     // TODO: passing default-draft as the locale property of req isn't
     // really how the frontend does it
-    return apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), { slug: '/' }).toObject(function(err, home) {
-      console.error(err);
+    return apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { slug: '/' }).toObject(function(err, home) {
       assert(!err);
       assert(home);
       assert(home.slug === '/');
@@ -102,7 +101,7 @@ describe('Workflow Core', function() {
   });
 
   it('parked homepage exists in default locale', function(done) {
-    return apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), { slug: '/' }).workflowLocale('default').toObject(function(err, home) {
+    return apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { slug: '/' }).workflowLocale('default').toObject(function(err, home) {
       assert(!err);
       assert(home);
       assert(home.slug === '/');
@@ -200,12 +199,12 @@ describe('Workflow Core', function() {
   //////
 
   it('should have a find method on pages that returns a cursor', function(){
-    var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }));
+    var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }));
     assert(cursor);
   });
 
   it('should be able to find the parked homepage', function(done){
-    var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), { slug: '/' });
+    var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { slug: '/' });
 
     cursor.toObject(function(err, page){
       assert(!err);
@@ -220,7 +219,7 @@ describe('Workflow Core', function() {
 
 
   it('should be able to find just a single page', function(done){
-    var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), { slug: '/child' });
+    var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { slug: '/child' });
 
     cursor.toObject(function(err, page){
       assert(!err);
@@ -233,7 +232,7 @@ describe('Workflow Core', function() {
   });
 
   it('should be able to include the ancestors of a page', function(done){
-    var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), { slug: '/child' });
+    var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { slug: '/child' });
 
     cursor.ancestors(true).toObject(function(err, page){
       assert(!err);
@@ -250,7 +249,7 @@ describe('Workflow Core', function() {
   });
 
   it('should be able to include just one ancestor of a page, i.e. the parent', function(done) {
-    var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), { slug: '/child' });
+    var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { slug: '/child' });
 
     cursor.ancestors({ depth: 1 }).toObject(function(err, page){
       assert(!err);
@@ -265,7 +264,7 @@ describe('Workflow Core', function() {
   });
 
   it('should be able to include the children of the ancestors of a page', function(done){
-    var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), { slug: '/child' });
+    var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { slug: '/child' });
 
     cursor.ancestors({children: 1}).toObject(function(err, page){
       assert(!err);
@@ -306,7 +305,7 @@ describe('Workflow Core', function() {
   });
 
   it('is able to insert a new page in the correct order', function(done) {
-    var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), { slug: '/new-page' });
+    var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { slug: '/new-page' });
 
     cursor.toObject(function(err, page){
       assert.equal(page.rank, 2);
@@ -316,7 +315,7 @@ describe('Workflow Core', function() {
   });
 
   it('is able to insert a new page in the correct order in both locales', function(done) {
-    var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), { slug: '/new-page' }).workflowLocale('default').trash(null);
+    var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { slug: '/new-page' }).workflowLocale('default').trash(null);
 
     cursor.toObject(function(err, page){
       assert.equal(page.rank, 2);
@@ -337,7 +336,7 @@ describe('Workflow Core', function() {
         console.log(err);
       }
       assert(!err);
-      var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), {_id: '4312'});
+      var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), {_id: '4312'});
       cursor.toObject(function(err, page) {
         if (err) {
           console.log(err);
@@ -379,7 +378,7 @@ describe('Workflow Core', function() {
         console.log(err);
       }
       assert(!err);
-      var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), {_id: '4312'});
+      var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), {_id: '4312'});
       cursor.toObject(function(err, page){
         if (err) {
           console.log(err);
@@ -403,7 +402,7 @@ describe('Workflow Core', function() {
         console.log(err);
       }
       assert(!err);
-      var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), {_id: '4312'});
+      var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), {_id: '4312'});
       cursor.toObject(function(err, page){
         if (err) {
           console.log(err);
@@ -425,7 +424,7 @@ describe('Workflow Core', function() {
         console.log(err);
       }
       assert(!err);
-      var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), {_id: '4321'});
+      var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), {_id: '4321'});
       cursor.toObject(function(err, page){
         if (err) {
           console.log(err);
@@ -440,7 +439,7 @@ describe('Workflow Core', function() {
   });
 
   it('moving /parent into /another-parent should also move /parent/sibling in the other locale', function(done) {
-    var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), { path: '/another-parent/parent/sibling' }).workflowLocale('default');
+    var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { path: '/another-parent/parent/sibling' }).workflowLocale('default');
     cursor.toObject(function(err, page){
       if (err) {
         console.log(err);
@@ -508,14 +507,14 @@ describe('Workflow Core', function() {
         console.log(err);
       }
       assert(!err);
-      var cursor = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), {_id: '1234'});
+      var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), {_id: '1234'});
       cursor.toObject(function(err, page){
         if (err) {
           console.log(err);
         }
         assert(!err);
         assert(!page);
-        var cursor2 = apos.pages.find(apos.tasks.getAnonReq({ locale: 'default-draft' }), { _id: '1234' }).
+        var cursor2 = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { _id: '1234' }).
           permission(false).trash(null).toObject(function(err, page) {
             assert(page.path, '/another-parent/parent');
             assert(page.trash);
@@ -1200,6 +1199,40 @@ describe('Workflow Subdomains and Prefixes', function() {
         return callback(null);
       });
     }
+  });
+  
+  it('anon can fetch public fr home page', function(done) {
+    return apos.pages.find(apos.tasks.getAnonReq({ locale: 'fr' }), { slug: '/' }).toObject(function(err, page) {
+      assert(!err);
+      assert(page);
+      assert(page.workflowLocale === 'fr');
+      done();
+    });
+  });
+
+  it('anon cannot fetch private default home page', function(done) {
+    return apos.pages.find(apos.tasks.getAnonReq({ locale: 'default' }), { slug: '/default' }).toObject(function(err, page) {
+      assert(!err);
+      assert(!page);
+      done();
+    });
+  });
+
+  it('user with private-locales permission can fetch private default home page', function(done) {
+    var req = apos.tasks.getAnonReq({ 
+      locale: 'default',
+      user: {
+        _permissions: {
+          'private-locales': true
+        }
+      }
+    });
+    return apos.pages.find(req, { slug: '/default/' }).toObject(function(err, page) {
+      assert(!err);
+      assert(page);
+      assert(page.workflowLocale === 'default');
+      done();
+    });
   });
 
 });
