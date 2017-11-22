@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.0
+
+* Beginning with this release, the `private-locales` permission is enforced. You **must** give out the "View Private Locales" permission to your editors via groups in the admin bar. If you are still using hardcoded groups via the `groups` option of the `apostrophe-users` module, you must add the `private-locales` permission to relevant groups and restart. However we recommend commenting out the `groups` option if you're using workflow; odds are you have a need to manage groups and their permissions through the UI at this point.
+
+Users with the global `admin` permission do **not** need to be given this permission separately.
+
 ## 2.4.1
 
 Unit tests passing.
