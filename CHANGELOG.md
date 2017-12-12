@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.5.1
+
+* The new `apos.docs.ensureSlug` method is called in `beforeInsert` to ensure there is no chicken-and-egg problem when working with new documents.
+
 ## 2.5.0
 
 * Beginning with this release, the `private-locales` permission is enforced. You **must** give out the "View Private Locales" permission to your editors via groups in the admin bar. If you are still using hardcoded groups via the `groups` option of the `apostrophe-users` module, you must add the `private-locales` permission to relevant groups and restart. However we recommend commenting out the `groups` option if you're using workflow; odds are you have a need to manage groups and their permissions through the UI at this point.
