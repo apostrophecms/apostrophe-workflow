@@ -8,7 +8,7 @@ describe('Workflow Core', function() {
 
   var apos;
 
-  this.timeout(5000);
+  this.timeout(20000);
 
   after(function() {
     apos.db.dropDatabase();
