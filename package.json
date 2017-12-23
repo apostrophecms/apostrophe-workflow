@@ -6,12 +6,12 @@
   "dependencies": {
     "async": "^1.5.2",
     "deep-get-set": "^1.1.0",
-    "jsondiffpatch": "^0.2.4",
+    "jsondiffpatch": "^0.2.5",
     "lodash": "^3.10.1"
   },
   "devDependencies": {
-    "apostrophe": "^2.26.1",
-    "mocha": "^3.4.2"
+    "apostrophe": "^2.43.0",
+    "mocha": "^3.5.3"
   },
   "scripts": {
     "test": "mocha test/test.js"
