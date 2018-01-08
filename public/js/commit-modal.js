@@ -22,12 +22,19 @@ apos.define('apostrophe-workflow-commit-modal', {
         } else {
           apos.notify('The document was committed successfully.', { type: 'success', dismiss: true });
         }
-        if (_.keys(self.manager.locales).length > 2) {
-          // We have more than two locales (more than default and default-draft),
-          // so exporting is a logical feature to offer
-          return self.manager.export(result.commitId, callback);
-        }
-        return callback(null);
+        return self.api('editable-locales', { 
+          id: options.body.id
+        }, function(result) {
+          if (result.status !== 'ok') {
+            return callback(result.status);
+          }
+          if (result.locales.length > 1) {
+            return self.manager.export(result.commitId, callback);
+          }
+          return callback(null);
+        }, function(err) {
+          return callback(err);
+        });
       }, function(err) {
         return callback(err);
       });
