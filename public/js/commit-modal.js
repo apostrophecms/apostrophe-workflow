@@ -22,6 +22,7 @@ apos.define('apostrophe-workflow-commit-modal', {
         } else {
           apos.notify('The document was committed successfully.', { type: 'success', dismiss: true });
         }
+        var commitId = result.commitId;
         return self.api('editable-locales', { 
           id: options.body.id
         }, function(result) {
@@ -29,7 +30,7 @@ apos.define('apostrophe-workflow-commit-modal', {
             return callback(result.status);
           }
           if (result.locales.length > 1) {
-            return self.manager.export(result.commitId, callback);
+            return self.manager.export(commitId, callback);
           }
           return callback(null);
         }, function(err) {
