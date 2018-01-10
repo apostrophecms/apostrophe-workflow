@@ -82,6 +82,7 @@ module.exports = {
     require('./lib/middleware.js')(self, options); 
     require('./lib/routes.js')(self, options); 
     require('./lib/tasks.js')(self, options);     
+    require('./lib/helpers.js')(self, options);     
   }
 
 };

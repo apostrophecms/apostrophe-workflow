@@ -134,6 +134,24 @@ Now access the site as an administrator. You will be able to click on the curren
 
 Note that a single document may have a different slug in different locales. The slugs may also be the same, but you'll typically want to enable locale-specific prefixes, locale-specific domain names or a combination of the two as described below.
 
+## Setting the `lang` attribute
+
+Multilingual websites should set the `lang` attribute of the `html` element appropriately.
+
+Apostrophe currently ships with an `outerLayoutBase` template that includes a `locale` block,
+which can be used to easily override the `lang` attribute of the page. And this module ships with a
+helper function to set `lang` for you.
+
+So just write this in your
+`lib/modules/apostrophe-templates/views/layout.html` template, or `outerLayout.html` if you have one:
+
+{% block locale %}{{ apos.modules['apostrophe-workflow'].lang() }}{% endblock %}
+
+By default, this helper converts a string like `en-gb` to `en`, and leaves a string like `fr` alone.
+
+If this is not sufficient for your needs, you may set the `lang` property when configuring each
+locale, and that value will be output directly.
+
 ## Building a locale picker on the front end
 
 Here's how to code a locale picker on the front end:
