@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.6.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Implemented `lang` helper to easily set the lang attribute of the html tag. It is your responsibility to call it if you choose, see the documentation.
+* UX improvement: no export modal should be displayed after committing if you can only edit one locale anyway based on permissions.
+
 ## 2.5.1
 
 Unit tests passing.
