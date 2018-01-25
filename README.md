@@ -688,6 +688,14 @@ callback);
 
 "What about inserting a new doc?" A newly inserted doc is pushed to all locales, however its `trash` flag is true in all of them except the current locale. If you want the new doc to be instantly available in all locales, then after the insert is complete, you can use `setPropertiesAcrossLocales` to set the `trash` property to `false`.
 
+## Writing safe `afterInsert` and `docAfterInsert` handlers, etc.
+
+If you are writing custom code that includes `afterInsert` or `afterUpdate` methods for pieces modules, or `docAfterInsert` or `docAfterUpdate` methods in any module, **and these handlers update the doc**, then your code **must complete its own work BEFORE invoking the original version of the method, or the callback.**
+
+If you do not follow this rule when inserting a new doc, the workflow module may encounter a race condition when adding corresponding docs for other locales. In recent versions of `apostrophe-workflow`, this will result in a unique index error. In older versions it may result in duplicate docs for the same `workflowGuid + workflowLocale` combination. Either way: a bad thing.
+
+For best results, **all** implementations of Apostrophe callbacks should wait to complete their own work before invoking the callback. It produces the most predictable result. However, you can bend this rule if you are not updating the doc itself in the database.
+
 ## Technical approach
 
 For 2.x, the draft and live versions of a doc are completely separate docs as far as most of Apostrophe is concerned. A `workflowGuid` property ties them together. This greatly reduces the scope of changes required in the rest of Apostrophe and improves performance by removing the need to move content around on every page view or load content for locales you are not looking at.
