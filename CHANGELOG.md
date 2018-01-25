@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.6.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Prior to this release, a race condition could lead to duplicate documents with the same combination of `workflowGuid` and `workflowLocale`. A unique sparse index on `workflowGuid + workflowLocale` has been added to address this problem, and if it initially fails, code has been added to address any existing duplicates. A winner is chosen, and the others are moved to a `workflowGuidAndLocaleDuplicates` array property, just in case. Any joins from other documents to those orphaned duplicates are automatically corrected to point to the winning version.
+
+* Documented that when writing an `afterInsert` or similar method override or `callAll` handler, developers using workflow must not invoke the callback provided until **after** carrying out any `update` of the piece or page in question. This means you must wait for your own callback before invoking the one provided by Apostrophe. Otherwise race conditions can lead to an error in your insert operation, which will be reported as such thanks to the new index mentioned above.
+
+* The migration above now completes on very large doc collections thanks to the use of the `allowDiskUse: true` flag. Thanks to Sylvain Chabert.
+
+* 
+
 ## 2.6.0
 
 Unit tests passing.
