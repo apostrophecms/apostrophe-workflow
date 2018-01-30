@@ -5,7 +5,7 @@ apos.define('apostrophe-workflow-batch-export-modal', {
   extend: 'apostrophe-workflow-export-modal',
 
   source: 'batch-export-modal',
-  
+
   verb: 'batch-export',
 
   construct: function(self, options) {
@@ -22,7 +22,7 @@ apos.define('apostrophe-workflow-batch-export-modal', {
         locales: locales,
         job: true
       }, options.body);
-      
+
       return self.api(self.options.verb, data, function(result) {
         if (result.status !== 'ok') {
           apos.notify('An error occurred.', { type: 'error' });
@@ -34,7 +34,7 @@ apos.define('apostrophe-workflow-batch-export-modal', {
         return callback(err);
       });
     };
-    
+
     self.presentResult = function(result) {
       var workflow = apos.modules['apostrophe-workflow'];
       workflow.presentBatchExportResult(result);

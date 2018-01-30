@@ -8,7 +8,7 @@ apos.define('apostrophe-workflow-batch-force-export-modal', {
   extend: 'apostrophe-workflow-export-modal',
 
   source: 'batch-force-export-modal',
-  
+
   construct: function(self, options) {
 
     self.saveContent = function(callback) {

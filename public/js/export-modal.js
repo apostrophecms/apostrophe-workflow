@@ -5,7 +5,7 @@ apos.define('apostrophe-workflow-export-modal', {
   extend: 'apostrophe-modal',
 
   source: 'export-modal',
-  
+
   verb: 'export',
 
   construct: function(self, options) {
@@ -48,7 +48,7 @@ apos.define('apostrophe-workflow-export-modal', {
         var data = _.assign({
           locales: locales
         }, options.body);
-        
+
         return self.api(self.options.verb, data, function(result) {
           if (result.status !== 'ok') {
             apos.notify('An error occurred.', { type: 'error' });
@@ -61,7 +61,7 @@ apos.define('apostrophe-workflow-export-modal', {
         });
       });
     };
-    
+
     self.presentResult = function(result) {
       _.each(result.errors, function(error) {
         apos.notify('%s: ' + error.message, error.locale, { type: 'error' });
@@ -70,7 +70,7 @@ apos.define('apostrophe-workflow-export-modal', {
         apos.notify('Successfully exported to: %s', result.success.join(', '), { type: 'success', dismiss: true });
       }
     };
-    
+
     self.exportRelatedUnexported = function(locales, callback) {
       return self.manager.getRelatedUnexported({ id: options.body.id, exportLocales: locales }, function(err, result) {
         if (err) {
