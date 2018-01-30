@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.6.2
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Run beforeInsert, afterInsert, etc. on docs inserted across locales, especially pieces. Previously `apos.docs.insert` was invoked; this does not invoke such module-level callbacks, although it does invoke the `callAll`-based callbacks.
+* Added unit tests confirming that `afterInsert` callbacks can successfully update a piece, and that they are invoked both for the original insert and those that cascade to insert it across locales.
+* This module now complies with an eslint code quality validation suite. A number of global variable leaks were corrected, as well as improvements in error handling, etc.
+
 ## 2.6.1
 
 Unit tests passing.
