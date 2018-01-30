@@ -1,6 +1,3 @@
-var async = require('async');
-var _ = require('lodash');
-
 var modules = [
   'apostrophe-workflow-areas',
   'apostrophe-workflow-docs',
@@ -16,33 +13,33 @@ var modules = [
 ];
 
 // ## Options
-// 
+//
 // `includeTypes: [ 'my-blog-post', 'my-event' ]`
-// 
+//
 // Apply workflow only to docs of the specified types. IF WORKFLOW IS ENABLED FOR ANY PAGE TYPE,
 // AS OPPOSED TO A PIECE, IT MUST BE ENABLED FOR *ALL* PAGE TYPES.
-// 
+//
 // `excludeTypes: [ 'my-personal-profile' ]`
-// 
+//
 // Apply workflow to everything EXCEPT the specified types. IF WORKFLOW IS ENABLED FOR ANY PAGE TYPE,
 // AS OPPOSED TO A PIECE, IT MUST BE ENABLED FOR *ALL* PAGE TYPES.
-// 
+//
 // If both options are present, a type must appear in `includeTypes`
 // and NOT appear in `excludeTypes`.
-// 
+//
 // `baseExcludeTypes: [ 'apostrophe-user', 'apostrophe-group' ]`
-// 
+//
 // **Typically not changed.** A short list of types that should never be subject to workflow,
 // no matter what the other options say. For security reasons this list contains users and groups
 // by default. You will usually leave this alone.
-// 
+//
 // `excludeProperties: [ 'hitCounter' ]`
-// 
+//
 // A list of properties that should not be subject to workflow, but rather should be allowed to
 // vary for each locale and never be copied. These are typically properties
 // that don't make sense to edit as a "draft" and then submit as the new live version. For
 // instance, you wouldn't want to overwrite a page view counter field.
-// 
+//
 // There is no `includeProperties` option. In Apostrophe 2.x workflow applies to properties by default,
 // and excluded properties are unique to the locale (that is, either draft or live version of the doc).
 //
@@ -78,12 +75,10 @@ module.exports = {
     require('./lib/api.js')(self, options);
     require('./lib/callAll.js')(self, options);
     require('./lib/browser.js')(self, options);
-    require('./lib/permissions-schema-field.js')(self, options);
-    require('./lib/middleware.js')(self, options); 
-    require('./lib/routes.js')(self, options); 
-    require('./lib/tasks.js')(self, options);     
-    require('./lib/helpers.js')(self, options);     
+    require('./lib/middleware.js')(self, options);
+    require('./lib/routes.js')(self, options);
+    require('./lib/tasks.js')(self, options);
+    require('./lib/helpers.js')(self, options);
   }
 
 };
-

@@ -15,7 +15,7 @@ apos.define('apostrophe-workflow-review-modal', {
     self.saveContent = function(callback) {
       console.log('saving');
       console.log(options);
-      return apos.create('apostrophe-workflow-export-modal', 
+      return apos.create('apostrophe-workflow-export-modal',
         _.assign({
           manager: self.manager,
           body: { id: options.body.id },
