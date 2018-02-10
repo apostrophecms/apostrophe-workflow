@@ -23,7 +23,7 @@ apos.define('apostrophe-workflow-commit-modal', {
           apos.notify('The document was committed successfully.', { type: 'success', dismiss: true });
         }
         var commitId = result.commitId;
-        return self.api('editable-locales', { 
+        return self.api('editable-locales', {
           id: options.body.id
         }, function(result) {
           if (result.status !== 'ok') {

@@ -22,15 +22,15 @@ apos.define('apostrophe-workflow', {
 
     self.locales = options.locales;
     self.locale = options.locale;
-    self.liveLocale = self.locale.replace(/\-draft$/, '');
+    self.liveLocale = self.locale.replace(/-draft$/, '');
 
     self.enableExpand = function () {
       $('body').on('click', '[data-apos-expand-trigger]', function(e) {
         e.preventDefault();
         var $this = $(this);
         $this.parent('[data-apos-expand]').toggleClass('apos-expand-list-container--open');
-      })
-    }
+      });
+    };
 
     // If there are any editable doc ids on the page, including
     // things that would be editable if we were looking at the draft
@@ -57,12 +57,9 @@ apos.define('apostrophe-workflow', {
         self.updateWorkflowControls();
       });
     };
-    
+
     self.updateWorkflowControls = function() {
       var $menu = $('body').find('[data-apos-workflow-menu]');
-      var $submit = $menu.find('[data-apos-workflow-submit]');
-      var $commit = $menu.find('[data-apos-workflow-commit]');
-      var $state = $menu.find('[data-apos-workflow-mode]').closest('[data-apos-dropdown]');
       return self.getEditable({ related: true }, function(err, result) {
         if (err) {
           return;
@@ -71,7 +68,7 @@ apos.define('apostrophe-workflow', {
         setClass($menu, 'apos-workflow-modified', !!result.modified.length);
         setClass($menu, 'apos-workflow-committable', !!result.committable.length);
         setClass($menu, 'apos-workflow-unsubmitted', !!result.unsubmitted.length);
-        
+
         // Show/hide the widget level force export buttons based on whether
         // their doc is committable (it's preexisting and we have permission
         // to write to the live version of it)
@@ -113,7 +110,7 @@ apos.define('apostrophe-workflow', {
       ids = _.uniq(ids);
       return ids;
     };
-    
+
     // Obtain the doc ids presently on the page,
     // and filter the whole list to include only editable docs.
     // The callback receives `(null, result)` on success.
@@ -137,7 +134,7 @@ apos.define('apostrophe-workflow', {
         return callback(error);
       });
     };
-    
+
     self.getRelatedUnexported = function(params, callback) {
       return self.api('related-unexported', params, function(result) {
         if (result.status === 'ok') {
@@ -149,11 +146,11 @@ apos.define('apostrophe-workflow', {
         return callback(error);
       });
     };
-      
+
     self.enableSubmit = function() {
       $('body').on('click', '[data-apos-workflow-submit]', function() {
         apos.ui.globalBusy(true);
-        return self.getEditable({ related: true }, function(err, result) {
+        self.getEditable({ related: true }, function(err, result) {
           apos.ui.globalBusy(false);
           if (!err) {
             self.submit(result.modified);
@@ -187,46 +184,46 @@ apos.define('apostrophe-workflow', {
         return false;
       });
     };
-    
+
     self.enableHistory = function(callback) {
       apos.ui.link('apos-workflow-history', null, function($el, id) {
         self.history(id, callback);
       });
     };
-    
+
     self.history = function(id) {
-      return apos.create('apostrophe-workflow-history-modal', 
+      return apos.create('apostrophe-workflow-history-modal',
         _.assign({
           manager: self,
           body: { id: id }
         }, options)
       );
     };
-    
+
     self.enableExport = function() {
       apos.ui.link('apos-workflow-export', null, function($el, id) {
         self.export(id);
       });
     };
-    
+
     // id is a commit id, not a doc id
 
     self.export = function(id, callback) {
       return self.launchExportModal({ id: id }, callback);
     };
-    
+
     // ids are commit ids, not doc ids
 
     self.batchExport = function(ids, callback) {
       return self.launchBatchExportModal({ ids: ids }, callback);
     };
-    
+
     self.batchForceExportGetLocales = function(data, callback) {
       return self.launchBatchForceExportModal(data, callback);
     };
 
     self.launchExportModal = function(data, callback) {
-      return apos.create('apostrophe-workflow-export-modal', 
+      return apos.create('apostrophe-workflow-export-modal',
         _.assign({}, self.options, {
           manager: self,
           body: data,
@@ -236,7 +233,7 @@ apos.define('apostrophe-workflow', {
     };
 
     self.launchBatchExportModal = function(options, callback) {
-      return apos.create('apostrophe-workflow-batch-export-modal', 
+      return apos.create('apostrophe-workflow-batch-export-modal',
         _.assign({}, self.options, {
           manager: self,
           body: options,
@@ -246,7 +243,7 @@ apos.define('apostrophe-workflow', {
     };
 
     self.launchBatchForceExportModal = function(options, callback) {
-      return apos.create('apostrophe-workflow-batch-force-export-modal', 
+      return apos.create('apostrophe-workflow-batch-force-export-modal',
         _.assign({}, self.options, {
           manager: self,
           body: options,
@@ -260,10 +257,10 @@ apos.define('apostrophe-workflow', {
         self.forceExport(id);
       });
     };
-    
+
     self.forceExport = function(id, callback) {
       return apos.areas.saveAllIfNeeded(function() {
-        return apos.create('apostrophe-workflow-force-export-modal', 
+        return apos.create('apostrophe-workflow-force-export-modal',
           _.assign({
             manager: self,
             body: { id: id },
@@ -274,7 +271,7 @@ apos.define('apostrophe-workflow', {
     };
 
     self.launchBatchForceExportModal = function(options, callback) {
-      return apos.create('apostrophe-workflow-batch-force-export-modal', 
+      return apos.create('apostrophe-workflow-batch-force-export-modal',
         _.assign({}, self.options, {
           manager: self,
           body: options,
@@ -283,14 +280,13 @@ apos.define('apostrophe-workflow', {
       );
     };
 
-
     self.enableForceExportWidget = function() {
       apos.ui.link('apos-workflow-force-export-widget', null, function($el) {
         var widgetId = $el.closest('[data-apos-widget-id]').attr('data-apos-widget-id');
         // Skip up to the enclosing area with a real doc id, not a virtual or widget one
         var docId = $el.closest('[data-doc-id^="c"]').attr('data-doc-id');
         return apos.areas.saveAllIfNeeded(function() {
-          return apos.create('apostrophe-workflow-force-export-widget-modal', 
+          return apos.create('apostrophe-workflow-force-export-widget-modal',
             _.assign({
               manager: self,
               body: { id: docId, widgetId: widgetId }
@@ -302,7 +298,7 @@ apos.define('apostrophe-workflow', {
 
     self.enableReview = function() {
       apos.ui.link('apos-workflow-review', null, function($el, id) {
-        return apos.create('apostrophe-workflow-review-modal', 
+        return apos.create('apostrophe-workflow-review-modal',
           _.assign({
             manager: self,
             body: { id: id }
@@ -332,8 +328,8 @@ apos.define('apostrophe-workflow', {
         apos.notify('An error occurred.', { type: 'error' });
         return callback && callback('error');
       });
-    }
-    
+    };
+
     self.dismiss = function(id) {
       apos.ui.globalBusy(true);
       self.api('dismiss', { id: id }, function(result) {
@@ -343,7 +339,7 @@ apos.define('apostrophe-workflow', {
         }
       });
     };
-    
+
     // Present commit modals for all ids in the array, one after another
     self.commit = function(ids, callback) {
       if (!ids.length) {
@@ -361,7 +357,7 @@ apos.define('apostrophe-workflow', {
       var i = 0;
       return async.eachSeries(ids, function(id, callback) {
         i++;
-        return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId == id) }, callback);
+        return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId === id) }, callback);
       }, function(err) {
         if (!err) {
           apos.emit('workflowCommitted', ids);
@@ -369,17 +365,17 @@ apos.define('apostrophe-workflow', {
         return callback && callback(err);
       });
     };
-    
+
     self.enableManageModal = function() {
       apos.adminBar.link(self.__meta.name + '-manage-modal', function() {
         self.launchManageModal();
       });
     };
-    
+
     self.launchManageModal = function() {
       return apos.create(self.__meta.name + '-manage-modal', _.assign({ manager: self }, options));
     };
-    
+
     self.launchCommitModal = function(options, callback) {
       return apos.create(self.__meta.name + '-commit-modal', _.assign({}, self.options, {
         manager: self,
@@ -387,14 +383,14 @@ apos.define('apostrophe-workflow', {
         after: callback
       }));
     };
-    
+
     self.launchLocalePickerModal = function() {
       return apos.create(self.__meta.name + '-locale-picker', _.assign({
         manager: self,
         body: { url: window.location.href }
       }));
     };
-    
+
     self.enablePreviewIframe = function(options) {
       self.api('diff', options, function(result) {
         if (result.status !== 'ok') {
@@ -419,8 +415,8 @@ apos.define('apostrophe-workflow', {
         });
 
         function removed(change) {
-  
-          $area = $('[data-doc-id="' + id + '"][data-dot-path="' + change.dotPath.replace(/\.items\.\d+$/, '') + '"]');
+
+          var $area = $('[data-doc-id="' + id + '"][data-dot-path="' + change.dotPath.replace(/\.items\.\d+$/, '') + '"]');
 
           var matches = change.dotPath.match(/\d+$/);
           if (!matches) {
@@ -431,7 +427,7 @@ apos.define('apostrophe-workflow', {
           if (!$area.length) {
             return;
           }
-          
+
           var data = change.value;
 
           // TODO: this would generate a lot of API requests if a lot
@@ -452,7 +448,6 @@ apos.define('apostrophe-workflow', {
               // various situations in which jquery is
               // picky about HTML
               var $newWidget = $($.parseHTML($.trim(html), null, true));
-              var offset = matches[1];
               var $before = $area.findSafe('[data-apos-widget-wrapper]', '[data-apos-area]').eq(index);
               if ($before.length) {
                 $before.before($newWidget);
@@ -472,7 +467,7 @@ apos.define('apostrophe-workflow', {
         apos.notify('An error occurred displaying the difference between the documents.', { type: 'error' });
       }
     };
-    
+
     self.enableLocalePickerModal = function() {
       apos.adminBar.link(self.__meta.name + '-locale-picker-modal', function() {
         self.launchLocalePickerModal();
@@ -484,7 +479,7 @@ apos.define('apostrophe-workflow', {
         _.assign({ manager: self, body: { workflowGuid: options.contextGuid } }, options)
       );
     };
-    
+
     self.presentBatchExportResult = function(result) {
       var errors = 0;
       var success = 0;
@@ -506,7 +501,7 @@ apos.define('apostrophe-workflow', {
         apos.notify('No documents were exported.');
       }
     };
-    
+
     self.enableCrossDomainSessionToken = function() {
       $('body').on('click', 'a[data-apos-cross-domain-session-token]', function(event) {
         var $link = $(this);
@@ -530,6 +525,6 @@ apos.define('apostrophe-workflow', {
         window.location.href = href;
       });
     };
-    
+
   }
 });
