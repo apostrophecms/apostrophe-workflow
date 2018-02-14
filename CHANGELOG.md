@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.6.3
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Fixed bug in which parked properties of existing pages were not updated for draft locales.
+* Documented the strong recommendation to set a `parkedId` for parked pages so that you do not encounter problems later when changing or adding locale prefixes.
+* Introduced locking so that the page parking mechanism never encounters race conditions.
+* If `defaultLocale` is not set, the first locale configured is assumed.
+* The `apostrophe-workflow:remove-numbered-parked-pages` task, which continues to be of use when working around previous parking bugs, now accounts for the fact that `parked` may contain previously parked properties rather than being a simple boolean.
+* `apostrophe-workflow:add-missing-locales` task sped up approximately 3x using parallelism.
+
 ## 2.6.2
 
 Unit tests passing.
