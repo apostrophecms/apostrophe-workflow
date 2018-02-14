@@ -22,6 +22,10 @@ In `app.js`, configure the `apostrophe-workflow` module with the rest. We'll sta
 }
 ```
 
+## Adding `parkedId` to your parked pages
+
+If you are using the `park` option with `apostrophe-pages`, and you have not already set a unique `parkedId` property for each page specified for that option, **do so before you start using workflow.** This will address problems that otherwise occur if slugs change due to locale prefixes.
+
 ## Adding workflow to your database
 
 Odds are, you already have a database. Either from an existing project, or for a new one, since Apostrophe creates the database on the very first run. So, follow these steps to add workflow to your database.
