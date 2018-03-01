@@ -59,6 +59,7 @@ module.exports = {
   afterConstruct: function(self, callback) {
     self.composeLocales();
     self.composeOptions();
+    self.reconfigureI18n();
     self.enableAddMissingLocalesTask();
     self.enableAddLocalePrefixesTask();
     self.enableRemoveNumberedParkedPagesTask();
