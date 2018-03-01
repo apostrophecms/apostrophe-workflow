@@ -9,7 +9,9 @@ var modules = [
   'apostrophe-workflow-schemas',
   'apostrophe-workflow-images',
   'apostrophe-workflow-admin-bar',
-  'apostrophe-workflow-tasks'
+  'apostrophe-workflow-tasks',
+  'apostrophe-workflow-bridge-i18n',
+  'apostrophe-workflow-i18n'
 ];
 
 // ## Options
