@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.6.4
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Fixed bug in which localization helper would crash if used in a newly saved widget. The helper does not actually display localizations until page refresh due to a deeper issue but this is only a concern when editing, not for the public. 
+* Merged helper implementations into `helpers.js` for consistency.
+
 ## 2.6.3
 
 Unit tests passing.
