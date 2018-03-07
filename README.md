@@ -346,6 +346,44 @@ If you set up the site with the typical `admin`, `guest` and `editor` groups, bu
 
 **Do not remove the `admin` group.** You need it to log in with full privileges.
 
+### Locale-specific stylesheets
+
+Basic support for locale-specific stylesheets is provided. You may, if you wish, specify a stylesheet name for a locale. The primary purpose of such a stylesheet is to define font face imports and other global items, so that the regular LESS CSS build of Apostrophe can then use a consistent `font-family` setting for all locales but will in fact receive the correct actual font.
+
+You may also define a `defaultStylesheet` to be pushed to all locales that do not specify a stylesheet. This is useful in cases where a single `@font-face` or `@import` declaration will serve for almost all locales, but should be overridden completely for a few specific locales to avoid redundant downloads.
+
+```
+'apostrophe-workflow': {
+  locales: [
+    {
+      name: 'en-gb',
+      label: 'England'
+    },
+    {
+      name: 'en-us',
+      label: 'United States'
+    },
+    {
+      name: 'cn',
+      label: 'China',
+      stylesheet: 'cn'
+    }
+  ],
+  defaultStylesheet: 'default'
+  // other options...
+}
+```
+
+Since we specified `stylesheet: 'cn'` for the `cn` locale, the project-level file `/lib/modules/apostrophe-workflow/public/css/cn.css` will be served to the browser. For all other locales, `/lib/modules/apostrophe-workflow/public/sss/default.css` will be served, because `defaultStylesheet` was also set.
+
+It will be delivered via a special Express route and the URL will target that route. The URL will be unique to the current asset generation and locale. 
+
+> The file will not be part of a minified, CDN-delivered asset bundle. However, site-relative URLs (those beginning with `/`) will be rewritten to account for Apostrophe's `prefix` option and/or the use of an asset bundle in a CDN. Other types of relative URLs currently are not supported here. If you need to reference assets in the `public` folder of a module, use `/modules/modulename`, prefixing `modulename` with `my-` if it is in the project level `public` folder of an Apostrophe core or npm module.
+
+This file will be pushed via a **separate `link` element in the `head`,** prior to the main, LESS-compiled spreadsheet.
+
+This file currently **WILL NOT** be compiled with LESS, and it **MAY NOT** set LESS variables for other stylesheets to honor. Again, its primary purpose is to declare font face imports in a way that does not require excessive imports that are not needed in other locales.
+
 ### An overview of permissions
 
 Permissions are an important issue when working with workflow and locales. First we'll review all of the permissions you're sure to have questions about. Then we'll look at selecting locales for each permission and what that allows us to do.
