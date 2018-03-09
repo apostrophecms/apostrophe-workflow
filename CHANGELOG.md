@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.7.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Basic support for per-locale stylesheets. Useful when you need the same `@font-face` to refer to different files for different locales.
+
 ## 2.6.4
 
 Unit tests passing.
