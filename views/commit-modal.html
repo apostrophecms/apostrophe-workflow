@@ -21,6 +21,10 @@
     <p>
       {{ __('This related item may also be visible on the page. Please consider it first so that your final commit is more complete.') }}
     </p>
+    <p>
+      <a class="apos-workflow-shortcut" data-commit-all-related href="#">{{ __('Commit all like this') }}</a>
+      <a class="apos-workflow-shortcut" data-skip-all-related href="#">{{ __('Skip all like this') }}</a>
+    </p>
   {% else %}
     <p>
       {{ __('Click Commit to make these changes live.') }}

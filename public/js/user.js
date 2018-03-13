@@ -183,6 +183,17 @@ apos.define('apostrophe-workflow', {
         }
         return false;
       });
+      $('body').on('click', '[data-commit-all-related]', function() {
+        self.commitAllRelated = true;
+        console.log('committing all related');
+        $('[data-apos-save]:visible').click();
+        return false;
+      });
+      $('body').on('click', '[data-skip-all-related]', function() {
+        self.skipAllRelated = true;
+        $('[data-apos-cancel]:visible').click();
+        return false;
+      });
     };
 
     self.enableHistory = function(callback) {
@@ -342,6 +353,8 @@ apos.define('apostrophe-workflow', {
 
     // Present commit modals for all ids in the array, one after another
     self.commit = function(ids, callback) {
+      self.commitAllRelated = false;
+      self.skipAllRelated = false;
       if (!ids.length) {
         return apos.notify('No modifications to commit.', { type: 'warn', dismiss: true });
       }
@@ -356,6 +369,16 @@ apos.define('apostrophe-workflow', {
       }
       var i = 0;
       return async.eachSeries(ids, function(id, callback) {
+        console.log('next pass');
+        if (self.skipAllRelated && (leadId !== id)) {
+          i++;
+          return setImmediate(callback);
+        }
+        if (self.commitAllRelated && (leadId !== id)) {
+          i++;
+          console.log('invoking commitSimilarly');
+          return self.commitSimilarly(id, callback);
+        }
         i++;
         return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId === id) }, callback);
       }, function(err) {
@@ -364,6 +387,63 @@ apos.define('apostrophe-workflow', {
         }
         return callback && callback(err);
       });
+    };
+
+    // Commit just one doc, following the same decisions
+    // re: export made for the previous interactively
+    // exported doc. Part of the implementation of
+    // commitAllRelated
+
+    self.commitSimilarly = function(id, callback) {
+      return self.api('commit', { id: id }, function(result) {
+        if (result.status !== 'ok') {
+          apos.notify('An error occurred.', { type: 'error' });
+          return callback(result.status);
+        }
+        if (result.title) {
+          apos.notify('%s was committed successfully.', result.title, { type: 'success', dismiss: true });
+        } else {
+          apos.notify('The document was committed successfully.', { type: 'success', dismiss: true });
+        }
+        var commitId = result.commitId;
+        return self.exportSimilarly(id, commitId, callback);
+      });
+    };
+
+    // Export one doc plus related unexported docs, if desired,
+    // following the same decisions re: export made for the previous
+    // interactively exported doc. Part of the implementation of
+    // commitAllRelated
+
+    self.exportSimilarly = function(id, commitId, callback) {
+      console.log('in exportSimilarly');
+      if (self.nextExportHint && self.nextExportHint.length) {
+        return self.getRelatedUnexported({ id: id, exportLocales: self.nextExportHint }, function(err, ids) {
+          if (err) {
+            return callback(err);
+          }
+          return exportIds(ids.concat([commitId]));
+        });
+      } else {
+        // Do not export
+        console.log('do not export');
+        return callback(null);
+      }
+      function exportIds(ids) {
+        return async.eachSeries(ids, function(id, callback) {
+          return self.api('export', {
+            locales: self.nextExportHint,
+            id: id
+          }, function(result) {
+            _.each(result.errors, function(error) {
+              apos.notify('%s: ' + error.message, error.locale, { type: 'error' });
+            });
+            if (result.success.length) {
+              apos.notify('Successfully exported to: %s', result.success.join(', '), { type: 'success', dismiss: true });
+            }
+          });
+        }, callback);
+      }
     };
 
     self.enableManageModal = function() {
