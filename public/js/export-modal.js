@@ -13,6 +13,10 @@ apos.define('apostrophe-workflow-export-modal', {
     self.manager = options.manager;
 
     self.beforeShow = function(callback) {
+      var workflow = apos.modules['apostrophe-workflow'];
+      _.each(workflow.nextExportHint || [], function(locale) {
+        self.$el.find('input[type="checkbox"][name="locales[' + locale + ']"]').prop('checked', true);
+      });
       self.$el.on('change', 'input[type="checkbox"]', function() {
         var checked = $(this).prop('checked');
         $(this).closest('li').find('input[type="checkbox"]').prop('checked', checked);
@@ -40,6 +44,9 @@ apos.define('apostrophe-workflow-export-modal', {
         apos.notify('Select at least one locale to export to.', { type: 'error' });
         return callback('user');
       }
+
+      var workflow = apos.modules['apostrophe-workflow'];
+      workflow.nextExportHint = locales;
 
       return self.exportRelatedUnexported(locales, function(err) {
         if (err) {
