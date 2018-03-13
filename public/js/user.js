@@ -342,6 +342,7 @@ apos.define('apostrophe-workflow', {
 
     // Present commit modals for all ids in the array, one after another
     self.commit = function(ids, callback) {
+      self.nextExportHint = [];
       if (!ids.length) {
         return apos.notify('No modifications to commit.', { type: 'warn', dismiss: true });
       }
