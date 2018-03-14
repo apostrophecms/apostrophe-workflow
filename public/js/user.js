@@ -372,13 +372,13 @@ apos.define('apostrophe-workflow', {
         if (self.skipAllRelated && (leadId !== id)) {
           i++;
           return setImmediate(callback);
-        }
-        if (self.commitAllRelated && (leadId !== id)) {
+        } else if (self.commitAllRelated && (leadId !== id)) {
           i++;
           return self.commitSimilarly(id, callback);
+        } else {
+          i++;
+          return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId === id) }, callback);
         }
-        i++;
-        return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId === id) }, callback);
       }, function(err) {
         if (!err) {
           apos.emit('workflowCommitted', ids);
