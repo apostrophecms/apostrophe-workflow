@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.7.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Insertion of new documents sped up by 2x when many locales exist.
+* Export choices made for the first document in a series of commit and export dialogs are now the default for the next, and so on. This saves time and reduces mistakes.
+* "Commit all like this" and "skip all like this" buttons added to ease committing and exporting numerous related documents, like images for a slideshow that exists on the page. These are set up to reduce the number of steps required. You can of course ignore them and continue to commit each doc individually. The "in context" doc (the page or piece at this URL) is still prompted for separately.
+* Added `apostrophe-workflow:harmonize-workflow-guids-by-parked-id` task. You are unlikely to need this unless you are receiving unique index errors, due to an older database where parked pages did not always have a `parkedId` property and have many locales. However in that situation it is useful to clean up leftover duplication caused by situations that are no longer possible with `parkedId`. Like `apostrophe-workflow:remove-numbered-parked-pages`, this task can remove content in certain cases, so back up your database first.
+
 ## 2.7.0
 
 Unit tests passing.
