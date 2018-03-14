@@ -185,7 +185,6 @@ apos.define('apostrophe-workflow', {
       });
       $('body').on('click', '[data-commit-all-related]', function() {
         self.commitAllRelated = true;
-        console.log('committing all related');
         $('[data-apos-save]:visible').click();
         return false;
       });
@@ -355,6 +354,7 @@ apos.define('apostrophe-workflow', {
     self.commit = function(ids, callback) {
       self.commitAllRelated = false;
       self.skipAllRelated = false;
+      self.nextExportHint = [];
       if (!ids.length) {
         return apos.notify('No modifications to commit.', { type: 'warn', dismiss: true });
       }
@@ -369,18 +369,16 @@ apos.define('apostrophe-workflow', {
       }
       var i = 0;
       return async.eachSeries(ids, function(id, callback) {
-        console.log('next pass');
         if (self.skipAllRelated && (leadId !== id)) {
           i++;
           return setImmediate(callback);
-        }
-        if (self.commitAllRelated && (leadId !== id)) {
+        } else if (self.commitAllRelated && (leadId !== id)) {
           i++;
-          console.log('invoking commitSimilarly');
           return self.commitSimilarly(id, callback);
+        } else {
+          i++;
+          return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId === id) }, callback);
         }
-        i++;
-        return self.launchCommitModal({ id: id, index: i, total: ids.length, lead: (leadId === id) }, callback);
       }, function(err) {
         if (!err) {
           apos.emit('workflowCommitted', ids);
@@ -406,7 +404,7 @@ apos.define('apostrophe-workflow', {
           apos.notify('The document was committed successfully.', { type: 'success', dismiss: true });
         }
         var commitId = result.commitId;
-        return self.exportSimilarly(id, commitId, callback);
+        return self.exportSimilarly(commitId, callback);
       });
     };
 
@@ -415,18 +413,16 @@ apos.define('apostrophe-workflow', {
     // interactively exported doc. Part of the implementation of
     // commitAllRelated
 
-    self.exportSimilarly = function(id, commitId, callback) {
-      console.log('in exportSimilarly');
+    self.exportSimilarly = function(commitId, callback) {
       if (self.nextExportHint && self.nextExportHint.length) {
-        return self.getRelatedUnexported({ id: id, exportLocales: self.nextExportHint }, function(err, ids) {
+        return self.getRelatedUnexported({ id: commitId, exportLocales: self.nextExportHint }, function(err, result) {
           if (err) {
             return callback(err);
           }
-          return exportIds(ids.concat([commitId]));
+          return exportIds(result.ids.concat([commitId]));
         });
       } else {
         // Do not export
-        console.log('do not export');
         return callback(null);
       }
       function exportIds(ids) {
@@ -441,8 +437,11 @@ apos.define('apostrophe-workflow', {
             if (result.success.length) {
               apos.notify('Successfully exported to: %s', result.success.join(', '), { type: 'success', dismiss: true });
             }
+            return callback(null);
           });
-        }, callback);
+        }, function(err) {
+          return callback(err);
+        });
       }
     };
 
