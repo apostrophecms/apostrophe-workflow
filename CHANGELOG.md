@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.7.2
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Fixed race condition introduced in version 2.7.1 which could lead to incorrect remapping of joined document IDs when committing or exporting. 
+* Fixed scenario in which a missing doc resulted in a restart. Thanks to Sylvain Chabert.
+
 ## 2.7.1
 
 Unit tests passing.
