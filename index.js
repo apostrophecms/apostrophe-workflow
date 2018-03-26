@@ -69,6 +69,7 @@ module.exports = {
     self.apos.pages.addAfterContextMenu(self.menu);
     self.enableHelpers();
     self.enableCrossDomainSessionCache();
+    self.refineOptimizeKey();
     return self.enableCollection(callback);
   },
 
