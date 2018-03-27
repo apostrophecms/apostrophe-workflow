@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.7.3
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Accommodations for the forthcoming `apostrophe-optimizer` module.
+
 ## 2.7.2
 
 Unit tests passing.
