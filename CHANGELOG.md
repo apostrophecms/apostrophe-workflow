@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.7.4
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Prevent various duplicate prompts about related docs to commit or export
+* Deoptimize overly complicated calculations of which related docs need exporting to eliminate bugs
+* Body classes for draft and live mode. Thanks to Raphaël DiRago
+* Eliminated race condition that led to null IDs in some exports of joins
+
 ## 2.7.3
 
 Unit tests passing.

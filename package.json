@@ -1,6 +1,6 @@
 {
   "name": "apostrophe-workflow",
-  "version": "2.7.3",
+  "version": "2.7.4",
   "description": "Workflow, approvals, localization and internationalization for Apostrophe 2.x",
   "main": "index.js",
   "dependencies": {
