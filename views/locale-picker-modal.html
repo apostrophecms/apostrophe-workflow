@@ -1,7 +1,11 @@
 {%- macro picker(localizations, nestedLocales, crossDomainSessionToken) -%}
   <ul class="apos-workflow-locale-picker-items">
     {%- for locale in nestedLocales -%}
-      {%- set localization = localizations[locale.name] or localizations[locale.name + '-draft'] -%}
+      {%- if data.workflowMode == 'live' -%}
+        {%- set localization = localizations[locale.name] -%}
+      {%- else %}
+        {%- set localization = localizations[locale.name + '-draft'] -%}
+      {% endif %}
       <li>
         {%- if localization and localization._url -%}
           <a 
@@ -12,7 +16,12 @@
             href="{{ localization._url }}">{{ locale.label or locale.name }}</a>
         {%- else -%}
           {# Still need tree visualization and access to kids #}
-          <span class="apos-workflow-locale-unavailable">{{ locale.label or locale.name }}</span>
+          <a class="apos-workflow-locale-unavailable"
+            {% if crossDomainSessionToken %}
+              data-apos-locale="{{ locale.name }}"
+              data-apos-cross-domain-session-token="{{ crossDomainSessionToken }}"
+            {% endif %}
+            href="#" data-apos-workflow-rescue-and-navigate="{{ data.workflowGuid }}:{{ locale.name }}">{{ locale.label or locale.name }}</a>
         {%- endif -%}
         {%- if locale.children -%}
           {{ picker(localizations, locale.children, crossDomainSessionToken) }}
