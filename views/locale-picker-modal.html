@@ -14,14 +14,15 @@
               data-apos-cross-domain-session-token="{{ crossDomainSessionToken }}"
             {% endif %}
             href="{{ localization._url }}">{{ locale.label or locale.name }}</a>
-        {%- else -%}
-          {# Still need tree visualization and access to kids #}
+        {%- elseif data.workflowMode == 'draft' -%}
           <a class="apos-workflow-locale-unavailable"
             {% if crossDomainSessionToken %}
               data-apos-locale="{{ locale.name }}"
               data-apos-cross-domain-session-token="{{ crossDomainSessionToken }}"
             {% endif %}
-            href="#" data-apos-workflow-rescue-and-navigate="{{ data.workflowGuid }}:{{ locale.name }}">{{ locale.label or locale.name }}</a>
+            href="#" data-apos-workflow-locale-unavailable="{{ data.workflowGuid }}:{{ locale.name }}">{{ locale.label or locale.name }}</a>
+        {%- else -%}
+          <span class="apos-workflow-locale-unavailable">{{ locale.label or locale.name }}</a>
         {%- endif -%}
         {%- if locale.children -%}
           {{ picker(localizations, locale.children, crossDomainSessionToken) }}

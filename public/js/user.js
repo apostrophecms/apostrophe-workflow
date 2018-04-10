@@ -9,6 +9,7 @@ apos.define('apostrophe-workflow', {
     self.enableDismiss();
     self.enableCommit();
     self.enableHistory();
+    self.enableLocaleUnavailable();
     self.enableExport();
     self.enableReview();
     self.enableManageModal();
@@ -195,9 +196,16 @@ apos.define('apostrophe-workflow', {
       });
     };
 
-    self.enableHistory = function(callback) {
+    self.enableHistory = function() {
       apos.ui.link('apos-workflow-history', null, function($el, id) {
-        self.history(id, callback);
+        self.history(id);
+      });
+    };
+
+    self.enableLocaleUnavailable = function() {
+      apos.ui.link('apos-workflow-locale-unavailable', null, function($el, info) {
+        info = info.split(':');
+        self.localeUnavailable(info[0], info[1]);
       });
     };
 
@@ -206,6 +214,15 @@ apos.define('apostrophe-workflow', {
         _.assign({
           manager: self,
           body: { id: id }
+        }, options)
+      );
+    };
+
+    self.localeUnavailable = function(workflowGuid, locale) {
+      return apos.create('apostrophe-workflow-locale-unavailable-modal',
+        _.assign({
+          manager: self,
+          body: { workflowGuid: workflowGuid, locale: locale }
         }, options)
       );
     };

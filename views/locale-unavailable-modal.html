@@ -31,21 +31,20 @@
 {% endblock %}
 
 {%- block body -%}
-  <p>
-    {{ __('That document is not currently available for editing in the %s locale.', data.locale) }}
-  </p>
-  {% if data.live %}
-    <p>{{ __('You are currently reviewing live content. If you choose to activate this document, you will be switched to draft mode to work with it in the new locale.') }}</p>
-  {% endif %}
-  <p>
-    {% if (data.status == 'inTrash') %}
-      {{ __('It does look like that document has been edited in that locale in the past,
-      but it is currently in the trash. If you click "Activate," it will be removed
-      from the trash.') }}
-    {% else if (data.status == 'newInTrash') %}
-      {{ __('That document has never been active for that locale. If you click "Activate," the current locale\'s content will be exported to it, and it will become available to edit as a draft.') }}
-    {% endif %}
-  </p>
+  <div class="apos-workflow-locale-unavailable-body">
+    <p>
+      {{ __('That document is not currently available for editing in the %s locale.', data.locale) }}
+    </p>
+    <p>
+      {% if (data.status == 'inTrash') %}
+        {{ __('It does look like that document has been edited in that locale in the past,
+        but it is currently in the trash. If you click "Activate," it will be removed
+        from the trash.') }}
+      {% elseif (data.status == 'newInTrash') %}
+        {{ __('That document has never been active for that locale. If you click "Activate," the current locale\'s content will be exported to it, and it will become available to edit as a draft.') }}
+      {% endif %}
+    </p>
+  </div>
 {%- endblock -%}
 
 {%- block footerContainer -%}{%- endblock -%}
