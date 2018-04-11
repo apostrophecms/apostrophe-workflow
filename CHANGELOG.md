@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.8.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+This release is focused on demystifying the process of activating docs in additional locales:
+
+* Activating pages and pieces in new locales is much more intuitive. The `apostrophe-workflow:add-missing-locales` task will base the content of a new doc on its closest available ancestor in the locale tree. For drafts, the "trash" status of a doc in a new locale will match that of its closest available ancestor.
+* The locale picker modal now clearly indicates which locales are still in the trash. If you click on one of these, you are invited to force export it or just rescue it from the trash, according to whether it has ever been modified or not in the new locale (i.e. whether it was deliberately placed in the trash there).
+* Locale prefixes are not erroneously duplicated when the slug is exported.
+
 ## 2.7.4
 
 Unit tests passing.
