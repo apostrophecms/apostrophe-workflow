@@ -1,0 +1,41 @@
+{%- extends "apostrophe-modal:base.html" -%}
+{%- import "apostrophe-modal:macros.html" as modals -%}
+{%- import "apostrophe-ui:components/buttons.html" as buttons with context -%}
+
+{%- block modalClass -%}
+  apos-workflow-locale-unavailable-modal apos-ui-modal-no-sidebar
+{%- endblock -%}
+
+{%- block controls -%}
+  {{ buttons.minor('Cancel', { action: 'cancel' }) }}
+  {{ buttons.major('Activate', { action: 'save' }) }}
+{%- endblock -%}
+
+{%- block label -%}
+  {{ __('Activate document for editing in new locale') }}
+{%- endblock -%}
+
+{% block instructions %}
+  <p>
+    {{ __('Click Activate to make the document available for editing in the new locale.') }}
+  </p>
+{% endblock %}
+
+{%- block body -%}
+  <div class="apos-workflow-locale-unavailable-body">
+    <p>
+      {{ __('That document is not currently available for editing in the %s locale.', data.locale) }}
+    </p>
+    <p>
+      {% if (data.status == 'inTrash') %}
+        {{ __('It does look like that document has been edited in that locale in the past,
+        but it is currently in the trash. If you click "Activate," it will be removed
+        from the trash.') }}
+      {% elseif (data.status == 'newInTrash') %}
+        {{ __('That document has never been active for that locale. If you click "Activate," the current locale\'s content will be exported to it, and it will become available to edit as a draft.') }}
+      {% endif %}
+    </p>
+  </div>
+{%- endblock -%}
+
+{%- block footerContainer -%}{%- endblock -%}
