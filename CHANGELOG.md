@@ -4,6 +4,8 @@
 
 Unit tests passing.
 
+Regression tests passing.
+
 * Index on `path, level, workflowLocale` for performance.
 
 * Dropdown menu name attributes for nightwatch functional test compatibility.

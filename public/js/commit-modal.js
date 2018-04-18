@@ -12,24 +12,30 @@ apos.define('apostrophe-workflow-commit-modal', {
       return apos.areas.saveAllIfNeeded(callback);
     };
     self.saveContent = function(callback) {
+      console.log('in saveContent');
       return self.api('commit', { id: options.body.id }, function(result) {
         if (result.status !== 'ok') {
+          console.log('error');
           apos.notify('An error occurred.', { type: 'error' });
           return callback(result.status);
         }
         if (result.title) {
+          console.log('success');
           apos.notify('%s was committed successfully.', result.title, { type: 'success', dismiss: true });
         } else {
           apos.notify('The document was committed successfully.', { type: 'success', dismiss: true });
+          console.log('success');
         }
         var commitId = result.commitId;
         return self.api('editable-locales', {
           id: options.body.id
         }, function(result) {
+          console.log('editable-locales response');
           if (result.status !== 'ok') {
             return callback(result.status);
           }
           if (result.locales.length > 1) {
+            console.log('passing the baton to export');
             return self.manager.export(commitId, callback);
           }
           return callback(null);
