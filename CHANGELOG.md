@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.8.1
+
+Unit tests passing.
+
+* Index on `path, level, workflowLocale` for performance.
+
+* Dropdown menu name attributes for nightwatch functional test compatibility.
+
 ## 2.8.0
 
 Unit tests passing.
