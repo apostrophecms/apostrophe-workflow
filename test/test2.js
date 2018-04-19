@@ -619,7 +619,7 @@ describe('Workflow Subdomains and Prefixes', function() {
     assert(criteria.$and[0].workflowGuid === 'baz');
     // We are looking for the stub criteria the permissions module uses when
     // it sees that an anon user should never be able to do something
-    assert(criteria.$and[1]._iNeverMatch === true);
+    assert(criteria.$and[1]._id === '__iNeverMatch');
   });
 
   it('setPropertiesAcrossLocales works', function(done) {
