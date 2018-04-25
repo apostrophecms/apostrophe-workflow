@@ -1,11 +1,12 @@
 var assert = require('assert');
+var async = require('async');
 debugger;
 
 describe('Workflow Core', function() {
   this.timeout(5000);
   
   after(function() {
-    apos.db.dropDatabase();
+    /* apos.db.dropDatabase(); */
   });
 
   it('should be a property of the apos object', function(done) {
@@ -68,33 +69,47 @@ describe('Workflow Core', function() {
       });
   });
   
-  it('Export our product to default (live)', () => {
-    console.log('test commit')
+  it('Commmit a change', (done) => {
     var req = apos.tasks.getReq({locale: 'default-draft'});
-    // load it from db again 
-    apos.products.find(req).toArray().then( docs => {
-      assert(docs[0]);
-      apos.workflow.commitLatest(req, docs[0]._id, (err, res) => {
-          console.log("EXPORT", res);
-          if (err) {
-            console.log(err);
-          }
-          assert(!err);
-          assert(commitId);
-          assert(draftTitle === 'initial title');
-          console.log('first');
-          done();
+
+    async.waterfall([getProductDraft, updateProductDraft, commitUpdate], (err, res) => {
+      assert(!err);
+      assert(typeof res === 'string', 'response should be an id');
+      done();
+    })
+    
+    function getProductDraft(cb) {
+      apos.products.find(req).toArray().then( docs => {
+        assert(docs[0]);
+        return cb(null, docs[0]);
+      })
+      .catch(e => {
+        return cb(e)
       });
-    });
+    }
+
+    function updateProductDraft(product, cb) {
+      product.title = 'new title';
+      apos.products.update(req, product, (err, res) => {
+        return cb(err, res);
+      });
+    }
+
+    function commitUpdate(product, cb) {
+      apos.workflow.commitLatest(req, product._id, (err, res) => {
+        console.log('workflow commit success',err, res);
+        return cb(err, res);
+      });
+    }
   });
 
   it('Check for live document after commit', done => {
-    console.log('second');
     const req = apos.tasks.getReq({locale: 'default'});
     apos.products.find(req).toArray().then( docs => {
        console.log("FOUND", docs);
+       assert(docs[0].title === 'new title');
+       assert(!docs[0].trash)
        done();
     });
   });
 });
-
