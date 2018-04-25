@@ -6,7 +6,7 @@ describe('Workflow Core', function() {
   this.timeout(5000);
   
   after(function() {
-    /* apos.db.dropDatabase(); */
+//    apos.db.dropDatabase();
   });
 
   it('should be a property of the apos object', function(done) {
@@ -68,11 +68,11 @@ describe('Workflow Core', function() {
         assert(doc.workflowLocale === 'default-draft');
       });
   });
-  
+
   it('Commmit a change', (done) => {
     var req = apos.tasks.getReq({locale: 'default-draft'});
 
-    async.waterfall([getProductDraft, updateProductDraft, commitUpdate], (err, res) => {
+    async.waterfall([getProductDraft, commitUpdate], (err, res) => {
       assert(!err);
       assert(typeof res === 'string', 'response should be an id');
       done();
@@ -96,6 +96,7 @@ describe('Workflow Core', function() {
     }
 
     function commitUpdate(product, cb) {
+      console.log("PROD", product)
       apos.workflow.commitLatest(req, product._id, (err, res) => {
         console.log('workflow commit success',err, res);
         return cb(err, res);
@@ -104,7 +105,7 @@ describe('Workflow Core', function() {
   });
 
   it('Check for live document after commit', done => {
-    const req = apos.tasks.getReq({locale: 'default'});
+    const req = apos.tasks.getReq();
     apos.products.find(req).toArray().then( docs => {
        console.log("FOUND", docs);
        assert(docs[0].title === 'new title');
