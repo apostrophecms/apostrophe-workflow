@@ -5,6 +5,7 @@ debugger;
 
 describe('Workflow Core', function() {
   this.timeout(5000);
+  var apos;
   
   after(function() {
     apos.db.dropDatabase();
@@ -57,14 +58,11 @@ describe('Workflow Core', function() {
   });
 
   it('Test add draft product to db as draft', () => {
-    const req = apos.tasks.getReq();
-    return apos.products.insert(req, {
-      title: 'initial title',
-      published: true,
-      trash: false
-    })
+    var req = apos.tasks.getReq();
+    var product = apos.products.newInstance();
+    product.title = 'initial title';
+    return apos.products.insert(req, product)
       .then(doc => {
-        console.log("DOC", doc)
         assert(doc.type === 'product');
         assert(doc.workflowGuid);
         assert(doc.workflowLocale === 'default-draft');
