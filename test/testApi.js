@@ -4,6 +4,7 @@ debugger;
 
 describe('Workflow Core', function() {
   this.timeout(5000);
+  var apos;
   
   after(function() {
     /* apos.db.dropDatabase(); */
@@ -57,12 +58,10 @@ describe('Workflow Core', function() {
 
   it('Test add draft product to db as draft', () => {
     const req = apos.tasks.getReq();
-    return apos.products.insert(req, {
-      title: 'initial title',
-      published: true
-    })
+    var product = apos.products.newInstance();
+    product.title = 'initial title';
+    return apos.products.insert(req, product)
       .then(doc => {
-        console.log("DOC", doc)
         assert(doc.type === 'product');
         assert(doc.workflowGuid);
         assert(doc.workflowLocale === 'default-draft');
@@ -97,7 +96,6 @@ describe('Workflow Core', function() {
 
     function commitUpdate(product, cb) {
       apos.workflow.commitLatest(req, product._id, (err, res) => {
-        console.log('workflow commit success',err, res);
         return cb(err, res);
       });
     }
@@ -105,11 +103,10 @@ describe('Workflow Core', function() {
 
   it('Check for live document after commit', done => {
     const req = apos.tasks.getReq({locale: 'default'});
-    apos.products.find(req).toArray().then( docs => {
-       console.log("FOUND", docs);
-       assert(docs[0].title === 'new title');
-       assert(!docs[0].trash)
-       done();
+    apos.products.find(req).trash(null).toArray().then(docs => {
+      assert(docs[0].title === 'new title');
+      assert(!docs[0].trash);
+      done();
     });
   });
 });
