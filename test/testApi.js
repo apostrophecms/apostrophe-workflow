@@ -1,9 +1,12 @@
 var assert = require('assert');
-var api = require('../lib/api');
-var async = require('async');
-var _ = require('lodash');
-var testDocIds = [];
-var pageInitial;
+debugger;
+
+describe('Workflow Core', function() {
+  this.timeout(5000);
+  
+  after(function() {
+    apos.db.dropDatabase();
+  });
 
   it('should be a property of the apos object', function(done) {
     apos = require('apostrophe')({
@@ -27,8 +30,8 @@ var pageInitial;
           settings: {
             locales: ['default'],
             defaultLocale: 'default',
-            alias: 'worflow' // for testing only!
-          }
+          },
+          alias: 'workflow' // for testing only!
         },
         'products': {
           extend: 'apostrophe-pieces',
@@ -52,8 +55,11 @@ var pageInitial;
   });
 
   it('Test add draft product to db as draft', () => {
-    var req = apos.tasks.getReq({locale: 'default-draft'});
-    return apos.products.insert(req, {title: 'initial title'})
+    const req = apos.tasks.getReq();
+    return apos.products.insert(req, {
+      title: 'initial title',
+      published: true
+    })
       .then(doc => {
         console.log("DOC", doc)
         assert(doc.type === 'product');
@@ -61,4 +67,34 @@ var pageInitial;
         assert(doc.workflowLocale === 'default-draft');
       });
   });
+  
+  it('Export our product to default (live)', () => {
+    console.log('test commit')
+    var req = apos.tasks.getReq({locale: 'default-draft'});
+    // load it from db again 
+    apos.products.find(req).toArray().then( docs => {
+      assert(docs[0]);
+      apos.workflow.commitLatest(req, docs[0]._id, (err, res) => {
+          console.log("EXPORT", res);
+          if (err) {
+            console.log(err);
+          }
+          assert(!err);
+          assert(commitId);
+          assert(draftTitle === 'initial title');
+          console.log('first');
+          done();
+      });
+    });
+  });
+
+  it('Check for live document after commit', done => {
+    console.log('second');
+    const req = apos.tasks.getReq({locale: 'default'});
+    apos.products.find(req).toArray().then( docs => {
+       console.log("FOUND", docs);
+       done();
+    });
+  });
+});
 
