@@ -1,0 +1,53 @@
+{%- extends "apostrophe-modal:base.html" -%}
+{%- import "apostrophe-modal:macros.html" as modals -%}
+{%- import "apostrophe-ui:components/buttons.html" as buttons with context -%}
+{%- import "apostrophe-ui:components/dropdowns.html" as dropdowns with context -%}
+
+{%- block modalClass -%}
+  apos-workflow-commit-modal apos-ui-modal-no-sidebar
+{%- endblock -%}
+
+{%- block controls -%}
+  {{ buttons.minor('Cancel' if (data.total == 1) else 'Skip', { action: 'cancel' }) }}
+  {{ buttons.major('Commit', { action: 'save' }) }}
+{%- endblock -%}
+
+{%- block label -%}
+  {{ __('[%s of %s] Committing %s', data.index, data.total, data.doc.title or data.doc.slug) }}
+{%- endblock -%}
+
+{% block instructions %}
+  {% if not data.lead %}
+    <p>
+      {{ __('This related item may also be visible on the page. Please consider it first so that your final commit is more complete.') }}
+    </p>
+    <p>
+      <a class="apos-workflow-shortcut" data-commit-all-related href="#">{{ __('Commit all like this') }}</a>
+      <a class="apos-workflow-shortcut" data-skip-all-related href="#">{{ __('Skip all like this') }}</a>
+    </p>
+  {% else %}
+    <p>
+      {{ __('Click Commit to make these changes live.') }}
+    </p>
+  {% endif %}
+{% endblock %}
+
+{%- block body -%}
+  {% if data.modifiedFields.length %}
+    <div class="apos-workflow-modified-fields">
+      <p>{{ __('Modified fields: %s', data.modifiedFields | join(', ')) }}</p>
+      <p class="apos-workflow-hint">Also see below for content edited in context.</p>
+    </div>
+  {% endif %}
+  <div class="apos-workflow-preview">
+    {% if data.preview %}
+      {{ data.preview }}
+    {% elseif data.doc._url %}
+      <iframe class="apos-workflow-preview-iframe" src="{{ data.doc._url | build({ workflowPreview: data.doc._id }) }}"></iframe>
+    {% else %}
+      <p class="apos-workflow-no-preview">No preview available.</p>
+    {% endif %}
+  </div>
+{%- endblock -%}
+
+{%- block footerContainer -%}{%- endblock -%}

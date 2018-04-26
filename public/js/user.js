@@ -12,6 +12,7 @@ apos.define('apostrophe-workflow', {
     self.enableLocaleUnavailable();
     self.enableExport();
     self.enableReview();
+    self.enableRevert();
     self.enableManageModal();
     self.enableLocalePickerModal();
     self.enableForceExport();
@@ -333,6 +334,23 @@ apos.define('apostrophe-workflow', {
         );
       });
     };
+
+    self.enableRevert = function() {
+      apos.ui.link('apos-workflow-revert', null, function($el, id) {
+        apos.ui.globalBusy(true);
+        self.api('revert', {id: id}, function (result) {
+          apos.ui.globalBusy(false);
+          if (result.status && result.status !== 'ok') {
+            return apos.notify('Error reverting commit:' + result.status);
+          } else if (!result.status) {
+            return apos.notify('Error reverting commit');
+          }
+
+          return apos.notify('Document reverted to commit!');
+          // @@TODO - where do we go now?
+        });
+      });
+    }
 
     // Submit the docs with the specified ids for approval and notify the user.
     self.submit = function(ids, callback) {
