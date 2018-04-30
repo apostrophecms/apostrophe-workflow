@@ -340,13 +340,15 @@ apos.define('apostrophe-workflow', {
         apos.ui.globalBusy(true);
         self.api('revert', {id: id}, function (result) {
           apos.ui.globalBusy(false);
-          console.log('Revert response', result)
           if (result.status && result.status !== 'ok') {
             return apos.notify('Error reverting commit:' + result.status);
           } else if (!result.status) {
             return apos.notify('Error reverting commit');
           }
 
+          if (result.redirect) {
+            window.location.href = result.redirect;
+          }
           return apos.notify('Document reverted to commit!');
           // @@TODO - where do we go now?
         });
