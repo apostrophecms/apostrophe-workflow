@@ -13,8 +13,6 @@ var modules = [
   'apostrophe-workflow-assets'
 ];
 
-console.log('workflow dev!');
-
 // ## Options
 //
 // `includeTypes: [ 'my-blog-post', 'my-event' ]`
