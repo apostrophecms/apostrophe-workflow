@@ -1,12 +1,11 @@
 var assert = require('assert');
 var async = require('async');
 var revertId;
-debugger;
 
 describe('Workflow Core', function() {
   this.timeout(5000);
   var apos;
-  
+
   after(function() {
     apos.db.dropDatabase();
   });
@@ -32,7 +31,7 @@ describe('Workflow Core', function() {
         'apostrophe-workflow': {
           settings: {
             locales: ['default'],
-            defaultLocale: 'default',
+            defaultLocale: 'default'
           },
           alias: 'workflow' // for testing only!
         },
@@ -68,12 +67,11 @@ describe('Workflow Core', function() {
         assert(doc.workflowLocale === 'default-draft');
       });
   });
-  
+
   // block repeats
   it('Commmit a change', (done) => {
     var req = apos.tasks.getReq({locale: 'default-draft'});
-    var msgs = ['first commit', 'second commit'];
-    
+
     async.waterfall([getProductDraft, updateProductDraft, commitUpdate], (err, res) => {
       if (err) {
         console.log('test Commit err', err);
@@ -82,16 +80,16 @@ describe('Workflow Core', function() {
       assert(!err);
       assert(typeof res === 'string', 'response should be an id');
       done();
-    })
-    
+    });
+
     function getProductDraft(cb) {
-      apos.products.find(req).toArray().then( docs => {
+      apos.products.find(req).toArray().then(docs => {
         assert(docs[0]);
         return cb(null, docs[0]);
       })
-      .catch(e => {
-        return cb(e)
-      });
+        .catch(e => {
+          return cb(e);
+        });
     }
 
     function updateProductDraft(product, cb) {
@@ -111,10 +109,10 @@ describe('Workflow Core', function() {
 
   it('Check for live document after commit', done => {
     const req = apos.tasks.getReq();
-    apos.products.find(req).toArray().then( docs => {
-       assert(docs[0].title === 'new title');
-       assert(!docs[0].trash)
-       done();
+    apos.products.find(req).toArray().then(docs => {
+      assert(docs[0].title === 'new title');
+      assert(!docs[0].trash);
+      done();
     });
   });
   // end block repeats
@@ -122,8 +120,7 @@ describe('Workflow Core', function() {
   // block repeats
   it('Commmit a change', (done) => {
     var req = apos.tasks.getReq({locale: 'default-draft'});
-    var msgs = ['first commit', 'second commit'];
-    
+
     async.waterfall([getProductDraft, updateProductDraft, commitUpdate], (err, res) => {
       if (err) {
         console.log('test Commit err', err);
@@ -132,16 +129,16 @@ describe('Workflow Core', function() {
       assert(!err);
       assert(typeof res === 'string', 'response should be an id');
       done();
-    })
-    
+    });
+
     function getProductDraft(cb) {
-      apos.products.find(req).toArray().then( docs => {
+      apos.products.find(req).toArray().then(docs => {
         assert(docs[0]);
         return cb(null, docs[0]);
       })
-      .catch(e => {
-        return cb(e)
-      });
+        .catch(e => {
+          return cb(e);
+        });
     }
 
     function updateProductDraft(product, cb) {
@@ -161,17 +158,17 @@ describe('Workflow Core', function() {
 
   it('Check for live document after commit', done => {
     const req = apos.tasks.getReq();
-    apos.products.find(req).toArray().then( docs => {
-       assert(docs[0].title === 'new title 2');
-       assert(!docs[0].trash)
-       done();
+    apos.products.find(req).toArray().then(docs => {
+      assert(docs[0].title === 'new title 2');
+      assert(!docs[0].trash);
+      done();
     });
   });
 
   it('Test revert', done => {
     const req = apos.tasks.getReq();
     assert(revertId);
-    
+
     async.waterfall([revert, check], (err, docs) => {
       assert(!err);
       assert(docs[0].title === 'new title');
@@ -188,12 +185,12 @@ describe('Workflow Core', function() {
         cb(err);
       });
     }
-    
+
     function check (cb) {
       var req = apos.tasks.getReq({locale: 'default-draft'});
-      apos.products.find(req).toArray().then( docs => {
+      apos.products.find(req).toArray().then(docs => {
         cb(null, docs);
-      }).catch(cb)
+      }).catch(cb);
     }
   });
 });

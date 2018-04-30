@@ -350,7 +350,7 @@ apos.define('apostrophe-workflow', {
           // @@TODO - where do we go now?
         });
       });
-    }
+    };
 
     // Submit the docs with the specified ids for approval and notify the user.
     self.submit = function(ids, callback) {
