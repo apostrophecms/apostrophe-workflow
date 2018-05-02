@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.8.2
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Unit test fix to accommodate a performance improvement in Apostrophe's queries. No code changes to this module.
+
 ## 2.8.1
 
 Unit tests passing.
