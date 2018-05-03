@@ -348,7 +348,10 @@ apos.define('apostrophe-workflow', {
 
           if (result.redirect) {
             window.location.href = result.redirect;
+          } else {
+            apos.emit('change', result.type);
           }
+
           return apos.notify('Document reverted to commit!');
           // @@TODO - where do we go now?
         });
