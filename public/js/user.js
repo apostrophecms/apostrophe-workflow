@@ -338,7 +338,7 @@ apos.define('apostrophe-workflow', {
     self.enableRevert = function() {
       apos.ui.link('apos-workflow-revert', null, function($el, id) {
         apos.ui.globalBusy(true);
-        self.api('revert', {id: id}, function (result) {
+        self.api('revert', { id: id }, function (result) {
           apos.ui.globalBusy(false);
           if (result.status && result.status !== 'ok') {
             return apos.notify('Error reverting commit:' + result.status);
