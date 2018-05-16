@@ -22,7 +22,7 @@
     "eslint-plugin-standard": "^3.0.1"
   },
   "scripts": {
-    "test": "mocha test/test1.js && mocha test/test2.js && mocha test/test3.js && eslint ."
+    "test": "mocha test/test1.js && mocha test/test2.js && mocha test/test3.js && mocha test/testApi.js && eslint ."
   },
   "repository": {
     "type": "git",
