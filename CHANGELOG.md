@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.9.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* New `Revert Draft` button available in the `History` modal, allowing users to roll the draft back to the content of any past commit. "Page Versions" is available too, but this is often more intuitive.
+
 ## 2.8.2
 
 Unit tests passing.
