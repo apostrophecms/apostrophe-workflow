@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.9.1
+
+Unit tests passing.
+
+Relevant regression tests passing.
+
+* You can once again add `apostrophe-workflow` to an existing project that already has a database before the point at which `apostrophe-workflow` is enabled. You do still need to follow the documentation's instructions to run the `apostrophe-workflow:add-missing-locales --live` task before first use after adding workflow. Thanks to Carsten for reporting the bug.
+
 ## 2.9.0
 
 Unit tests passing.
