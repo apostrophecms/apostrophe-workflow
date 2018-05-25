@@ -123,9 +123,12 @@ apos.define('apostrophe-workflow', {
     //
     // If `options.related` is truthy then related documents,
     // i.e. related via joins or widgets, are also included.
+    //
+    // If `options.ids` is specified, those ids are
+    // considered rather than those found on the page.
 
     self.getEditable = function(options, callback) {
-      var ids = self.getDocIds();
+      var ids = options.ids || self.getDocIds();
       return self.api('editable', _.assign({ ids: ids }, options), function(result) {
         if (result.status === 'ok') {
           return callback(null, result);
@@ -391,15 +394,23 @@ apos.define('apostrophe-workflow', {
       });
     };
 
-    // Present commit modals for all ids in the array, one after another
-    self.commit = function(ids, callback) {
+    // Present commit modals for all ids in the array, one after another.
+    // The options object may be entirely omitted.
+    // If present, `options.leadId` is the lead id — the doc that is not considered
+    // merely "related" to the one the user is "looking at." If not specified, the
+    // context piece or page is considered to be the lead id.
+    self.commit = function(ids, options, callback) {
+      if (!callback) {
+        callback = options;
+        options = {};
+      }
       self.commitAllRelated = false;
       self.skipAllRelated = false;
       self.nextExportHint = [];
       if (!ids.length) {
         return apos.notify('No modifications to commit.', { type: 'warn', dismiss: true });
       }
-      var leadId = (apos.contextPiece && apos.contextPiece._id) || (apos.pages.page && apos.pages.page._id);
+      var leadId = options.leadId || (apos.contextPiece && apos.contextPiece._id) || (apos.pages.page && apos.pages.page._id);
       if (!_.contains(ids, leadId)) {
         leadId = null;
       }
