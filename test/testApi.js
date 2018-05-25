@@ -6,8 +6,8 @@ describe('Workflow Core', function() {
   this.timeout(5000);
   var apos;
 
-  after(function() {
-    apos.db.dropDatabase();
+  after(function(done) {
+    require('apostrophe/test-lib/util').destroy(apos, done);
   });
 
   it('should be a property of the apos object', function(done) {

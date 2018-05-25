@@ -9,8 +9,8 @@ describe('Workflow Add Missing Locales Inheritance', function() {
 
   this.timeout(5000);
 
-  after(function() {
-    apos.db.dropDatabase();
+  after(function(done) {
+    require('apostrophe/test-lib/util').destroy(apos, done);
   });
 
   /// ///

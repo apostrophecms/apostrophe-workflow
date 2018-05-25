@@ -8,8 +8,8 @@ describe('Workflow Core', function() {
 
   this.timeout(20000);
 
-  after(function() {
-    apos.db.dropDatabase();
+  after(function(done) {
+    require('apostrophe/test-lib/util').destroy(apos, done);
   });
 
   /// ///
