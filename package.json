@@ -1,25 +1,25 @@
 {
   "name": "apostrophe-workflow",
-  "version": "2.9.1",
+  "version": "2.9.2",
   "description": "Workflow, approvals, localization and internationalization for Apostrophe 2.x",
   "main": "index.js",
   "dependencies": {
+    "@sailshq/lodash": "^3.10.3",
     "async": "^1.5.2",
     "bluebird": "^3.5.1",
     "deep-get-set": "^1.1.0",
-    "jsondiffpatch": "^0.2.5",
-    "lodash": "^3.10.1"
+    "jsondiffpatch": "^0.2.5"
   },
   "devDependencies": {
     "apostrophe": "^2.43.0",
-    "mocha": "^3.5.3",
     "eslint": "^4.15.0",
     "eslint-config-punkave": "^1.0.10",
     "eslint-config-standard": "^11.0.0-beta.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-node": "^5.2.1",
     "eslint-plugin-promise": "^3.6.0",
-    "eslint-plugin-standard": "^3.0.1"
+    "eslint-plugin-standard": "^3.0.1",
+    "mocha": "^5.1.1"
   },
   "scripts": {
     "test": "mocha test/test1.js && mocha test/test2.js && mocha test/test3.js && mocha test/testApi.js && eslint ."
