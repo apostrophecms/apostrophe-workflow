@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.9.3
+
+Unit tests passing.
+
+Relevant regression tests passing.
+
+* Exempt the locale specific stylesheet generation routes from loading `apostrophe-global`, for performance. Significant performance boost when `apostrophe-global` contains joins.
+
+## 2.9.2
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Updated package dependencies; passing `npm audit`.
+
 ## 2.9.1
 
 Unit tests passing.
