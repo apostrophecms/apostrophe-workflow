@@ -408,7 +408,10 @@ apos.define('apostrophe-workflow', {
       self.skipAllRelated = false;
       self.nextExportHint = [];
       if (!ids.length) {
-        return apos.notify('No modifications to commit.', { type: 'warn', dismiss: true });
+        apos.notify('No modifications to commit.', { type: 'warn', dismiss: true });
+        if (callback) {
+          return callback(null);
+        }
       }
       var leadId = options.leadId || (apos.contextPiece && apos.contextPiece._id) || (apos.pages.page && apos.pages.page._id);
       if (!_.contains(ids, leadId)) {
