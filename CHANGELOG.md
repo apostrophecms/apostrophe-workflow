@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.9.4
+
+Unit tests passing.
+
+Regression tests passing.
+
+* When the commit option is chosen but there is no actual change to commit, don't get hung up in the progress display. This was an issue only when accessed via a workflow dropdown menu.
+
 ## 2.9.3
 
 Unit tests passing.
