@@ -409,9 +409,7 @@ apos.define('apostrophe-workflow', {
       self.nextExportHint = [];
       if (!ids.length) {
         apos.notify('No modifications to commit.', { type: 'warn', dismiss: true });
-        if (callback) {
-          return callback(null);
-        }
+        return callback && callback(null);
       }
       var leadId = options.leadId || (apos.contextPiece && apos.contextPiece._id) || (apos.pages.page && apos.pages.page._id);
       if (!_.contains(ids, leadId)) {
