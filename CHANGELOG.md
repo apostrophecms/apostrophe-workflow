@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.10.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Developers no longer have to explicitly run the `apostrophe-workflow:add-missing-locales` and `apostrophe-workflow:add-locale-prefixes` command line tasks. Much like parked pages, these are implemented automatically when starting up your node server process or when running command line tasks such as `apostrophe-migrations:migrate`. It is still possible to run these tasks explicitly.
+* `apostrophe-workflow:add-locale-prefixes` can now remove a slug prefix that is no longer present in your configuration, provided that it was present on a previous startup with this version or newer. All historical locale slug prefixes are remembered for consideration in the cleanup process.
+* `apostrophe-workflow:add-locale-prefixes` has been optimized to avoid unnecessary work.
+
 ## 2.9.4
 
 Unit tests passing.
