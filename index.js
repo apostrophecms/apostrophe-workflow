@@ -1,3 +1,5 @@
+var async = require('async');
+
 var modules = [
   'apostrophe-workflow-areas',
   'apostrophe-workflow-docs',
@@ -70,7 +72,11 @@ module.exports = {
     self.enableHelpers();
     self.enableCrossDomainSessionCache();
     self.refineOptimizeKey();
-    return self.enableCollection(callback);
+    return async.series([
+      self.enableCollection,
+      self.enableFacts,
+      self.updateHistoricalPrefixes
+    ], callback);
   },
 
   construct: function(self, options) {
