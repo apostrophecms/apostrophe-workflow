@@ -1,16 +1,20 @@
 var assert = require('assert');
 var _ = require('@sailshq/lodash');
 
-describe('Workflow Add Missing Locales Inheritance', function() {
+describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function() {
 
-  var apos;
+  var apos, apos2, apos3;
 
   var existsIn = [ 'default', 'us' ];
 
   this.timeout(5000);
 
   after(function(done) {
-    require('apostrophe/test-lib/util').destroy(apos, done);
+    require('apostrophe/test-lib/util').destroy(apos, function() {
+      require('apostrophe/test-lib/util').destroy(apos2, function() {
+        require('apostrophe/test-lib/util').destroy(apos3, done);
+      });
+    });
   });
 
   /// ///
@@ -117,6 +121,196 @@ describe('Workflow Add Missing Locales Inheritance', function() {
       var usEn = _.find(docs, { workflowLocale: 'us-en' });
       assert(usEn);
       assert(usEn.origin === 'us');
+    });
+  });
+
+  it('can spin up second instance with same db but different prefixes and more locales', function(done) {
+    apos2 = require('apostrophe')({
+      testModule: true,
+
+      modules: {
+        'apostrophe-express': {
+          port: 7999
+        },
+        'apostrophe-pages': {
+          park: [],
+          types: [
+            {
+              name: 'home',
+              label: 'Home'
+            },
+            {
+              name: 'testPage',
+              label: 'Test Page'
+            }
+          ]
+        },
+        'apostrophe-workflow': {
+          prefixes: {
+            // Even private locales must be distinguishable by hostname and/or prefix
+            'default': '/default',
+            'us': '/us',
+            'us-en': '/us-en',
+            'us-es': '/us-es',
+            'us-fr': '/us-fr'
+            // We don't need prefixes for plain fr because
+            // that hostname is not shared with other
+            // locales
+          },
+          locales: [
+            {
+              name: 'default',
+              label: 'Default',
+              private: true,
+              children: [
+                {
+                  name: 'fr'
+                },
+                {
+                  name: 'us',
+                  private: true,
+                  children: [
+                    {
+                      name: 'us-en'
+                    },
+                    {
+                      name: 'us-es'
+                    },
+                    {
+                      name: 'us-fr'
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          defaultLocale: 'default'
+        }
+      },
+      afterInit: function(callback) {
+        assert(apos2.modules['apostrophe-workflow']);
+        // Should NOT have an alias!
+        assert(!apos2.workflow);
+        return callback(null);
+      },
+      afterListen: function(err) {
+        assert(!err);
+        done();
+      }
+    });
+  });
+
+  it('new locale appears, existing locales have updated prefixes', function() {
+    return apos2.docs.db.find({ title: 'test' }).toArray().then(function(docs) {
+      assert(docs);
+      assert(docs.length === 12);
+      var fr = _.find(docs, { workflowLocale: 'fr' });
+      assert(fr);
+      assert(fr.origin === 'default');
+      assert(fr.slug === '/test');
+      var usEn = _.find(docs, { workflowLocale: 'us-en' });
+      assert(usEn);
+      assert(usEn.origin === 'us');
+      assert(usEn.slug === '/us-en/test');
+      var usFr = _.find(docs, { workflowLocale: 'us-fr' });
+      assert(usFr);
+      assert(usFr.origin === 'us');
+      assert(usFr.slug === '/us-fr/test');
+    });
+  });
+
+  it('can spin up third instance where a prefix is removed', function(done) {
+    apos3 = require('apostrophe')({
+      testModule: true,
+
+      modules: {
+        'apostrophe-express': {
+          port: 7998
+        },
+        'apostrophe-pages': {
+          park: [],
+          types: [
+            {
+              name: 'home',
+              label: 'Home'
+            },
+            {
+              name: 'testPage',
+              label: 'Test Page'
+            }
+          ]
+        },
+        'apostrophe-workflow': {
+          prefixes: {
+            // Even private locales must be distinguishable by hostname and/or prefix
+            'default': '/default',
+            'us': '/us',
+            'us-en': '/us-en',
+            'us-es': '/us-es'
+            // us-fr removed
+            // We don't need prefixes for plain fr because
+            // that hostname is not shared with other
+            // locales
+          },
+          locales: [
+            {
+              name: 'default',
+              label: 'Default',
+              private: true,
+              children: [
+                {
+                  name: 'fr'
+                },
+                {
+                  name: 'us',
+                  private: true,
+                  children: [
+                    {
+                      name: 'us-en'
+                    },
+                    {
+                      name: 'us-es'
+                    },
+                    {
+                      name: 'us-fr'
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          defaultLocale: 'default'
+        }
+      },
+      afterInit: function(callback) {
+        assert(apos3.modules['apostrophe-workflow']);
+        // Should NOT have an alias!
+        assert(!apos3.workflow);
+        return callback(null);
+      },
+      afterListen: function(err) {
+        assert(!err);
+        done();
+      }
+    });
+  });
+
+  it('prefix removed', function() {
+    return apos3.docs.db.find({ title: 'test' }).toArray().then(function(docs) {
+      assert(docs);
+      assert(docs.length === 12);
+      var fr = _.find(docs, { workflowLocale: 'fr' });
+      assert(fr);
+      assert(fr.origin === 'default');
+      assert(fr.slug === '/test');
+      var usEn = _.find(docs, { workflowLocale: 'us-en' });
+      assert(usEn);
+      assert(usEn.origin === 'us');
+      assert(usEn.slug === '/us-en/test');
+      var usFr = _.find(docs, { workflowLocale: 'us-fr' });
+      assert(usFr);
+      assert(usFr.origin === 'us');
+      assert(usFr.slug === '/test');
     });
   });
 

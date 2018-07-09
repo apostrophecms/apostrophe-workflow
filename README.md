@@ -30,25 +30,20 @@ If you are using the `park` option with `apostrophe-pages`, and you have not alr
 
 Odds are, you already have a database. Either from an existing project, or for a new one, since Apostrophe creates the database on the very first run. So, follow these steps to add workflow to your database.
 
-1. **FOR EXISTING PROJECTS, BACK UP YOUR DATABASE,** In case you decide this module is not for you, or decide you should have used the `--live` option as seen below. Currently there is no command to stop using workflow once you start.
+1. **FOR EXISTING PROJECTS, BACK UP YOUR DATABASE,** In case you decide this module is not for you. Currently there is no command to stop using workflow once you start.
 
 You should initially experiment with this module with a *local* copy of your site, not your live production content.
 
 You can back up your database easily with the `mongodump` command line utility.
 
-2. Execute this task:
-
-```
-node app apostrophe-workflow:add-missing-locales --live
-```
-
-**You should not have to do this more than once,** except when adding new locales (see "localization" below).
-
-Once you run this task, all of your documents will exist in both draft and live versions. Editors will be able to the draft version while in "draft" mode. Everyone else, and editors in "live" mode, will see the live version and will not be able to edit it directly. The only way to make new content live is to "commit" the changes that have been made to the document.
+**Once you add this module and restart your apostrophe process,** all of your documents will exist in both draft and live versions. Editors will be able to the draft version while in "draft" mode. Everyone else, and editors in "live" mode, will see the live version and will not be able to edit it directly. The only way to make new content live is to "commit" the changes that have been made to the document.
 
 If you have not added an admin user yet, you can do it now in the usual way:
 
 ```
+# If you do not have preconfigured groups, add a group too
+node app apostrophe-groups:add admin admin
+# Now add the user
 node app apostrophe-users:add admin admin
 ```
 
@@ -120,13 +115,15 @@ If you have worked with localization before you will recognize locale names like
 >
 > The parent-child relationship between locales is just a convenience for quickly exporting content to them, as you'll see below. You can nest `children` as many levels deep as you wish.
 
-Now let's ask Apostrophe to add the new locales to all of the existing docs in the database:
+**When you restart your Apostrophe node process or run a command line task such as `apostrophe-migrations:migrate**, Apostrophe will **automatically** add the new locales to all of the existing docs in the database.
+
+You may also do this explicitly:
 
 ```
 node app apostrophe-workflow:add-missing-locales
 ```
 
-By default, docs copied to new locales via this task will be considered trash in all locales except for the draft version of the default locale, until an editor chooses to clear the "trash" checkbox and then commit that change. If you prefer that that they be immediately live everywhere, use this command instead:
+By default, docs copied to new locales via this task will be considered trash in all live locales, until an editor chooses to commit them.  If you prefer that that they be immediately live everywhere, use this command instead:
 
 ```
 node app apostrophe-workflow:add-missing-locales --live
@@ -266,15 +263,19 @@ Two locales may have the same prefix, as long as they have different hostnames, 
 
 ### Adding prefixes to an existing database
 
-Apostrophe does not automatically add prefixes to existing slugs in your database when you enable prefixes for locales. You can do so with this command line task:
+**Prefixes are automatically added to page slugs when Apostrophe is restarted or you run a command line task,** such as `apostrophe-migrations:migrate`.
+
+You can also request this explicitly:
 
 ```
 node app apostrophe-workflow:add-locale-prefixes
 ```
 
-This is a one-time action.
+This is a one-time action. Prefixes are automatically added to new pages and when editing the "page settings" of old ones.
 
-There is currently no task to remove prefixes if you choose to stop using them. However, after the prefix configuration is removed, it becomes possible to edit the slug fully and remove the prefix by hand.
+**If you change or remove the prefix for a locale,** the change will take place for existing pages the next time you restart the site or run a task.
+
+> The editor may appear to allow removing the prefix from the slug, but it is always restored on save.
 
 ### If you only care about subdomains
 
@@ -289,12 +290,6 @@ Similarly, if all of your locales use prefixes which match the name of the local
 ### One login across all hostnames
 
 The workflow module provides single sign-on across all of the hostnames, provided that you use the locale picker provided by Apostrophe's editing interface to switch between them. The user's session cookie is transferred to the other hostname as part of following that link.
-
-You **do not** have to run this task again. It is a one-time transition.
-
-Currently there is no automated way to roll back to not having slug prefixes. However, if you disable the `prefixes` flag, the entire slug becomes editable again, and so you can manually remove them.
-
-*The editor may appear to allow removing the prefix from the slug, but it is always restored on save.*
 
 ## Tags and localization: we recommend using joins instead
 
