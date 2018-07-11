@@ -3,7 +3,7 @@ var _ = require('@sailshq/lodash');
 
 describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function() {
 
-  var apos, apos2, apos3;
+  var apos, apos2, apos3, apos4;
 
   var existsIn = [ 'default', 'us' ];
 
@@ -12,7 +12,9 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
   after(function(done) {
     require('apostrophe/test-lib/util').destroy(apos, function() {
       require('apostrophe/test-lib/util').destroy(apos2, function() {
-        require('apostrophe/test-lib/util').destroy(apos3, done);
+        require('apostrophe/test-lib/util').destroy(apos3, function() {
+          require('apostrophe/test-lib/util').destroy(apos4, done);
+        });
       });
     });
   });
@@ -96,6 +98,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
     }));
     return apos.docs.db.insert(_.map(existsIn, function(locale) {
       return {
+        _id: 'abc-' + locale,
         workflowGuid: 'abc',
         workflowLocale: locale,
         type: 'testPage',
@@ -307,6 +310,90 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
       assert(usEn);
       assert(usEn.origin === 'us');
       assert(usEn.slug === '/us-en/test');
+      var usFr = _.find(docs, { workflowLocale: 'us-fr' });
+      assert(usFr);
+      assert(usFr.origin === 'us');
+      assert(usFr.slug === '/test');
+    });
+  });
+
+  it('can spin up fourth instance with no prefix config', function(done) {
+    apos4 = require('apostrophe')({
+      testModule: true,
+
+      modules: {
+        'apostrophe-express': {
+          port: 7997
+        },
+        'apostrophe-pages': {
+          park: [],
+          types: [
+            {
+              name: 'home',
+              label: 'Home'
+            },
+            {
+              name: 'testPage',
+              label: 'Test Page'
+            }
+          ]
+        },
+        'apostrophe-workflow': {
+          locales: [
+            {
+              name: 'default',
+              label: 'Default',
+              private: true,
+              children: [
+                {
+                  name: 'fr'
+                },
+                {
+                  name: 'us',
+                  private: true,
+                  children: [
+                    {
+                      name: 'us-en'
+                    },
+                    {
+                      name: 'us-es'
+                    },
+                    {
+                      name: 'us-fr'
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          defaultLocale: 'default'
+        }
+      },
+      afterInit: function(callback) {
+        assert(apos4.modules['apostrophe-workflow']);
+        // Should NOT have an alias!
+        assert(!apos4.workflow);
+        return callback(null);
+      },
+      afterListen: function(err) {
+        assert(!err);
+        done();
+      }
+    });
+  });
+
+  it('prefix removed from everything', function() {
+    return apos4.docs.db.find({ title: 'test' }).toArray().then(function(docs) {
+      assert(docs);
+      assert(docs.length === 12);
+      var fr = _.find(docs, { workflowLocale: 'fr' });
+      assert(fr);
+      assert(fr.origin === 'default');
+      assert(fr.slug === '/test');
+      var usEn = _.find(docs, { workflowLocale: 'us-en' });
+      assert(usEn);
+      assert(usEn.origin === 'us');
+      assert(usEn.slug === '/test');
       var usFr = _.find(docs, { workflowLocale: 'us-fr' });
       assert(usFr);
       assert(usFr.origin === 'us');
