@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.10.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* `apostrophe-workflow` again operates properly with no `prefixes` option. This was an oversight in the logic introduced in `2.10.0` to optimize the `add-locale-prefixes` task and make it automatic at startup. Test coverage has been added to make sure this scenario is always checked for in the future.
+* The "live/draft" toggle in schema-driven forms now works properly with field types that have more than one `label` element, provided they themselves use `self.findFieldset` in the usual way to scope everything else.
+
 ## 2.10.0
 
 Unit tests passing.
