@@ -46,10 +46,6 @@ describe('Workflow Core', function() {
         return callback(null);
       },
       afterListen: function(err) {
-        if (err) {
-          console.log("Existrs", err);
-        }
-
         assert(!err);
         done();
       }
@@ -73,9 +69,6 @@ describe('Workflow Core', function() {
     var req = apos.tasks.getReq({locale: 'default-draft'});
 
     async.waterfall([getProductDraft, updateProductDraft, commitUpdate], (err, res) => {
-      if (err) {
-        console.log('test Commit err', err);
-      }
 
       assert(!err);
       assert(typeof res === 'string', 'response should be an id');
@@ -122,9 +115,6 @@ describe('Workflow Core', function() {
     var req = apos.tasks.getReq({locale: 'default-draft'});
 
     async.waterfall([getProductDraft, updateProductDraft, commitUpdate], (err, res) => {
-      if (err) {
-        console.log('test Commit err', err);
-      }
 
       assert(!err);
       assert(typeof res === 'string', 'response should be an id');
@@ -178,9 +168,6 @@ describe('Workflow Core', function() {
 
     function revert (cb) {
       apos.workflow.revert(req, revertId, (err, res) => {
-        if (err) {
-          console.log("Err at API revert");
-        }
         assert(!err);
         cb(err);
       });

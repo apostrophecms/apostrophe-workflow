@@ -13,8 +13,6 @@ apos.define('apostrophe-workflow-review-modal', {
       return apos.areas.saveAllIfNeeded(callback);
     };
     self.saveContent = function(callback) {
-      console.log('saving');
-      console.log(options);
       return apos.create('apostrophe-workflow-export-modal',
         _.assign({
           manager: self.manager,
