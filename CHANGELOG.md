@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.10.2
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Use apos.locks.withLock to avoid race conditions when manipulating the configuration. Also: use, and pass, the apostrophe lint standards rather than the punkave standards, which mostly meant using `apos.utils.error` and friends, but also revealed a missing dependency on `qs`.
+
 ## 2.10.1
 
 Unit tests passing.
