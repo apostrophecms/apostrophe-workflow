@@ -174,9 +174,6 @@ describe('Workflow Core', function() {
     testItems = localize(testItems);
 
     apos.docs.db.insert(testItems, function(err) {
-      if (err) {
-        console.error(err);
-      }
       assert(!err);
       done();
     });
