@@ -115,7 +115,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
   });
 
   it('missing locales now have copies inherited from correct ancestors', function() {
-    return apos.docs.db.find({ title: 'test' }).toArray().then(function(docs) {
+    return apos.docs.db.findWithProjection({ title: 'test' }).toArray().then(function(docs) {
       assert(docs);
       assert(docs.length === 10);
       var fr = _.find(docs, { workflowLocale: 'fr' });
@@ -204,7 +204,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
   });
 
   it('new locale appears, existing locales have updated prefixes', function() {
-    return apos2.docs.db.find({ title: 'test' }).toArray().then(function(docs) {
+    return apos2.docs.db.findWithProjection({ title: 'test' }).toArray().then(function(docs) {
       assert(docs);
       assert(docs.length === 12);
       var fr = _.find(docs, { workflowLocale: 'fr' });
@@ -299,7 +299,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
   });
 
   it('prefix removed', function() {
-    return apos3.docs.db.find({ title: 'test' }).toArray().then(function(docs) {
+    return apos3.docs.db.findWithProjection({ title: 'test' }).toArray().then(function(docs) {
       assert(docs);
       assert(docs.length === 12);
       var fr = _.find(docs, { workflowLocale: 'fr' });
@@ -383,7 +383,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
   });
 
   it('prefix removed from everything', function() {
-    return apos4.docs.db.find({ title: 'test' }).toArray().then(function(docs) {
+    return apos4.docs.db.findWithProjection({ title: 'test' }).toArray().then(function(docs) {
       assert(docs);
       assert(docs.length === 12);
       var fr = _.find(docs, { workflowLocale: 'fr' });

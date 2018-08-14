@@ -527,7 +527,7 @@ describe('Workflow Core', function() {
     return Promise.try(function() {
       return manager.insert(req, product, {});
     }).then(function() {
-      return apos.docs.db.find({ title: 'Test Product' }).toArray();
+      return apos.docs.db.findWithProjection({ title: 'Test Product' }).toArray();
     }).then(function(replicas) {
       assert(replicas.length === 2);
       assert(replicas[0].afterInsertRan);

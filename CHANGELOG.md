@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.10.3
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Locale stylesheets now have long cache lifetimes in the browser. In addition, the default locale stylesheet now has a cachebusting generation identifier in its URL, ensuring this is safe. (Locale-specific stylesheets already did.)
+* UX bug fix: if permissions for specific locales are granted for a particular permission, you should be able to see these immediately if you reopen the settings for that group later. Prior to this fix you had to toggle the permission off and on again to open the tree of locales.
+* All direct calls to MongoDB's `docs.db.find()` are now `docs.db.findWithProjection`, which is patched by Apostrophe to always work the way the MongoDB 2.x driver `find()` method did, even if the 3.x driver is in use via the forthcoming `apostrophe-db-mongo-3-driver` module.
+
 ## 2.10.2
 
 Unit tests passing.

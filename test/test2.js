@@ -650,7 +650,7 @@ describe('Workflow Subdomains and Prefixes', function() {
       });
     }
     function fetchResults(callback) {
-      return apos.docs.db.find({ workflowGuid: home.workflowGuid }).toArray(function(err, docs) {
+      return apos.docs.db.findWithProjection({ workflowGuid: home.workflowGuid }).toArray(function(err, docs) {
         assert(!err);
         var us = _.find(docs, { workflowLocale: 'us' });
         assert(us);
@@ -666,7 +666,7 @@ describe('Workflow Subdomains and Prefixes', function() {
     }
     function fetchUnrelated(callback) {
       // Make sure that pages other than the desired page were unaffected
-      return apos.docs.db.find({ workflowGuid: { $ne: home.workflowGuid, $exists: 1 } }).toArray(function(err, docs) {
+      return apos.docs.db.findWithProjection({ workflowGuid: { $ne: home.workflowGuid, $exists: 1 } }).toArray(function(err, docs) {
         assert(!err);
         var us = _.find(docs, { workflowLocale: 'us' });
         assert(us);
