@@ -47,6 +47,12 @@ node app apostrophe-groups:add admin admin
 node app apostrophe-users:add admin admin
 ```
 
+2. **FOR EXISTING PROJECTS, YOU MUST ADD LOCALES TO EXISTING DOCUMENTS.** This is NOT automatic for existing projects, you must run this task on a one-time basis:
+
+```
+node app apostrophe-workflow:add-missing-locales --live
+```
+
 ## Using Workflow
 
 This basic configuration provides you with a live/draft toggle on the page (lower left corner). Editing is not possible in the live mode. You will not see most types of pieces in the admin bar, and you will not see editing controls on the page. This is normal.
