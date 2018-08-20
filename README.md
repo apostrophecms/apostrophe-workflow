@@ -697,14 +697,11 @@ However, if you need to work directly with MongoDB while respecting a specific l
 {
   $and: [
     {
-      $or: [
-        {
-          workflowLocale: 'en'
-        },
-        {
-          workflowLocale: { $exists: 0 }
-        }
-      ]
+      workflowLocale: {
+        $in: [
+          'en', null
+        ]
+      }
     },
     {
       // YOUR OWN CRITERIA GO HERE

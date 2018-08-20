@@ -2,7 +2,7 @@ var assert = require('assert');
 var async = require('async');
 var revertId;
 
-describe('Workflow Core', function() {
+describe('Workflow API', function() {
   this.timeout(5000);
   var apos;
 
