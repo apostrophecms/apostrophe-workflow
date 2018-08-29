@@ -119,7 +119,7 @@ node app apostrophe-users:add admin admin
 2. **FOR EXISTING PROJECTS, YOU MUST ADD LOCALES TO EXISTING DOCUMENTS.** This is NOT automatic for existing projects, you must run this task on a one-time basis:
 
 ```
-node app apostrophe-workflow:add-missing-locales -live
+node app apostrophe-workflow:add-missing-locales --live
 ```
 
 ## Using the workflow feature
