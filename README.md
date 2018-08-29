@@ -38,13 +38,13 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
     + ["Upload and Crop"](#user-content-upload-and-crop)
     + [The "Admin: Global" permission](#user-content-the-admin-global-permission)
     + [The "Edit: Global" permission (do not use)](#user-content-the-edit-global-permission-do-not-use)
-    + ["Admin: Pages": total control of pages](#user-content-admin-pages--total-control-of-pages)
-    + ["Edit: Pages": candidates to edit pages](#user-content-edit-pages--candidates-to-edit-pages)
-    + ["Admin: Article": total control of articles](#user-content-admin-article--total-control-of-articles)
-    + ["Edit: Article": creating and editing their own articles](#user-content-edit-article--creating-and-editing-their-own-articles)
-    + ["Admin: Image": total control of articles](#user-content-admin-image--total-control-of-articles)
-    + ["Edit: Image": creating and editing their own images](#user-content-edit-image--creating-and-editing-their-own-images)
-    + ["Edit: File": creating and editing their own files](#user-content-edit-file--creating-and-editing-their-own-files)
+    + ["Admin: Pages": total control of pages](#user-content-admin-pages-total-control-of-pages)
+    + ["Edit: Pages": candidates to edit pages](#user-content-edit-pages-candidates-to-edit-pages)
+    + ["Admin: Article": total control of articles](#user-content-admin-article-total-control-of-articles)
+    + ["Edit: Article": creating and editing their own articles](#user-content-edit-article-creating-and-editing-their-own-articles)
+    + ["Admin: Image": total control of articles](#user-content-admin-image-total-control-of-articles)
+    + ["Edit: Image": creating and editing their own images](#user-content-edit-image-creating-and-editing-their-own-images)
+    + ["Edit: File": creating and editing their own files](#user-content-edit-file-creating-and-editing-their-own-files)
   * [Locales for permissions](#user-content-locales-for-permissions)
   * [Permissions tutorial](#user-content-permissions-tutorial)
     + [Creating the fr-editors group](#user-content-creating-the-fr-editors-group)
@@ -60,10 +60,10 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
   * [Aliasing the module](#user-content-aliasing-the-module)
   * [Previewing piece types without an index page](#user-content-previewing-piece-types-without-an-index-page)
   * [Command line tasks and workflow](#user-content-command-line-tasks-and-workflow)
-    + [Using the `-workflow-locale` option](#user-content-using-the--workflow-locale-option)
+    + [Using the `-workflow-locale` option](#user-content-using-the-workflow-locale-option)
   * [Setting the current locale programmatically](#user-content-setting-the-current-locale-programmatically)
   * [Direct MongoDB access and workflow](#user-content-direct-mongodb-access-and-workflow)
-  * [`setPropertiesAcrossLocales`: modifying a document programmatically across locales](#user-content-setpropertiesacrosslocales--modifying-a-document-programmatically-across-locales)
+  * [`setPropertiesAcrossLocales`: modifying a document programmatically across locales](#user-content-setpropertiesacrosslocales-modifying-a-document-programmatically-across-locales)
   * [Writing safe `afterInsert` and `docAfterInsert` handlers, etc.](#user-content-writing-safe-afterinsert-and-docafterinsert-handlers-etc)
     + [Recognizing inserts due to localization](#user-content-recognizing-inserts-due-to-localization)
     + [Always finish the job before continuing](#user-content-always-finish-the-job-before-continuing)
@@ -716,8 +716,8 @@ By default, command line tasks that use Apostrophe's `find`, `insert` and `updat
 You can change this by adding the `-workflow-locale` option to your command line:
 
 ```
-node app my-module:my-task -workflow-locale=en
-node app my-module:my-task -workflow-locale=en-draft
+node app my-module:my-task --workflow-locale=en
+node app my-module:my-task --workflow-locale=en-draft
 ```
 
 Note that you *must add the `-draft` suffix* if you want to target draft content, not live content.
