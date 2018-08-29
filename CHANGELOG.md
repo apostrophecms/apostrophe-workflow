@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.11.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Eliminated `$or` MongoDB queries for performance. Performance tests show `$ne: true` is as good or better.
+* Run quiet.
+* Documentation improvements: table of contents. Big thanks to Fredrik Ekelund.
+* Clarified that running the `add-missing-locales` task is currently mandatory for migrating existing sites. This may become automatic soon.
+* Always use the manager of a doc type to update it with a new commit, if possible. This means that `beforeSave`, `beforeUpdate`, `afterSave` and `afterUpdate` methods of a pieces module will be called in this situation.
+
 ## 2.10.3
 
 Unit tests passing.
