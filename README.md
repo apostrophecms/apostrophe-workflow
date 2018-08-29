@@ -376,7 +376,7 @@ Similarly, if all of your locales use prefixes which match the name of the local
 
 The workflow module provides single sign-on across all of the hostnames, provided that you use the locale picker provided by Apostrophe's editing interface to switch between them. The user's session cookie is transferred to the other hostname as part of following that link.
 
-#### Locale-specific stylesheets
+### Locale-specific stylesheets
 
 Basic support for locale-specific stylesheets is provided. You may, if you wish, specify a stylesheet name for a locale. The primary purpose of such a stylesheet is to define font face imports and other global items, so that the regular LESS CSS build of Apostrophe can then use a consistent `font-family` setting for all locales but will in fact receive the correct actual font.
 
@@ -413,34 +413,6 @@ It will be delivered via a special Express route and the URL will target that ro
 This file will be pushed via a **separate `link` element in the `head`,** prior to the main, LESS-compiled spreadsheet.
 
 This file currently **WILL NOT** be compiled with LESS, and it **MAY NOT** set LESS variables for other stylesheets to honor. Again, its primary purpose is to declare font face imports in a way that does not require excessive imports that are not needed in other locales.
-
-### Excluding certain types and properties from workflow
-
-You may have piece types and individual document properties that should not be subject to workflow.
-
-For instance, the `apostrophe-user` and `apostrophe-group` piece types are automatically excluded from workflow, because they power login on the site, have permissions associated with them and are generally not intended to be displayed as frontend content.
-
-To exclude additional types, set the `excludeTypes` option:
-
-```javascript
-'apostrophe-workflow': {
-  excludeTypes: [ 'my-type-name' ]
-}
-```
-
-**Note that `my-type-name` will be singular,** it matches the `name` option of your pieces module, it is **not the module name.**
-
-You may also want to exclude individual properties. If you have a property of your pieces which only makes sense for the live locales and should not be translated either, such as a hit counter field, you will not want workflow to constantly present the "commit" button based on that difference between draft and live.
-
-To exclude a property, write:
-
-```javascript
-'apostrophe-workflow': {
-  excludeProperties: [ 'hitCounter' ]
-}
-```
-
-**The property is excluded for all doc types.** Use a name that is unambiguous for such properties.
 
 ## Workflow with permissions: limiting who can do what
 
@@ -683,6 +655,34 @@ However, in the suggested examples above, we assume you have done this when enab
 ```
 
 If you are using that alias for another module in your project, all of the examples above will still work. Just replace any references to `apos.workflow` with a different alias and configure that alias for the module.
+
+### Excluding certain types and properties from workflow
+
+You may have piece types and individual document properties that should not be subject to workflow.
+
+For instance, the `apostrophe-user` and `apostrophe-group` piece types are automatically excluded from workflow, because they power login on the site, have permissions associated with them and are generally not intended to be displayed as frontend content.
+
+To exclude additional types, set the `excludeTypes` option:
+
+```javascript
+'apostrophe-workflow': {
+  excludeTypes: [ 'my-type-name' ]
+}
+```
+
+**Note that `my-type-name` will be singular,** it matches the `name` option of your pieces module, it is **not the module name.**
+
+You may also want to exclude individual properties. If you have a property of your pieces which only makes sense for the live locales and should not be translated either, such as a hit counter field, you will not want workflow to constantly present the "commit" button based on that difference between draft and live.
+
+To exclude a property, write:
+
+```javascript
+'apostrophe-workflow': {
+  excludeProperties: [ 'hitCounter' ]
+}
+```
+
+**The property is excluded for all doc types.** Use a name that is unambiguous for such properties.
 
 ### Previewing piece types without an index page
 
