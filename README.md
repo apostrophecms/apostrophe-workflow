@@ -205,7 +205,7 @@ node app apostrophe-workflow:add-missing-locales
 By default, docs copied to new locales via this task will be considered trash in all live locales, until an editor chooses to commit them.  If you prefer that that they be immediately live everywhere, use this command instead:
 
 ```
-node app apostrophe-workflow:add-missing-locales -live
+node app apostrophe-workflow:add-missing-locales --live
 ```
 
 Now access the site as an administrator. You will be able to click on the current locale name to switch to other locales.
