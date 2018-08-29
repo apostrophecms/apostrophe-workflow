@@ -4,49 +4,74 @@ The `apostrophe-workflow` module adds powerful workflow and localization capabil
 
 We'll begin with the steps needed simply to add workflow to your project. Then we'll examine the changes needed for localization (also known as i18n or internationalization).
 
-- [Before getting started](#user-content-before-getting-started)
-  - [Adding `parkedId` to your parked pages](#user-content-adding-parkedid-to-your-parked-pages)
-  - [Adding workflow to your database](#user-content-adding-workflow-to-your-database)
-- [Using the workflow feature](#user-content-using-the-workflow-feature)
-  - [Private locales and default locale](#user-content-private-locales-and-default-locale)
-  - ["Why am I asked to commit so many things?"](#user-content-why-am-i-asked-to-commit-so-many-things)
-  - [Workflow for pieces](#user-content-workflow-for-pieces)
-  - [Workflow for page settings](#user-content-workflow-for-page-settings)
-- [Using the localization feature](#user-content-using-the-localization-feature)
-  - [Private locales](#user-content-private-locales)
-  - [Document structure for locales](#user-content-document-structure-for-locales)
-  - [Setting the lang attribute](#user-content-setting-the-lang-attribute)
-  - [Building a locale picker on the front end](#user-content-building-a-locale-picker-on-the-front-end)
-  - [Exporting between locales](#user-content-exporting-between-locales)
-    - [Forcing exports](#user-content-forcing-exports)
-    - [Forcing export of one widget](#user-content-forcing-export-of-one-widget)
-  - [Switching locales via custom hostnames and/or prefixes](#user-content-switching-locales-via-custom-hostnames-andor-prefixes)
-    - [Adding prefixes to an existing database](#user-content-adding-prefixes-to-an-existing-database)
-    - [If you only care about subdomains](#user-content-if-you-only-care-about-subdomains)
-    - [If you only care about prefixes](#user-content-if-you-only-care-about-prefixes)
-    - [One login across all hostnames](#user-content-one-login-across-all-hostnames)
-  - [Excluding certain types and properties from workflow](#user-content-excluding-certain-types-and-properties-from-workflow)
-
-  - [Tags and localization: we recommend using joins instead](#user-content-tags-and-localization-we-recommend-using-joins-instead)
-  - [Workflow with permissions: limiting who can do what](#user-content-workflow-with-permissions-limiting-who-can-do-what)
-    - [Setting up the site: enabling group management](#user-content-setting-up-the-site-enabling-group-management)
-  - [Locale-specific stylesheets](#user-content-locale-specific-stylesheets)
-  - [An overview of permissions](#user-content-an-overview-of-permissions)
-    - [Locales for permissions](#user-content-locales-for-permissions)
-    - [Permissions tutorial](#user-content-permissions-tutorial)
-  - [Accessing newly created pages in other locales](#user-content-accessing-newly-created-pages-in-other-locales)
-  - [Aliasing the module](#user-content-aliasing-the-module)
-  - [Previewing piece types without an index page](#user-content-previewing-piece-types-without-an-index-page)
-- [Command line tasks and workflow](#user-content-command-line-tasks-and-workflow)
-  - [Using the --workflow-locale option](#user-content-using-the---workflow-locale-option)
-  - [Setting the current locale programmatically](#user-content-setting-the-current-locale-programmatically)
-- [Direct MongoDB access and workflow](#user-content-direct-mongodb-access-and-workflow)
-- [setPropertiesAcrossLocales: modifying a document programmatically across locales](#user-content-setpropertiesacrosslocales-modifying-a-document-programmatically-across-locales)
-- [Writing safe afterInsert and docAfterInsert handlers etc.](#user-content-writing-safe-afterinsert-and-docafterinsert-handlers-etc)
-- [Technical approach](#user-content-technical-approach)
-  - [Use of jsondiffpatch](#user-content-use-of-jsondiffpatch)
-  - [Patching and exporting of widgets](#user-content-patching-and-exporting-of-widgets)
-- [Legacy task: cleaning up duplicate homepages](#user-content-legacy-task-cleaning-up-duplicate-homepages)
+- [Before getting started](#before-getting-started)
+  * [Adding `parkedId` to your parked pages](#adding--parkedid--to-your-parked-pages)
+  * [Adding workflow to your database](#adding-workflow-to-your-database)
+- [Using the workflow feature](#using-the-workflow-feature)
+  * ["Why am I asked to commit so many things?"](#-why-am-i-asked-to-commit-so-many-things--)
+  * [Workflow for pieces](#workflow-for-pieces)
+  * [Workflow for page settings](#workflow-for-page-settings)
+- [Using the localization feature](#using-the-localization-feature)
+  * [Private locales and default locale](#private-locales-and-default-locale)
+  * [Document structure for locales](#document-structure-for-locales)
+  * [Setting the `lang` attribute](#setting-the--lang--attribute)
+  * [Tags and localization: we recommend using joins instead](#tags-and-localization--we-recommend-using-joins-instead)
+  * [Building a locale picker on the front end](#building-a-locale-picker-on-the-front-end)
+  * [Exporting between locales](#exporting-between-locales)
+    + [Not all patches can be exported](#not-all-patches-can-be-exported)
+  * [Forcing exports](#forcing-exports)
+  * [Forcing export of one widget](#forcing-export-of-one-widget)
+  * [Switching locales via custom hostnames and/or prefixes](#switching-locales-via-custom-hostnames-and-or-prefixes)
+    + [Adding prefixes to an existing database](#adding-prefixes-to-an-existing-database)
+    + [If you only care about subdomains](#if-you-only-care-about-subdomains)
+    + [If you only care about prefixes](#if-you-only-care-about-prefixes)
+    + [One login across all hostnames](#one-login-across-all-hostnames)
+    + [Locale-specific stylesheets](#locale-specific-stylesheets)
+  * [Excluding certain types and properties from workflow](#excluding-certain-types-and-properties-from-workflow)
+- [Workflow with permissions: limiting who can do what](#workflow-with-permissions--limiting-who-can-do-what)
+  * [Setting up for permissions: enabling group management](#setting-up-for-permissions--enabling-group-management)
+    + [Removing the legacy groups](#removing-the-legacy-groups)
+  * [An overview of permissions](#an-overview-of-permissions)
+    + [The "Editor" permission](#the--editor--permission)
+    + [The "Admin: All" permission](#the--admin--all--permission)
+    + ["View Private Locales"](#-view-private-locales-)
+    + ["Upload and Crop"](#-upload-and-crop-)
+    + [The "Admin: Global" permission](#the--admin--global--permission)
+    + [The "Edit: Global" permission (do not use)](#the--edit--global--permission--do-not-use-)
+    + ["Admin: Pages": total control of pages](#-admin--pages---total-control-of-pages)
+    + ["Edit: Pages": candidates to edit pages](#-edit--pages---candidates-to-edit-pages)
+    + ["Admin: Article": total control of articles](#-admin--article---total-control-of-articles)
+    + ["Edit: Article": creating and editing their own articles](#-edit--article---creating-and-editing-their-own-articles)
+    + ["Admin: Image": total control of articles](#-admin--image---total-control-of-articles)
+    + ["Edit: Image": creating and editing their own images](#-edit--image---creating-and-editing-their-own-images)
+    + ["Edit: File": creating and editing their own files](#-edit--file---creating-and-editing-their-own-files)
+  * [Locales for permissions](#locales-for-permissions)
+  * [Permissions tutorial](#permissions-tutorial)
+    + [Creating the fr-editors group](#creating-the-fr-editors-group)
+    + [Creating an "fr-editor" user](#creating-an--fr-editor--user)
+    + [Creating the "fr-committers" group](#creating-the--fr-committers--group)
+    + [Creating an "fr-comitter" user](#creating-an--fr-comitter--user)
+    + [Granting editing permissions on the home page](#granting-editing-permissions-on-the-home-page)
+    + [Working with the "fr-editors" account](#working-with-the--fr-editors--account)
+    + [Working with the "fr-committers" account](#working-with-the--fr-committers--account)
+    + [Exporting](#exporting)
+    + [Accessing newly created pages in other locales](#accessing-newly-created-pages-in-other-locales)
+- [Other developer concerns](#other-developer-concerns)
+  * [Aliasing the module](#aliasing-the-module)
+  * [Previewing piece types without an index page](#previewing-piece-types-without-an-index-page)
+  * [Command line tasks and workflow](#command-line-tasks-and-workflow)
+    + [Using the `--workflow-locale` option](#using-the----workflow-locale--option)
+  * [Setting the current locale programmatically](#setting-the-current-locale-programmatically)
+  * [Direct MongoDB access and workflow](#direct-mongodb-access-and-workflow)
+  * [`setPropertiesAcrossLocales`: modifying a document programmatically across locales](#-setpropertiesacrosslocales---modifying-a-document-programmatically-across-locales)
+  * [Writing safe `afterInsert` and `docAfterInsert` handlers, etc.](#writing-safe--afterinsert--and--docafterinsert--handlers--etc)
+    + [Recognizing inserts due to localization](#recognizing-inserts-due-to-localization)
+    + [Always finish the job before continuing](#always-finish-the-job-before-continuing)
+- [Technical approach](#technical-approach)
+  * [Use of jsondiffpatch](#use-of-jsondiffpatch)
+  * [Patching and exporting of widgets](#patching-and-exporting-of-widgets)
+- [Legacy tasks](#legacy-tasks)
+  * [Cleaning up duplicate homepages](#cleaning-up-duplicate-homepages)
 
 ## Before getting started
 
@@ -207,6 +232,12 @@ By default, this helper converts a string like `en-gb` to `en`, and leaves a str
 If this is not sufficient for your needs, you may set the `lang` property when configuring each
 locale, and that value will be output directly.
 
+### Tags and localization: we recommend using joins instead
+
+Tags in Apostrophe follow the typical MongoDB approach of a simple array property containing strings. They are localized like other fields. Thus if they are used to select content for display it is important to be consistent when translating tags to a particular locale.
+
+When working with localization it may be preferable to avoid tags in favor of joins. A `joinByOne` or `joinByArray` relationship can be used to relate a document to various "categories," which are localized documents in their own right and therefore behave consistently across locales. `apostrophe-workflow` will ensure that exported joins referencing a category in one locale are correctly adjusted to point to the equivalent category in the other locale.
+
 ### Building a locale picker on the front end
 
 Here's how to code a locale picker on the front end:
@@ -345,84 +376,6 @@ Similarly, if all of your locales use prefixes which match the name of the local
 
 The workflow module provides single sign-on across all of the hostnames, provided that you use the locale picker provided by Apostrophe's editing interface to switch between them. The user's session cookie is transferred to the other hostname as part of following that link.
 
-### Excluding certain types and properties from workflow
-
-You may have piece types and individual document properties that should not be subject to workflow.
-
-For instance, the `apostrophe-user` and `apostrophe-group` piece types are automatically excluded from workflow, because they power login on the site, have permissions associated with them and are generally not intended to be displayed as frontend content.
-
-To exclude additional types, set the `excludeTypes` option:
-
-```javascript
-'apostrophe-workflow': {
-  excludeTypes: [ 'my-type-name' ]
-}
-```
-
-**Note that `my-type-name` will be singular,** it matches the `name` option of your pieces module, it is **not the module name.**
-
-You may also want to exclude individual properties. If you have a property of your pieces which only makes sense for the live locales and should not be translated either, such as a hit counter field, you will not want workflow to constantly present the "commit" button based on that difference between draft and live.
-
-To exclude a property, write:
-
-```javascript
-'apostrophe-workflow': {
-  excludeProperties: [ 'hitCounter' ]
-}
-```
-
-**The property is excluded for all doc types.** Use a name that is unambiguous for such properties.
-
-### Tags and localization: we recommend using joins instead
-
-Tags in Apostrophe follow the typical MongoDB approach of a simple array property containing strings. They are localized like other fields. Thus if they are used to select content for display it is important to be consistent when translating tags to a particular locale.
-
-When working with localization it may be preferable to avoid tags in favor of joins. A `joinByOne` or `joinByArray` relationship can be used to relate a document to various "categories," which are localized documents in their own right and therefore behave consistently across locales. `apostrophe-workflow` will ensure that exported joins referencing a category in one locale are correctly adjusted to point to the equivalent category in the other locale.
-
-### Workflow with permissions: limiting who can do what
-
-The workflow module supports permissions. This tutorial breaks down how to go about setting up a site with permissions and then creating permissions groups for particular locales. We'll then add new users to each of those groups and experiment with what they can and can't do.
-
-These features are helpful when a large team manages a site together. If your team is small and everyone might potentially work on everything, you might not choose to use these features.
-
-#### Setting up the site: enabling group management
-
-First, launch your site with the usual `groups` setting for the `apostrophe-users` module, or with this minimal one:
-
-```javascript
-groups: [
-  {
-    title: 'admin',
-    permissions: [ 'admin' ]
-  }
-],
-```
-
-Now, **if you haven't already,** follow the usual procedure to add a single user to the `admin` group:
-
-```
-node app apostrophe-users:add admin admin
-```
-
-Then, **remove the `groups` option or comment it out:**
-
-```javascript
-// groups: [
-//   {
-//     title: 'admin',
-//     permissions: [ 'admin' ]
-//   }
-// ],
-```
-
-Now restart the site. This will enable the user interface in the admin bar for managing groups. (We plan to add command-line tasks for creating an admin group as an alternative to temporarily setting the `groups` option.)
-
-##### Removing the legacy groups
-
-If you set up the site with the typical `admin`, `guest` and `editor` groups, but your plan is to give out permissions for specific locales to specific groups of people, you may wish to remove the `editor` group. You can do that via the "groups" button in the admin bar. Removing the `guest` group is optional; some find it useful for simple intranet pages.
-
-**Do not remove the `admin` group.** You need it to log in with full privileges.
-
 #### Locale-specific stylesheets
 
 Basic support for locale-specific stylesheets is provided. You may, if you wish, specify a stylesheet name for a locale. The primary purpose of such a stylesheet is to define font face imports and other global items, so that the regular LESS CSS build of Apostrophe can then use a consistent `font-family` setting for all locales but will in fact receive the correct actual font.
@@ -461,65 +414,137 @@ This file will be pushed via a **separate `link` element in the `head`,** prior 
 
 This file currently **WILL NOT** be compiled with LESS, and it **MAY NOT** set LESS variables for other stylesheets to honor. Again, its primary purpose is to declare font face imports in a way that does not require excessive imports that are not needed in other locales.
 
-#### An overview of permissions
+### Excluding certain types and properties from workflow
+
+You may have piece types and individual document properties that should not be subject to workflow.
+
+For instance, the `apostrophe-user` and `apostrophe-group` piece types are automatically excluded from workflow, because they power login on the site, have permissions associated with them and are generally not intended to be displayed as frontend content.
+
+To exclude additional types, set the `excludeTypes` option:
+
+```javascript
+'apostrophe-workflow': {
+  excludeTypes: [ 'my-type-name' ]
+}
+```
+
+**Note that `my-type-name` will be singular,** it matches the `name` option of your pieces module, it is **not the module name.**
+
+You may also want to exclude individual properties. If you have a property of your pieces which only makes sense for the live locales and should not be translated either, such as a hit counter field, you will not want workflow to constantly present the "commit" button based on that difference between draft and live.
+
+To exclude a property, write:
+
+```javascript
+'apostrophe-workflow': {
+  excludeProperties: [ 'hitCounter' ]
+}
+```
+
+**The property is excluded for all doc types.** Use a name that is unambiguous for such properties.
+
+## Workflow with permissions: limiting who can do what
+
+The workflow module supports permissions. This tutorial breaks down how to go about setting up a site with permissions and then creating permissions groups for particular locales. We'll then add new users to each of those groups and experiment with what they can and can't do.
+
+These features are helpful when a large team manages a site together. If your team is small and everyone might potentially work on everything, you might not choose to use these features.
+
+### Setting up for permissions: enabling group management
+
+First, launch your site with the usual `groups` setting for the `apostrophe-users` module, or with this minimal one:
+
+```javascript
+groups: [
+  {
+    title: 'admin',
+    permissions: [ 'admin' ]
+  }
+],
+```
+
+Now, **if you haven't already,** follow the usual procedure to add a single user to the `admin` group:
+
+```
+node app apostrophe-users:add admin admin
+```
+
+Then, **remove the `groups` option or comment it out:**
+
+```javascript
+// groups: [
+//   {
+//     title: 'admin',
+//     permissions: [ 'admin' ]
+//   }
+// ],
+```
+
+Now restart the site. This will enable the user interface in the admin bar for managing groups. (We plan to add command-line tasks for creating an admin group as an alternative to temporarily setting the `groups` option.)
+
+#### Removing the legacy groups
+
+If you set up the site with the typical `admin`, `guest` and `editor` groups, but your plan is to give out permissions for specific locales to specific groups of people, you may wish to remove the `editor` group. You can do that via the "groups" button in the admin bar. Removing the `guest` group is optional; some find it useful for simple intranet pages.
+
+**Do not remove the `admin` group.** You need it to log in with full privileges.
+
+### An overview of permissions
 
 Permissions are an important issue when working with workflow and locales. First we'll review all of the permissions you're sure to have questions about. Then we'll look at selecting locales for each permission and what that allows us to do.
 
-##### The "Editor" permission
+#### The "Editor" permission
 
 If you give this permission to a group, members of the group can *create and edit their own* pieces of any type, except for admin-only types like users and groups. In addition they are *candidates* to edit pages, but only if they are given permission explicitly for that page. If you do not need to distinguish between permissions for one piece type and another, this can be convenient.
 
-##### The "Admin: All" permission
+#### The "Admin: All" permission
 
 Do not give this permission to a group unless you want them to have **total control**, including making more users and giving groups more permissions.
 
 **This permission does not present a choice of locales,** because it provides **total control** of the website.
 
-##### "View Private Locales"
+#### "View Private Locales"
 
 This permission restricts access to locales that are marked with `private: true`. These are the locales that the general public cannot access. Often a `default` locale is the parent of all other locales and the public cannot see it. You should generally give this permission to any group that has editing privileges on the site.
 
-##### "Upload and Crop"
+#### "Upload and Crop"
 
 This permission is required to upload attachments to the site. You should generally give it to any group that has editing privileges on the site.
 
-##### The "Admin: Global" permission
+#### The "Admin: Global" permission
 
 This refers to the shared "global" document that is often used for shared headers and footers that appear on every page of a site. If you wish a group to be able to edit this, give them the "Admin: Global" permission.
 
-##### The "Edit: Global" permission (do not use)
+#### The "Edit: Global" permission (do not use)
 
 The "Edit: Global" permission exists because the global document is technically a piece, but will be hidden in the interface soon. Users can't create their own new "global" doc, so this permission is not useful. See "Admin: Global" instead.
 
-##### "Admin: Pages": total control of pages
+#### "Admin: Pages": total control of pages
 
 If you give this permission to a group, members of the group can edit all of the pages on the site, subject to locale restrictions, as we'll see in a moment.
 
-##### "Edit: Pages": candidates to edit pages
+#### "Edit: Pages": candidates to edit pages
 
 If you give this permission to a group, members of the group are *candidates* to edit pages, but only if they are given permission explicitly for that page. They can also create subpages at that point, and will have permission to edit those as well.
 
-##### "Admin: Article": total control of articles
+#### "Admin: Article": total control of articles
 
 Users with this permission have complete control of articles (blog post pieces, as configured in the sandbox project).
 
-##### "Edit: Article": creating and editing their own articles
+#### "Edit: Article": creating and editing their own articles
 
 Users with this permission can create and edit their own articles. They usually cannot edit anyone else's, unless custom edit permissions for pieces are specifically enabled (see the pieces module documentation).
 
-##### "Admin: Image": total control of articles
+#### "Admin: Image": total control of articles
 
 Users with this permission have complete control of images (the image pieces that the `apostrophe-images` widget displays).
 
-##### "Edit: Image": creating and editing their own images
+#### "Edit: Image": creating and editing their own images
 
 Users with this permission can add and edit their own images on the site. They cannot typically edit anyone else's, although it is possible to enable custom edit permissions for pieces (see the pieces module documentation). You will usually want to give any group with editing permissions access to edit images.
 
-##### "Edit: File": creating and editing their own files
+#### "Edit: File": creating and editing their own files
 
 Just like "Edit: Images", but for files such as PDFs, typically used with the apostrophe-files widget.
 
-#### Locales for permissions
+### Locales for permissions
 
 After you check the box for a permission, you will be presented with a choice of locales. There is a dropdown menu for each one.
 
@@ -533,13 +558,13 @@ If you set it to "commit," then members of the group can *both* edit the draft *
 
 > If you are only using this module for workflow and have not set up multiple locales, you will still need to set the dropdown for the "default" locale to "edit" or "commit" for each permission.
 
-#### Permissions tutorial
+### Permissions tutorial
 
 This tutorial assumes you have configured a `default` parent locale and `en` and `fr` child locales. We also assume you are working with our sandbox project, which has the blog module configured with the label "Articles."
 
 Our goal is to enable a certain group of people to edit, but not commit, the `en` locale, and another group of people to commit their changes, making them live. That second group should also be able to export those changes as new drafts in the `fr` locale.
 
-##### Creating the fr-editors group
+#### Creating the fr-editors group
 
 Log in as the admin user. Click on the admin bar. Click "Groups."
 
@@ -558,13 +583,13 @@ We recommend you check these boxes:
 
 After you check each of the last four, you will see dropdowns allowing you to pick a level of control for each locale. For "fr," pick "Edit." Leave the rest set to "None."
 
-##### Creating an "fr-editor" user
+#### Creating an "fr-editor" user
 
 Next, click on "Users" in the admin bar. Add an "fr-editor" user. Make them a member of the "fr-editors" group by clicking the "Browse" button for "Groups." It works just like editing any other relationship in Apostrophe.
 
 Save the user and move on to the next step.
 
-##### Creating the "fr-committers" group
+#### Creating the "fr-committers" group
 
 Now we'll want a group with permission to commit changes to "fr," and also export them, as drafts, to the "en" locale to explore that feature.
 
@@ -583,13 +608,13 @@ For each one, the list of locales will appear again. For "fr", pick "commit." Fo
 
 > "Why Admin: rather than Edit: this time?" Because this allows us to edit pieces that were created by **other people**. It also gives us access to all of the pages on the site for the specified locales. If you don't want this — if you want to be more restrictive, and give out permission page by page to this group — you can choose "Edit: Pages." Conversely, you can specify "Admin: Pages" for the "fr-editors" group if you wish to skip giving out permissions to them page by page.
 
-##### Creating an "fr-comitter" user
+#### Creating an "fr-comitter" user
 
 Next, click on "Users" in the admin bar. Add an "fr-committer" user. Much like before, make them a member of the "fr-committers" group by clicking the "Browse" button for "Groups."
 
 Save the user and move on to the next step.
 
-##### Granting editing permissions on the home page
+#### Granting editing permissions on the home page
 
 Now, as the admin user, switch from "Live" to "Draft." Then click "Page Menu" and "Page Settings." Now click the "Permissions" tab.
 
@@ -599,7 +624,7 @@ When the option appears, set "Apply to Subpages" to "Yes." This will perform a *
 
 Now save your work. Permissions for the home page have been pushed to the two new groups.
 
-##### Working with the "fr-editors" account
+#### Working with the "fr-editors" account
 
 Next, log out, or use an incognito window, separate browser, or separate user identity in Chrome.
 
@@ -611,7 +636,7 @@ Now you'll see edit buttons on the home page and you can edit it normally. You c
 
 Similarly, when you edit "Articles" via the admin bar, you can submit them, but you cannot commit them. So, you can't make changes live on your own.
 
-##### Working with the "fr-committers" account
+#### Working with the "fr-committers" account
 
 Now use another browser identity, or log out, and log back in as "fr-committer".
 
@@ -621,7 +646,7 @@ This time, you'll notice a "commit" button on the home page. And, you'll find th
 
 Commit changes to make them live for the home page, and you'll see that as a logged-out site visitor you are now able to see them, provided that you have implemented a way for logged-out users to switch to the `fr` locale.
 
-##### Exporting
+#### Exporting
 
 After you commit a change, such as on the home page, you'll be offered the usual option to export the change. And, as "fr-committer", you will be able to check the box to export to "en" (English). However, if any other locales are present, you will not be able to check those boxes. That's because we did not give the "fr-committers" group "edit" access to those locales for pages.
 
@@ -635,7 +660,9 @@ For pages, it is almost as straightforward. Click on "Pages" in the admin bar to
 
 As with pieces, change "Trash" to "No." The "Trash" field will be located right after the "Published" field. When you click save, the page will be live in this locale.
 
-#### Aliasing the module
+## Other developer concerns
+
+### Aliasing the module
 
 By default, optional modules like `apostrophe-workflow` do not have an alias. That means you can't just type `apos.workflow` to access them.
 
@@ -657,7 +684,7 @@ However, in the suggested examples above, we assume you have done this when enab
 
 If you are using that alias for another module in your project, all of the examples above will still work. Just replace any references to `apos.workflow` with a different alias and configure that alias for the module.
 
-#### Previewing piece types without an index page
+### Previewing piece types without an index page
 
 The preview iframe displayed by the commit and history review modals works with regular pages and also with pieces that can be displayed on a page via a pieces index page, such as a blog.
 
@@ -680,9 +707,9 @@ And the `workflowPreview.html` template:
 
 If you do not supply an implementation, a message indicating that no preview is available will be displayed. A list of modified fields will still be offered to help the user understand what has changed.
 
-## Command line tasks and workflow
+### Command line tasks and workflow
 
-### Using the `--workflow-locale` option
+#### Using the `--workflow-locale` option
 
 By default, command line tasks that use Apostrophe's `find`, `insert` and `update` methods see and modify the content of the default locale (not the draft version of it).
 
@@ -713,7 +740,7 @@ self.apos.tasks.getAnonReq({ locale: 'fr' })
 
 As usual, these can be used with any Apostrophe method that expects a `req` object.
 
-## Direct MongoDB access and workflow
+### Direct MongoDB access and workflow
 
 Code that bypasses Apostrophe's `find`, `insert` and `update` methods in favor of directly modifying the `apos.docs.db` MongoDB collection will not automatically restrict itself to the current locale.
 
@@ -744,7 +771,7 @@ However, if you need to work directly with MongoDB while respecting a specific l
 
 In general, you should use Apostrophe's own methods rather than direct MongoDB access unless you have a compelling reason, such as access to `$set` or `$inc`. See also `setPropertiesAcrossLocales`, below, for a convenient way to access `$set`.
 
-## `setPropertiesAcrossLocales`: modifying a document programmatically across locales
+### `setPropertiesAcrossLocales`: modifying a document programmatically across locales
 
 The `setPropertiesAcrossLocales` method can quickly update properties of a doc across some or all locales:
 
@@ -804,7 +831,17 @@ callback);
 
 "What about inserting a new doc?" A newly inserted doc is pushed to all locales, however its `trash` flag is true in all of them except the current locale. If you want the new doc to be instantly available in all locales, then after the insert is complete, you can use `setPropertiesAcrossLocales` to set the `trash` property to `false`.
 
-## Writing safe `afterInsert` and `docAfterInsert` handlers, etc.
+### Writing safe `afterInsert` and `docAfterInsert` handlers, etc.
+
+#### Recognizing inserts due to localization
+
+When a document is "born" in one locale, it is immediately replicated to all others, although it will initially be in the trash in many of them.
+
+In some cases, the work you do in your `beforeInsert` handlers, etc. should not be done in this situation, for instance because you are inserting many repetitions of an event, and that will already happen when the original document is created in the first locale.
+
+You can detect this situation by looking for the `doc._workflowPropagating` property. If it is true, the document being inserted is being copied from another locale.
+
+#### Always finish the job before continuing
 
 If you are writing custom code that includes `afterInsert` or `afterUpdate` methods for pieces modules, or `docAfterInsert` or `docAfterUpdate` methods in any module, **and these handlers update the doc**, then your code **must complete its own work BEFORE invoking the original version of the method, or the callback.**
 
@@ -830,7 +867,9 @@ As it turns out this algorithm is best suited to exporting changes to the schema
 
 `jsondiffpatch` is not well suited to patching widgets and other items with globally unique ids that can be leveraged to always recognize them even if they have moved around in a document. For this reason a separate algorithm is applied first to handle exporting and patching of widgets.
 
-## Legacy task: cleaning up duplicate homepages
+## Legacy tasks
+
+### Cleaning up duplicate homepages
 
 If you experimented with the pre-npm-publication Apostrophe 2.x version of this module before 2017-07-26, you may need to clean up duplicate homepages created by the parked page mechanism before it was made locale-aware. If you suffer from this problem you will likely see that the "reorganize" view does not show any children of the home page.
 
