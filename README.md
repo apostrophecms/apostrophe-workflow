@@ -25,6 +25,8 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
     - [If you only care about subdomains](#user-content-if-you-only-care-about-subdomains)
     - [If you only care about prefixes](#user-content-if-you-only-care-about-prefixes)
     - [One login across all hostnames](#user-content-one-login-across-all-hostnames)
+  - [Excluding certain types and properties from workflow](#user-content-excluding-certain-types-and-properties-from-workflow)
+
   - [Tags and localization: we recommend using joins instead](#user-content-tags-and-localization-we-recommend-using-joins-instead)
   - [Workflow with permissions: limiting who can do what](#user-content-workflow-with-permissions-limiting-who-can-do-what)
     - [Setting up the site: enabling group management](#user-content-setting-up-the-site-enabling-group-management)
@@ -342,6 +344,34 @@ Similarly, if all of your locales use prefixes which match the name of the local
 #### One login across all hostnames
 
 The workflow module provides single sign-on across all of the hostnames, provided that you use the locale picker provided by Apostrophe's editing interface to switch between them. The user's session cookie is transferred to the other hostname as part of following that link.
+
+### Excluding certain types and properties from workflow
+
+You may have piece types and individual document properties that should not be subject to workflow.
+
+For instance, the `apostrophe-user` and `apostrophe-group` piece types are automatically excluded from workflow, because they power login on the site, have permissions associated with them and are generally not intended to be displayed as frontend content.
+
+To exclude additional types, set the `excludeTypes` option:
+
+```javascript
+'apostrophe-workflow': {
+  excludeTypes: [ 'my-type-name' ]
+}
+```
+
+**Note that `my-type-name` will be singular,** it matches the `name` option of your pieces module, it is **not the module name.**
+
+You may also want to exclude individual properties. If you have a property of your pieces which only makes sense for the live locales and should not be translated either, such as a hit counter field, you will not want workflow to constantly present the "commit" button based on that difference between draft and live.
+
+To exclude a property, write:
+
+```javascript
+'apostrophe-workflow': {
+  excludeProperties: [ 'hitCounter' ]
+}
+```
+
+**The property is excluded for all doc types.** Use a name that is unambiguous for such properties.
 
 ### Tags and localization: we recommend using joins instead
 
