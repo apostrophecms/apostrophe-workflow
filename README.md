@@ -5,17 +5,17 @@ The `apostrophe-workflow` module adds powerful workflow and localization capabil
 We'll begin with the steps needed simply to add workflow to your project. Then we'll examine the changes needed for localization (also known as i18n or internationalization).
 
 - [Before getting started](#user-content-before-getting-started)
-  * [Adding `parkedId` to your parked pages](#user-content-adding--parkedid--to-your-parked-pages)
+  * [Adding `parkedId` to your parked pages](#user-content-adding-parkedid-to-your-parked-pages)
   * [Adding workflow to your database](#user-content-adding-workflow-to-your-database)
 - [Using the workflow feature](#user-content-using-the-workflow-feature)
-  * ["Why am I asked to commit so many things?"](#user-content--why-am-i-asked-to-commit-so-many-things--)
+  * ["Why am I asked to commit so many things?"](#user-content-why-am-i-asked-to-commit-so-many-things-)
   * [Workflow for pieces](#user-content-workflow-for-pieces)
   * [Workflow for page settings](#user-content-workflow-for-page-settings)
 - [Using the localization feature](#user-content-using-the-localization-feature)
   * [Private locales and default locale](#user-content-private-locales-and-default-locale)
   * [Document structure for locales](#user-content-document-structure-for-locales)
-  * [Setting the `lang` attribute](#user-content-setting-the--lang--attribute)
-  * [Tags and localization: we recommend using joins instead](#user-content-tags-and-localization--we-recommend-using-joins-instead)
+  * [Setting the `lang` attribute](#user-content-setting-the-lang-attribute)
+  * [Tags and localization: we recommend using joins instead](#user-content-tags-and-localization-we-recommend-using-joins-instead)
   * [Building a locale picker on the front end](#user-content-building-a-locale-picker-on-the-front-end)
   * [Exporting between locales](#user-content-exporting-between-locales)
     + [Not all patches can be exported](#user-content-not-all-patches-can-be-exported)
@@ -28,43 +28,43 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
     + [One login across all hostnames](#user-content-one-login-across-all-hostnames)
     + [Locale-specific stylesheets](#user-content-locale-specific-stylesheets)
   * [Excluding certain types and properties from workflow](#user-content-excluding-certain-types-and-properties-from-workflow)
-- [Workflow with permissions: limiting who can do what](#user-content-workflow-with-permissions--limiting-who-can-do-what)
-  * [Setting up for permissions: enabling group management](#user-content-setting-up-for-permissions--enabling-group-management)
+- [Workflow with permissions: limiting who can do what](#user-content-workflow-with-permissions-limiting-who-can-do-what)
+  * [Setting up for permissions: enabling group management](#user-content-setting-up-for-permissions-enabling-group-management)
     + [Removing the legacy groups](#user-content-removing-the-legacy-groups)
   * [An overview of permissions](#user-content-an-overview-of-permissions)
-    + [The "Editor" permission](#user-content-the--editor--permission)
-    + [The "Admin: All" permission](#user-content-the--admin--all--permission)
-    + ["View Private Locales"](#user-content--view-private-locales-)
-    + ["Upload and Crop"](#user-content--upload-and-crop-)
-    + [The "Admin: Global" permission](#user-content-the--admin--global--permission)
-    + [The "Edit: Global" permission (do not use)](#user-content-the--edit--global--permission--do-not-use-)
-    + ["Admin: Pages": total control of pages](#user-content--admin--pages---total-control-of-pages)
-    + ["Edit: Pages": candidates to edit pages](#user-content--edit--pages---candidates-to-edit-pages)
-    + ["Admin: Article": total control of articles](#user-content--admin--article---total-control-of-articles)
-    + ["Edit: Article": creating and editing their own articles](#user-content--edit--article---creating-and-editing-their-own-articles)
-    + ["Admin: Image": total control of articles](#user-content--admin--image---total-control-of-articles)
-    + ["Edit: Image": creating and editing their own images](#user-content--edit--image---creating-and-editing-their-own-images)
-    + ["Edit: File": creating and editing their own files](#user-content--edit--file---creating-and-editing-their-own-files)
+    + [The "Editor" permission](#user-content-the-editor-permission)
+    + [The "Admin: All" permission](#user-content-the-admin-all-permission)
+    + ["View Private Locales"](#user-content-view-private-locales-)
+    + ["Upload and Crop"](#user-content-upload-and-crop-)
+    + [The "Admin: Global" permission](#user-content-the-admin-global-permission)
+    + [The "Edit: Global" permission (do not use)](#user-content-the-edit-global-permission-do-not-use-)
+    + ["Admin: Pages": total control of pages](#user-content-admin-pages--total-control-of-pages)
+    + ["Edit: Pages": candidates to edit pages](#user-content-edit-pages--candidates-to-edit-pages)
+    + ["Admin: Article": total control of articles](#user-content-admin-article--total-control-of-articles)
+    + ["Edit: Article": creating and editing their own articles](#user-content-edit-article--creating-and-editing-their-own-articles)
+    + ["Admin: Image": total control of articles](#user-content-admin-image--total-control-of-articles)
+    + ["Edit: Image": creating and editing their own images](#user-content-edit-image--creating-and-editing-their-own-images)
+    + ["Edit: File": creating and editing their own files](#user-content-edit-file--creating-and-editing-their-own-files)
   * [Locales for permissions](#user-content-locales-for-permissions)
   * [Permissions tutorial](#user-content-permissions-tutorial)
     + [Creating the fr-editors group](#user-content-creating-the-fr-editors-group)
-    + [Creating an "fr-editor" user](#user-content-creating-an--fr-editor--user)
-    + [Creating the "fr-committers" group](#user-content-creating-the--fr-committers--group)
-    + [Creating an "fr-comitter" user](#user-content-creating-an--fr-comitter--user)
+    + [Creating an "fr-editor" user](#user-content-creating-an-fr-editor-user)
+    + [Creating the "fr-committers" group](#user-content-creating-the-fr-committers-group)
+    + [Creating an "fr-comitter" user](#user-content-creating-an-fr-comitter-user)
     + [Granting editing permissions on the home page](#user-content-granting-editing-permissions-on-the-home-page)
-    + [Working with the "fr-editors" account](#user-content-working-with-the--fr-editors--account)
-    + [Working with the "fr-committers" account](#user-content-working-with-the--fr-committers--account)
+    + [Working with the "fr-editors" account](#user-content-working-with-the-fr-editors-account)
+    + [Working with the "fr-committers" account](#user-content-working-with-the-fr-committers-account)
     + [Exporting](#user-content-exporting)
     + [Accessing newly created pages in other locales](#user-content-accessing-newly-created-pages-in-other-locales)
 - [Other developer concerns](#user-content-other-developer-concerns)
   * [Aliasing the module](#user-content-aliasing-the-module)
   * [Previewing piece types without an index page](#user-content-previewing-piece-types-without-an-index-page)
   * [Command line tasks and workflow](#user-content-command-line-tasks-and-workflow)
-    + [Using the `--workflow-locale` option](#user-content-using-the----workflow-locale--option)
+    + [Using the `-workflow-locale` option](#user-content-using-the--workflow-locale-option)
   * [Setting the current locale programmatically](#user-content-setting-the-current-locale-programmatically)
   * [Direct MongoDB access and workflow](#user-content-direct-mongodb-access-and-workflow)
-  * [`setPropertiesAcrossLocales`: modifying a document programmatically across locales](#user-content--setpropertiesacrosslocales---modifying-a-document-programmatically-across-locales)
-  * [Writing safe `afterInsert` and `docAfterInsert` handlers, etc.](#user-content-writing-safe--afterinsert--and--docafterinsert--handlers--etc)
+  * [`setPropertiesAcrossLocales`: modifying a document programmatically across locales](#user-content-setpropertiesacrosslocales--modifying-a-document-programmatically-across-locales)
+  * [Writing safe `afterInsert` and `docAfterInsert` handlers, etc.](#user-content-writing-safe-afterinsert-and-docafterinsert-handlers-etc)
     + [Recognizing inserts due to localization](#user-content-recognizing-inserts-due-to-localization)
     + [Always finish the job before continuing](#user-content-always-finish-the-job-before-continuing)
 - [Technical approach](#user-content-technical-approach)
@@ -78,7 +78,7 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
 Start by installing apostrophe-workflow.
 
 ```
-npm install --save apostrophe-workflow
+npm install -save apostrophe-workflow
 ```
 
 Then configure the `apostrophe-workflow` module in `app.js` with the rest of your modules. We'll start with a simple configuration just providing workflow:
@@ -119,7 +119,7 @@ node app apostrophe-users:add admin admin
 2. **FOR EXISTING PROJECTS, YOU MUST ADD LOCALES TO EXISTING DOCUMENTS.** This is NOT automatic for existing projects, you must run this task on a one-time basis:
 
 ```
-node app apostrophe-workflow:add-missing-locales --live
+node app apostrophe-workflow:add-missing-locales -live
 ```
 
 ## Using the workflow feature
@@ -205,7 +205,7 @@ node app apostrophe-workflow:add-missing-locales
 By default, docs copied to new locales via this task will be considered trash in all live locales, until an editor chooses to commit them.  If you prefer that that they be immediately live everywhere, use this command instead:
 
 ```
-node app apostrophe-workflow:add-missing-locales --live
+node app apostrophe-workflow:add-missing-locales -live
 ```
 
 Now access the site as an administrator. You will be able to click on the current locale name to switch to other locales.
@@ -709,15 +709,15 @@ If you do not supply an implementation, a message indicating that no preview is 
 
 ### Command line tasks and workflow
 
-#### Using the `--workflow-locale` option
+#### Using the `-workflow-locale` option
 
 By default, command line tasks that use Apostrophe's `find`, `insert` and `update` methods see and modify the content of the default locale (not the draft version of it).
 
-You can change this by adding the `--workflow-locale` option to your command line:
+You can change this by adding the `-workflow-locale` option to your command line:
 
 ```
-node app my-module:my-task --workflow-locale=en
-node app my-module:my-task --workflow-locale=en-draft
+node app my-module:my-task -workflow-locale=en
+node app my-module:my-task -workflow-locale=en-draft
 ```
 
 Note that you *must add the `-draft` suffix* if you want to target draft content, not live content.
