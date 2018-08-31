@@ -78,7 +78,7 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
 Start by installing apostrophe-workflow.
 
 ```
-npm install -save apostrophe-workflow
+npm install --save apostrophe-workflow
 ```
 
 Then configure the `apostrophe-workflow` module in `app.js` with the rest of your modules. We'll start with a simple configuration just providing workflow:
