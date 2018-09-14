@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.12.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Workflow-related batch operations for pages. These work just like the batch operations for pieces. You can find them in the "Reorganize" view (also reachable via "Pages" on the admin bar). 
+* Option to disable "export after commit." For some users, this is only an occasionally useful feature, and it doesn't make sense to present it 100% of the time. To shut that behavior off, set the `exportAfterCommit` option to `false`. To facilitate the discovery of alternatives, the "History" workflow menu item is now labeled "History and Export." Note that you can export any commit, not just the most recent one, which is useful if you skipped several.
+
+## 2.11.2
+
+Packaging only.
+
+## 2.11.1
+
+Documentation only.
+
 ## 2.11.0
 
 Unit tests passing.
