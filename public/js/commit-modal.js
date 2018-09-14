@@ -29,7 +29,7 @@ apos.define('apostrophe-workflow-commit-modal', {
           if (result.status !== 'ok') {
             return callback(result.status);
           }
-          if (result.locales.length > 1) {
+          if ((apos.modules['apostrophe-workflow'].options.exportAfterCommit !== false) && (result.locales.length > 1)) {
             return self.manager.export(commitId, callback);
           }
           return callback(null);

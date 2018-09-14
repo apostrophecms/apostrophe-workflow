@@ -269,6 +269,12 @@ After committing a change, you will be invited to export that change to other lo
 
 This allows for editors fluent in the other locale to complete any necessary translation tasks before finally committing the changes for that locale.
 
+#### If you find this option appears too frequently
+
+Do you export rarely? If so, you may want to set the `exportAfterCommit` option of the `apostrophe-workflow` module to `false`.
+
+If you do so, the "export" dialog box will not appear right after every commit. Instead the user must choose to access it. The option can be found on the "workflow" dropdown menu, accessed via "Page Settings" or via the editing dialog box for any piece type, including "global."
+
 #### Not all patches can be exported
 
 If the page has been altered greatly in structure, for example if the rich text widget on a page has been removed and replaced, making it effectively a separate widget altogether, then an edit to that widget will not take effect as a patch. It is a best practice to initially create all content in a "default" locale and then export it to others.
