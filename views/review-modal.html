@@ -1,5 +1,5 @@
 {# Similar to the commit modal, this modal allows us to review an existing commit's diff in the
-  preview iframe and decide whether to export it to more locales. #}
+  preview iframe and, if localized, decide whether to export it to more locales. #}
   
 {%- extends "apostrophe-modal:base.html" -%}
 {%- import "apostrophe-modal:macros.html" as modals -%}
@@ -10,8 +10,10 @@
 {%- endblock -%}
 
 {%- block controls -%}
-  {{ buttons.minor('Cancel', { action: 'cancel' }) }}
-  {{ buttons.major('Export', { action: 'save' }) }}
+  {{ buttons.minor('Cancel' if data.localized else 'Finished', { action: 'cancel' }) }}
+  {%- if data.localized -%}
+    {{ buttons.major('Export', { action: 'save' }) }}
+  {%- endif -%}
 {%- endblock -%}
 
 {%- block label -%}
@@ -20,7 +22,7 @@
 
 {% block instructions %}
   <p>
-    {{ __('Click Export to send these past changes to more locales.') }}
+    {{ __('Click Export to send these past changes to more locales.' if data.localized : 'Review the changes below.') }}
   </p>
 {% endblock %}
 
