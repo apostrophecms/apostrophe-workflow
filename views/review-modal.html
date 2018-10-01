@@ -22,7 +22,7 @@
 
 {% block instructions %}
   <p>
-    {{ __('Click Export to send these past changes to more locales.' if data.localized : 'Review the changes below.') }}
+    {{ __('Click Export to send these past changes to more locales.' if data.localized else 'Review the changes below.') }}
   </p>
 {% endblock %}
 
