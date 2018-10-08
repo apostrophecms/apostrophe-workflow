@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.12.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* The commit history modal dialog box is now available when using the workflow module without internationalization/localization features. This makes sense because the history modal permits you to roll the draft version of the document back to an earlier commit, in addition to offering export features that are intended for localization.
+
 ## 2.12.0
 
 Unit tests passing.
