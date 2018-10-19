@@ -146,7 +146,7 @@ apos.define('apostrophe-workflow', {
       var uncommittedTrash;
       var editable;
 
-      async.series([
+      return async.series([
         getUncommittedTrash,
         getEditable
       ], function(error) {
@@ -175,12 +175,12 @@ apos.define('apostrophe-workflow', {
             // actually be avoided.
             ids = result.uncommittedTrash.concat(ids);
             uncommittedTrash = result.uncommittedTrash;
-            callback(null);
+            return callback(null);
           } else {
-            callback(result.status);
+            return callback(result.status);
           }
         }, function(error) {
-          callback(error);
+          return callback(error);
         });
       }
 
@@ -188,12 +188,12 @@ apos.define('apostrophe-workflow', {
         self.api('editable', _.assign({ ids: ids }, options), function(result) {
           if (result.status === 'ok') {
             editable = result;
-            callback();
+            return callback();
           } else {
-            callback(result.status);
+            return callback(result.status);
           }
         }, function(error) {
-          callback(error);
+          return callback(error);
         });
       }
     };
