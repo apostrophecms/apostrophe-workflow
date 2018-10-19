@@ -129,11 +129,6 @@ apos.define('apostrophe-workflow', {
     // ids of draft documents, all of which are editable and
     // may in some way appear on the current page.
     //
-    // If `options.uncommittedTrash` is falsy, then we avoid
-    // looking up trashed draft docs that haven't been committed
-    // and no `uncommittedTrash` property is included in `result`.
-    // However this option is `true` by default.
-    //
     // If `options.related` is truthy then related documents,
     // i.e. related via joins or widgets, are also included.
     //
@@ -162,10 +157,6 @@ apos.define('apostrophe-workflow', {
       });
 
       function getUncommittedTrash(callback) {
-        if (!options.uncommittedTrash) {
-          return callback(null);
-        }
-
         self.api('uncommitted-trash', {}, function(result) {
           if (result.status === 'ok') {
             // We ask editors to commit uncommittedTrash docs first by putting those ids
