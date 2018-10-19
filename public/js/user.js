@@ -70,7 +70,7 @@ apos.define('apostrophe-workflow', {
         // The submit procedure should only affect edited docs, it shouldn't
         // consider documents that have been trashed (even if they technically
         // haven't been submitted)
-        var unsubmitted = _.difference(result.unsubmitted, result.trashed);
+        var unsubmitted = _.difference(result.unsubmitted, result.uncommittedTrash);
 
         setClass($menu, 'apos-workflow-editable', result.modified.length || result.unmodified.length);
         setClass($menu, 'apos-workflow-modified', !!result.modified.length);
@@ -125,14 +125,14 @@ apos.define('apostrophe-workflow', {
     // list to include only editable docs. The callback
     // receives `(null, result)` on success. `result` has
     // `modified`, `unmodified`, `committable`, `submitted`
-    // and `trashed` properties, which are arrays of ids of
-    // draft documents, all of which are editable and may in
-    // some way appear on the current page.
+    // and `uncommittedTrash` properties, which are arrays of
+    // ids of draft documents, all of which are editable and
+    // may in some way appear on the current page.
     //
-    // If `options.trashed` is falsy, then we avoid looking
-    // up trashed draft docs that haven't been committed and
-    // no `trashed` property is included in `result`. This option
-    // is `true` by default.
+    // If `options.uncommittedTrash` is falsy, then we avoid
+    // looking up trashed draft docs that haven't been committed
+    // and no `uncommittedTrash` property is included in `result`.
+    // However this option is `true` by default.
     //
     // If `options.related` is truthy then related documents,
     // i.e. related via joins or widgets, are also included.
@@ -141,41 +141,40 @@ apos.define('apostrophe-workflow', {
     // considered rather than those found on the page.
 
     self.getEditable = function(options, callback) {
-      options = _.assign({ trashed: true }, options);
+      options = _.assign({ uncommittedTrash: true }, options);
       var ids = options.ids || self.getDocIds();
-      var trashed;
+      var uncommittedTrash;
+      var editable;
 
       async.series([
-        getTrashed,
+        getUncommittedTrash,
         getEditable
-      ], function(error, results) {
+      ], function(error) {
         if (error) {
           return callback(error);
         }
 
-        var result = results[1];
-
-        if (trashed) {
-          result.trashed = trashed;
+        if (uncommittedTrash) {
+          editable.uncommittedTrash = uncommittedTrash;
         }
 
-        callback(null, result);
+        callback(null, editable);
       });
 
-      function getTrashed(callback) {
-        if (!options.trashed) {
+      function getUncommittedTrash(callback) {
+        if (!options.uncommittedTrash) {
           return callback(null);
         }
 
-        self.api('trashed', {}, function(result) {
+        self.api('uncommitted-trash', {}, function(result) {
           if (result.status === 'ok') {
-            // We ask editors to commit trashed docs first by putting those ids
-            // before the edited doc ids. That's because trashed docs have their
-            // slugs updated to avoid collisions with non-trashed docs, but
+            // We ask editors to commit uncommittedTrash docs first by putting those ids
+            // before the edited doc ids. That's because uncommittedTrash docs have their
+            // slugs updated to avoid collisions with non-uncommittedTrash docs, but
             // those new slugs need to be committed for that conflict to
             // actually be avoided.
-            ids = result.trashed.concat(ids);
-            trashed = result.trashed;
+            ids = result.uncommittedTrash.concat(ids);
+            uncommittedTrash = result.uncommittedTrash;
             callback(null);
           } else {
             callback(result.status);
@@ -188,7 +187,8 @@ apos.define('apostrophe-workflow', {
       function getEditable(callback) {
         self.api('editable', _.assign({ ids: ids }, options), function(result) {
           if (result.status === 'ok') {
-            callback(null, result);
+            editable = result;
+            callback();
           } else {
             callback(result.status);
           }
@@ -213,7 +213,7 @@ apos.define('apostrophe-workflow', {
     self.enableSubmit = function() {
       $('body').on('click', '[data-apos-workflow-submit]', function() {
         apos.ui.globalBusy(true);
-        self.getEditable({ related: true, trashed: false }, function(err, result) {
+        self.getEditable({ related: true, uncommittedTrash: false }, function(err, result) {
           apos.ui.globalBusy(false);
           if (!err) {
             self.submit(result.modified);
