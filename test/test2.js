@@ -41,9 +41,12 @@ describe('Workflow Subdomains and Prefixes', function() {
             'us': 'example.com',
             'us-en': 'example.com',
             'us-es': 'example.com',
+            'us-de': 'example.com',
             'es': 'example.es',
             'es-CO': 'example.es',
-            'es-MX': 'example.es'
+            'es-MX': 'example.es',
+            'de': 'example.de',
+            'de-de': 'example.de'
           },
           prefixes: {
             // Even private locales must be distinguishable by hostname and/or prefix
@@ -53,8 +56,10 @@ describe('Workflow Subdomains and Prefixes', function() {
             // will reside at the root level and share the hostname
             // with us-es and us-fr.
             'us-es': '/es',
+            'us-de': '/de',
             'es-CO': '/co',
-            'es-MX': '/mx'
+            'es-MX': '/mx',
+            'de-de': '/de'
             // We don't need prefixes for fr because
             // that hostname is not shared with other
             // locales
@@ -77,6 +82,9 @@ describe('Workflow Subdomains and Prefixes', function() {
                     },
                     {
                       name: 'us-es'
+                    },
+                    {
+                      name: 'us-de'
                     }
                   ]
                 },
@@ -88,6 +96,14 @@ describe('Workflow Subdomains and Prefixes', function() {
                     },
                     {
                       name: 'es-MX'
+                    }
+                  ]
+                },
+                {
+                  name: 'de',
+                  children: [
+                    {
+                      name: 'de-de'
                     }
                   ]
                 }
@@ -160,8 +176,36 @@ describe('Workflow Subdomains and Prefixes', function() {
   });
 
   it('can detect a root-level locale via middleware - case 2', function (done) {
+    tryMiddleware('http://example.com/some-url', function (req) {
+      assert(req.locale === 'us-en');
+      done();
+    });
+  });
+
+  it('can detect a root-level locale via middleware - case 3', function (done) {
     tryMiddleware('http://example.es', function (req) {
       assert(req.locale === 'es');
+      done();
+    });
+  });
+
+  it('can detect a root-level locale via middleware - case 4', function (done) {
+    tryMiddleware('http://example.es/some-url', function (req) {
+      assert(req.locale === 'es');
+      done();
+    });
+  });
+
+  it('can differentiate between locales which differ by hostname, but share a prefix - case 1', function (done) {
+    tryMiddleware('http://example.com/de', function (req) {
+      assert(req.locale === 'us-de');
+      done();
+    });
+  });
+
+  it('can differentiate between locales which differ by hostname, but share a prefix - case 2', function (done) {
+    tryMiddleware('http://example.de/de', function (req) {
+      assert(req.locale === 'de-de');
       done();
     });
   });
@@ -632,12 +676,18 @@ describe('Workflow Subdomains and Prefixes', function() {
       'us-en-draft',
       'us-es',
       'us-es-draft',
+      'us-de',
+      'us-de-draft',
       'es',
       'es-draft',
       'es-CO',
       'es-CO-draft',
       'es-MX',
-      'es-MX-draft'
+      'es-MX-draft',
+      'de',
+      'de-draft',
+      'de-de',
+      'de-de-draft'
     ];
     assert(_.isEqual(locales, $in));
   });
