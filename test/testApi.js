@@ -71,7 +71,6 @@ describe('Workflow API', function() {
     var req = apos.tasks.getReq({locale: 'default-draft'});
 
     async.waterfall([getProductDraft, updateProductDraft, commitUpdate], (err, res) => {
-      console.error(err);
       assert(!err);
       assert(typeof res === 'string', 'response should be an id');
       done();
