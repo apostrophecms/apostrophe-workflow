@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.13.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* When committing via the main "Commit" button, you are now also invited to commit any uncommitted trashed docs. Thanks to Fredrik Ekelund.
+* You have always been able to have more than one locale with the same hostname, as long as each one had a prefix. You may now have one (1) locale *without* a prefix on a hostname that also features other locales. However, there is a catch: you must help Apostrophe distinguish page URLs that should switch the locale from API URLs that should not. If you don't want to do that, just continue to prefix all of your locales that share a hostname. See the documentation of the new `addApiCalls` option. Thanks to Manoj Krishnan.
+* At commit time, if a property that exists in the schema has been completely deleted, it is now deleted from the live doc too.
+* The history modal is now available even in the absence of localization for pieces. It was already available in this scenario for pages.
+
 ## 2.12.1
 
 Unit tests passing.
