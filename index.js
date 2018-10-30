@@ -72,6 +72,7 @@ module.exports = {
     self.enableHelpers();
     self.enableCrossDomainSessionCache();
     self.refineOptimizeKey();
+    self.composeApiCalls();
     return async.series([
       self.enableCollection,
       self.enableFacts,

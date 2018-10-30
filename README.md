@@ -360,12 +360,18 @@ Notice that **a hostname is specified for every locale, and if a hostname is sha
 
 When one of the locales sharing a hostname has no prefix, Apostrophe needs your help to distinguish between page URLs that should switch to that locale and API calls that should rely on the locale setting already in the user's session.
 
-By default Apostrophe knows that any URL matching `/modules/*`, `/login` or `/logout` should not change the locale. You can add additional rules like these by passing an array of them as the `addApiCalls` option to the module:
+By default Apostrophe knows that any URL starting with `/modules` should not change the locale. Neither should `/login` or `/logout`, or anything with a file extension, to avoid accidental locale switches due to missing assets.
+
+You can add additional rules like these by passing an array of them as the `addApiCalls` option to the module:
 
 ```javascript
   addApiCalls: [
+    // simple string match
     '/my/private/api',
-    '/many/private/apis/start/here/*'
+    // minimatch glob match, just one folder level
+    '/my/apis/*',
+    // regular expression
+    /^\/nothing\/past\/here\/.*$/
   ]
 ```
 
