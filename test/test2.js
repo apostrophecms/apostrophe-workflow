@@ -182,6 +182,20 @@ describe('Workflow Subdomains and Prefixes', function() {
     });
   });
 
+  it('does not misinterpret an API URL as cause for a locale change', function (done) {
+    tryMiddleware('http://example.com/modules/apostrophe-workflow/test', function (req) {
+      assert(req.locale === 'default');
+      done();
+    });
+  });
+
+  it('does not misinterpret a bad asset URL as cause for a locale change', function (done) {
+    tryMiddleware('http://example.com/asset.png', function (req) {
+      assert(req.locale === 'default');
+      done();
+    });
+  });
+
   it('can detect a root-level locale via middleware - case 3', function (done) {
     tryMiddleware('http://example.es', function (req) {
       assert(req.locale === 'es');
