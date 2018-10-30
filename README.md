@@ -22,6 +22,7 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
   * [Forcing exports](#user-content-forcing-exports)
   * [Forcing export of one widget](#user-content-forcing-export-of-one-widget)
   * [Switching locales via custom hostnames and/or prefixes](#user-content-switching-locales-via-custom-hostnames-and-or-prefixes)
+    + [Using `addApiCalls`: when a locale that shares a hostname has no prefix](#using-addapicalls-when-a-locale-that-shares-a-hostname-has-no-prefix)
     + [Adding prefixes to an existing database](#user-content-adding-prefixes-to-an-existing-database)
     + [If you only care about subdomains](#user-content-if-you-only-care-about-subdomains)
     + [If you only care about prefixes](#user-content-if-you-only-care-about-prefixes)
@@ -299,7 +300,13 @@ Notice that **a hostname is specified for every locale, and if a hostname is sha
 
 *There does not have to be any similarity between the hostnames.* They can be completely different.
 
-Two locales may have the same prefix, as long as they have different hostnames, and vice versa.
+**Two or more locales may have the same prefix,** as long as they have different hostnames.
+
+**Two or more locales may share a hostname, as long as no more than one does not have a prefix.** That is, you may have a "fallback" locale for a hostname with no prefix configured, but you can't have more than one.
+
+**If one of several locales sharing a hostname has no prefix, you should review the `addApiCalls` option,** to avoid situations where Apostrophe assumes accesses to a private API implemented by your site should count as a switch to the unprefixed locale.
+
+#### Example
 
 ```javascript
     'apostrophe-workflow': {
@@ -311,10 +318,7 @@ Two locales may have the same prefix, as long as they have different hostnames, 
         'us-es': 'example.com'
       },
       prefixes: {
-        // Even private locales must be distinguishable by hostname and/or prefix
-        'default': '/default',
         'us': '/us',
-
         'us-en': '/en',
         'us-es': '/es',
         // We don't need prefixes for fr because
@@ -350,6 +354,19 @@ Two locales may have the same prefix, as long as they have different hostnames, 
       // be sure to set this
       alias: 'workflow'
     }
+```
+
+#### Using `addApiCalls`: when a locale that shares a hostname has no prefix
+
+When one of the locales sharing a hostname has no prefix, Apostrophe needs your help to distinguish between page URLs that should switch to that locale and API calls that should rely on the locale setting already in the user's session.
+
+By default Apostrophe knows that any URL matching `/modules/*`, `/login` or `/logout` should not change the locale. You can add additional rules like these by passing an array of them as the `addApiCalls` option to the module:
+
+```javascript
+  addApiCalls: [
+    '/my/private/api',
+    '/many/private/apis/start/here/*'
+  ]
 ```
 
 #### Adding prefixes to an existing database
