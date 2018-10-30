@@ -1,6 +1,7 @@
 var assert = require('assert');
 var async = require('async');
 var revertId;
+var _ = require('@sailshq/lodash');
 
 describe('Workflow API', function() {
   this.timeout(5000);
@@ -56,6 +57,7 @@ describe('Workflow API', function() {
     var req = apos.tasks.getReq();
     var product = apos.products.newInstance();
     product.title = 'initial title';
+    product.tags = [];
     return apos.products.insert(req, product)
       .then(doc => {
         assert(doc.type === 'product');
@@ -69,7 +71,6 @@ describe('Workflow API', function() {
     var req = apos.tasks.getReq({locale: 'default-draft'});
 
     async.waterfall([getProductDraft, updateProductDraft, commitUpdate], (err, res) => {
-
       assert(!err);
       assert(typeof res === 'string', 'response should be an id');
       done();
@@ -151,6 +152,53 @@ describe('Workflow API', function() {
     apos.products.find(req).toArray().then(docs => {
       assert(docs[0].title === 'new title 2');
       assert(!docs[0].trash);
+      // Verifies base case for the next group of tests. -Tom
+      assert(Array.isArray(docs[0].tags));
+      done();
+    });
+  });
+
+  it('Commit a change that deletes a property', (done) => {
+    var req = apos.tasks.getReq({locale: 'default-draft'});
+
+    async.waterfall([getProductDraft, updateProductDraft, commitUpdate], (err, res) => {
+
+      assert(!err);
+      assert(typeof res === 'string', 'response should be an id');
+      done();
+    });
+
+    function getProductDraft(cb) {
+      apos.products.find(req).toArray().then(docs => {
+        assert(docs[0]);
+        return cb(null, docs[0]);
+      })
+        .catch(e => {
+          return cb(e);
+        });
+    }
+
+    function updateProductDraft(product, cb) {
+      delete product.tags;
+      apos.products.update(req, product, (err, res) => {
+        return cb(err, res);
+      });
+    }
+
+    function commitUpdate(product, cb) {
+      apos.workflow.commitLatest(req, product._id, (err, res) => {
+        return cb(err, res);
+      });
+    }
+    // end block repeats
+  });
+
+  it('Check for live document after commit: no more tags property', done => {
+    const req = apos.tasks.getReq();
+    apos.products.find(req).toArray().then(docs => {
+      assert(docs[0].title === 'new title 2');
+      assert(!docs[0].trash);
+      assert(!_.has(docs[0], 'tags'));
       done();
     });
   });
