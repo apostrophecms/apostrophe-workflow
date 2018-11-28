@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.13.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Removed time-consuming migration that belongs in apostrophe core that previously ran each time locale changes were detected.
+* Better feedback when adding missing locales at startup.
+* Add trailing slash to URL when redirecting visitors to locale homepage, saving a redirect.
+
 ## 2.13.0
 
 Unit tests passing.
