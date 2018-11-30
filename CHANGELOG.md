@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.13.2
+
+* Fixed [bug affecting cross-domain logins](https://github.com/apostrophecms/apostrophe-workflow/pull/215#pullrequestreview-180432022) which made it difficult to log in again on the original domain. Thanks to Manoj Krishnan.
+
 ## 2.13.1
 
 Unit tests passing.
