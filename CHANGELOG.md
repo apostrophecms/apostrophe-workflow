@@ -1,6 +1,19 @@
 # Changelog
 
+## 2.13.3
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Do not crash when legacy locales no longer in the configuration are present for some but not all documents when moving a page in the tree.
+* The applyToSubpages dropdown on the page settings permissions tab is a one-time action that happens on save, it's not a setting. So toggling it to see what that setting is currently in "live" does not make sense.
+
 ## 2.13.2
+
+Unit tests passing.
+
+Regression tests passing.
 
 * Fixed [bug affecting cross-domain logins](https://github.com/apostrophecms/apostrophe-workflow/pull/215#pullrequestreview-180432022) which made it difficult to log in again on the original domain. Thanks to Manoj Krishnan.
 
