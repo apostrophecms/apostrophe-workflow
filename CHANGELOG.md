@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.14.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Added `defaultLocalesByHostname` option for situations where we can infer a better default locale from the hostname, even though the root URL is being accessed and all of the locales for that hostname have prefixes.
+* This module is now compatible with `apostrophe-i18n`. Specifically, when `apostrophe-workflow` sets the current locale, this also takes effect for `apostrophe-i18n` and thus for your static translations. Note that the `i18n` module is automatically reconfigured when the workflow module is instantiated, in order to pass the correct `locales` and `defaultLocale`; otherwise existing workflow-based sites would break. Configuring those options to `apostrophe-i18n` has no effect in the presence of workflow. However other options passed to that module via `apostrophe-i18n` configuration are left intact. Thanks to `ehibes` for their pull request.
+* Do not crash if a commit is attempted for a doc type that is not subject to workflow.
+
+Thanks to Michelin for making much of the above work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+
 ## 2.13.3
 
 Unit tests passing.
