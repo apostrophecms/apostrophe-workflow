@@ -22,6 +22,7 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
   * [Forcing exports](#user-content-forcing-exports)
   * [Forcing export of one widget](#user-content-forcing-export-of-one-widget)
   * [Switching locales via custom hostnames and/or prefixes](#user-content-switching-locales-via-custom-hostnames-and-or-prefixes)
+    + [Default locales by hostname](#default-locales-by-hostname)
     + [Using `addApiCalls`: when a locale that shares a hostname has no prefix](#using-addapicalls-when-a-locale-that-shares-a-hostname-has-no-prefix)
     + [Adding prefixes to an existing database](#user-content-adding-prefixes-to-an-existing-database)
     + [If you only care about subdomains](#user-content-if-you-only-care-about-subdomains)
@@ -354,6 +355,27 @@ Notice that **a hostname is specified for every locale, and if a hostname is sha
       // be sure to set this
       alias: 'workflow'
     }
+```
+
+#### Default locales for individual hostnames
+
+In addition to the global `defaultLocale` option, you can set up a `defaultLocalesByHostname` object to map hostnames to default locales. This is useful if the host has several `prefixes` but a request arrives with no prefix. If the global default locale is not the best choice for `yourcompany.us`, you can map it, for instance, to `en-us`:
+
+```javascript
+hostnames: {
+  'en-us': 'yourcompany.us',
+  'es-us': 'yourcompany.us',
+  'default': 'yourcompany.com'
+  // ... and other unrelated hostnames ...
+},
+prefixes: {
+  'en-us': '/en',
+  'es-us': '/es'
+},
+defaultLocalesByHostname: {
+  'yourcompany.us': 'en-us'
+},
+defaultLocale: 'default'
 ```
 
 #### Using `addApiCalls`: when a locale that shares a hostname has no prefix
