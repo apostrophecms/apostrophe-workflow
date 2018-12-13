@@ -46,7 +46,10 @@ describe('Workflow Subdomains and Prefixes', function() {
             'es-CO': 'example.es',
             'es-MX': 'example.es',
             'de': 'example.de',
-            'de-de': 'example.de'
+            'de-de': 'example.de',
+            'tt-one': 'tt.com',
+            'tt-two': 'tt.com',
+            'tt-three': 'tt.com'
           },
           prefixes: {
             // Even private locales must be distinguishable by hostname and/or prefix
@@ -54,12 +57,15 @@ describe('Workflow Subdomains and Prefixes', function() {
             'us': '/us-private',
             // we don't add a prefix for us-en since that locale
             // will reside at the root level and share the hostname
-            // with us-es and us-fr.
+            // with us-es and us-de.
             'us-es': '/es',
             'us-de': '/de',
             'es-CO': '/co',
             'es-MX': '/mx',
-            'de-de': '/de'
+            'de-de': '/de',
+            'tt-one': '/one',
+            'tt-two': '/two',
+            'tt-three': '/three'
             // We don't need prefixes for fr because
             // that hostname is not shared with other
             // locales
@@ -106,11 +112,23 @@ describe('Workflow Subdomains and Prefixes', function() {
                       name: 'de-de'
                     }
                   ]
+                },
+                {
+                  name: 'tt-one'
+                },
+                {
+                  name: 'tt-two'
+                },
+                {
+                  name: 'tt-three'
                 }
               ]
             }
           ],
-          defaultLocale: 'default'
+          defaultLocale: 'default',
+          defaultLocalesByHostname: {
+            'tt.com': 'tt-one'
+          }
         }
       },
       afterInit: function(callback) {
@@ -701,7 +719,13 @@ describe('Workflow Subdomains and Prefixes', function() {
       'de',
       'de-draft',
       'de-de',
-      'de-de-draft'
+      'de-de-draft',
+      'tt-one',
+      'tt-one-draft',
+      'tt-two',
+      'tt-two-draft',
+      'tt-three',
+      'tt-three-draft'
     ];
     assert(_.isEqual(locales, $in));
   });
@@ -816,6 +840,25 @@ describe('Workflow Subdomains and Prefixes', function() {
       assert(page.workflowLocale === 'default');
       done();
     });
+  });
+
+  it('guessLocale produces sensible results', function() {
+    var req = apos.tasks.getAnonReq({
+      locale: false,
+      get: function() {
+        return 'irrelevant.com';
+      }
+    });
+    apos.modules['apostrophe-workflow'].guessLocale(req);
+    assert(req.locale === 'default');
+    req = apos.tasks.getAnonReq({
+      locale: false,
+      get: function() {
+        return 'tt.com';
+      }
+    });
+    apos.modules['apostrophe-workflow'].guessLocale(req);
+    assert(req.locale === 'tt-one');
   });
 
 });
