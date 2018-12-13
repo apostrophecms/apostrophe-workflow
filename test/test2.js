@@ -34,9 +34,6 @@ describe('Workflow Subdomains and Prefixes', function() {
             }
           ]
         },
-        'apostrophe-i18n': {
-          defaultLocale: 'default'
-        },
         'apostrophe-workflow': {
           hostnames: {
             'fr': 'exemple.fr',
