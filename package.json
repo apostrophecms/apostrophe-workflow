@@ -1,8 +1,35 @@
 {
-  "name": "apostrophe-workflow",
-  "version": "2.13.3",
-  "description": "Workflow, approvals, localization and internationalization for Apostrophe 2.x",
-  "main": "index.js",
+  "_from": "apostrophe-workflow",
+  "_id": "apostrophe-workflow@2.14.0",
+  "_inBundle": false,
+  "_integrity": "sha512-NSOzLPQFBSR+xulY6Y3g131ItvGMidm9FqHMDoWeRQOZB223FFnxkUeEbTuiU0l3xxSeD5FbmaabHTvMkeHRXQ==",
+  "_location": "/apostrophe-workflow",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "apostrophe-workflow",
+    "name": "apostrophe-workflow",
+    "escapedName": "apostrophe-workflow",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/apostrophe-workflow/-/apostrophe-workflow-2.14.0.tgz",
+  "_shasum": "b1f6c6f599cf9e5b9e396f9849d6237f57a05d49",
+  "_spec": "apostrophe-workflow",
+  "_where": "/Users/boutell/tmp/test",
+  "author": {
+    "name": "P'unk Avenue LLC"
+  },
+  "bugs": {
+    "url": "https://github.com/punkave/apostrophe-workflow/issues"
+  },
+  "bundleDependencies": false,
   "dependencies": {
     "@sailshq/lodash": "^3.10.3",
     "async": "^1.5.2",
@@ -14,6 +41,8 @@
     "minimatch": "^3.0.4",
     "qs": "^6.5.2"
   },
+  "deprecated": false,
+  "description": "Workflow, approvals, localization and internationalization for Apostrophe 2.x",
   "devDependencies": {
     "apostrophe": "^2.64.0",
     "eslint": "^4.15.0",
@@ -24,13 +53,7 @@
     "eslint-plugin-standard": "^3.0.1",
     "mocha": "^5.1.1"
   },
-  "scripts": {
-    "test": "mocha test/test1.js && mocha test/test2.js && mocha test/test3.js && mocha test/testApi.js && eslint ."
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/punkave/apostrophe-workflow.git"
-  },
+  "homepage": "https://github.com/punkave/apostrophe-workflow#readme",
   "keywords": [
     "apostrophe",
     "apostrophecms",
@@ -40,10 +63,15 @@
     "cms",
     "workflow"
   ],
-  "author": "P'unk Avenue LLC",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/punkave/apostrophe-workflow/issues"
+  "main": "index.js",
+  "name": "apostrophe-workflow",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/punkave/apostrophe-workflow.git"
   },
-  "homepage": "https://github.com/punkave/apostrophe-workflow#readme"
+  "scripts": {
+    "test": "mocha test/test1.js && mocha test/test2.js && mocha test/test3.js && mocha test/testApi.js && eslint ."
+  },
+  "version": "2.14.0"
 }
