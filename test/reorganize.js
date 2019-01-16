@@ -1,5 +1,4 @@
 var assert = require('assert');
-var _ = require('@sailshq/lodash');
 var Promise = require('bluebird');
 
 describe('Workflow Reorganize', function() {
@@ -85,7 +84,6 @@ describe('Workflow Reorganize', function() {
     });
   });
 
-
   // it('dump pages', function() {
   //   return apos.docs.db.find({ slug: /^\// }).toArray().then(function(pages) {
   //     console.log(pages);
@@ -154,11 +152,11 @@ describe('Workflow Reorganize', function() {
     let commits;
     const req = apos.tasks.getReq({ locale: 'default-draft' });
     return Promise.try(function() {
-      return workflow.db.find().sort({ createdAt: 1 }).toArray();      
+      return workflow.db.find().sort({ createdAt: 1 }).toArray();
     }).then(function(_commits) {
-      commits = _commits;      return exporter(req, commits[0]._id, [ 'fr' ] );
+      commits = _commits; return exporter(req, commits[0]._id, [ 'fr' ]);
     }).then(function() {
-      return exporter(req, commits[1]._id, [ 'fr' ] );
+      return exporter(req, commits[1]._id, [ 'fr' ]);
     });
   });
 

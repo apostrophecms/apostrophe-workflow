@@ -347,24 +347,6 @@ describe('Workflow Core', function() {
 
   });
 
-  it('newly moved page is also in the right place in the other locale', function(done) {
-    // 'Cousin' _id === 4312
-    // 'Parent' _id === 1234
-    apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { path: '/cousin' }).workflowLocale('default').toObject(function(err, page) {
-      if (err) {
-        console.log(err);
-      }
-      assert(!err);
-      // Is the new path correct?
-      assert.equal(page.path, '/cousin');
-      // Is the rank correct?
-      assert.equal(page.rank, 1);
-      // Is the locale filter working?
-      assert.equal(page.workflowLocale, 'default');
-      return done();
-    });
-  });
-
   it('is able to move root/cousin before root/parent/child', function(done) {
     // 'Cousin' _id === 4312
     // 'Child' _id === 2341
@@ -430,20 +412,6 @@ describe('Workflow Core', function() {
       });
     });
 
-  });
-
-  it('moving /parent into /another-parent should also move /parent/sibling in the other locale', function(done) {
-    var cursor = apos.pages.find(apos.tasks.getReq({ locale: 'default-draft' }), { path: '/another-parent/parent/sibling' }).workflowLocale('default');
-    cursor.toObject(function(err, page) {
-      if (err) {
-        console.log(err);
-      }
-      assert(!err);
-      // Is the grandchild's path correct?
-      assert.equal(page.path, '/another-parent/parent/sibling');
-      assert.equal(page.workflowLocale, 'default');
-      return done();
-    });
   });
 
   it('should detect that the home page is an ancestor of any page except itself', function() {
