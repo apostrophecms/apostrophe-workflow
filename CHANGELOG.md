@@ -1,5 +1,38 @@
 # Changelog
 
+## 2.15.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* "Reorganize" (aka "Manage Pages") and Workflow finally play together well!
+
+In the past, it worked like this: any movement of a page in the tree automatically took place across all locales where that page was not considered trash. Including draft and live locales.
+
+This was widely considered a bug. It was actually a choice made due to challenges implementing true workflow for "reorganize," but it certainly felt like a bug.
+
+Certain permissions restrictions added frustration and did not reduce the risk associated with the feature as much as hoped.
+
+Now, beginning with version 2.15.0, it works like this:
+
+* To move a page via "reorganize," you simply need permission to edit that page and the page you are dropping it on, just like normal Apostrophe.
+* Until you commit this has *no effect* on the live version of the page.
+* When you commit, the same move operation is applied to the live version of the page.
+* When you export, or force export, that move operation is applied to the draft versions of the appropriate locales.
+
+In short... it works like most users always assumed it did!
+
+We hope you find this to be a substantial improvement in usability and safety for this feature.
+
+## 2.14.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* defaultLocalesByHostname option for situations where the hostname still has several prefixes but one is a sensible default other than the global default.
+
 ## 2.13.3
 
 Unit tests passing.
