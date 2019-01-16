@@ -2,11 +2,9 @@ var assert = require('assert');
 var _ = require('@sailshq/lodash');
 var Promise = require('bluebird');
 
-describe('Workflow Core', function() {
+describe('Workflow Reorganize', function() {
 
   let apos;
-  let page1;
-  let page2;
 
   this.timeout(20000);
 
@@ -35,7 +33,21 @@ describe('Workflow Core', function() {
             }
           ]
         },
-        'apostrophe-workflow': {}
+        'apostrophe-workflow': {
+          locales: [
+            {
+              name: 'default',
+              children: [
+                {
+                  name: 'en'
+                },
+                {
+                  name: 'fr'
+                }
+              ]
+            }
+          ]
+        }
       },
       afterInit: function(callback) {
         assert(apos.modules['apostrophe-workflow']);
@@ -132,6 +144,55 @@ describe('Workflow Core', function() {
     return page2IsNestedUnderPage1('default');
   });
 
+  it('meanwhile in fr-draft page2 is still a peer of page1', function() {
+    return page1AndPage2ArePeers('fr-draft');
+  });
+
+  it('export both commits to fr-draft locale', function() {
+    const workflow = apos.modules['apostrophe-workflow'];
+    const exporter = Promise.promisify(workflow.export);
+    let commits;
+    const req = apos.tasks.getReq({ locale: 'default-draft' });
+    return Promise.try(function() {
+      return workflow.db.find().sort({ createdAt: 1 }).toArray();      
+    }).then(function(_commits) {
+      commits = _commits;      return exporter(req, commits[0]._id, [ 'fr' ] );
+    }).then(function() {
+      return exporter(req, commits[1]._id, [ 'fr' ] );
+    });
+  });
+
+  it('after exports page2 is a child of page1 in fr-draft', function() {
+    return page2IsNestedUnderPage1('fr-draft');
+  });
+
+  it('... but still a peer in fr (live)', function() {
+    return page1AndPage2ArePeers('fr');
+  });
+
+  it('... and still a peer in the unrelated en-draft', function() {
+    return page1AndPage2ArePeers('en-draft');
+  });
+
+  it('can force export page1 and page2 to en-draft', function() {
+    const req = apos.tasks.getReq({ locale: 'default-draft' });
+    const workflow = apos.modules['apostrophe-workflow'];
+    const forceExport = Promise.promisify(workflow.forceExport);
+    let home;
+    return Promise.try(function() {
+      return apos.pages.find(req, { slug: '/' }).children({ depth: 2 }).toObject();
+    }).then(function(_home) {
+      home = _home;
+      return forceExport(req, home._children[0]._id, [ 'en' ]);
+    }).then(function() {
+      return forceExport(req, home._children[0]._children[0]._id, [ 'en' ]);
+    });
+  });
+
+  it('after force exports page2 is a child of page1 in en-draft', function() {
+    return page2IsNestedUnderPage1('en-draft');
+  });
+
   function page1AndPage2ArePeers(locale) {
     return Promise.try(function() {
       return apos.docs.db.find({ workflowLocale: locale }).toArray();
@@ -139,8 +200,8 @@ describe('Workflow Core', function() {
       return apos.pages.find(apos.tasks.getReq({ locale: locale }), { slug: '/' }).children({ depth: 2, trash: null }).toObject();
     }).then(function(home) {
       assert(home);
-      page1 = home._children[0];
-      page2 = home._children[1];
+      const page1 = home._children[0];
+      const page2 = home._children[1];
       assert(page1.title === 'page1');
       assert(page1.path === '/page1');
       assert(page1.level === 1);
