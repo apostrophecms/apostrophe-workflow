@@ -84,12 +84,6 @@ describe('Workflow Reorganize', function() {
     });
   });
 
-  // it('dump pages', function() {
-  //   return apos.docs.db.find({ slug: /^\// }).toArray().then(function(pages) {
-  //     console.log(pages);
-  //   });
-  // });
-
   it('page1 and page2 are peers in default-draft locale', function() {
     return page1AndPage2ArePeers('default-draft');
   });
@@ -154,7 +148,8 @@ describe('Workflow Reorganize', function() {
     return Promise.try(function() {
       return workflow.db.find().sort({ createdAt: 1 }).toArray();
     }).then(function(_commits) {
-      commits = _commits; return exporter(req, commits[0]._id, [ 'fr' ]);
+      commits = _commits;
+      return exporter(req, commits[0]._id, [ 'fr' ]);
     }).then(function() {
       return exporter(req, commits[1]._id, [ 'fr' ]);
     });
