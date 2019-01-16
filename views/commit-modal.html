@@ -36,6 +36,9 @@
   {% if data.modifiedFields.length %}
     <div class="apos-workflow-modified-fields">
       <p>{{ __('Modified fields: %s', data.modifiedFields | join(', ')) }}</p>
+      {% if data.doc.workflowMovedIsNew %}
+        <p>The page was moved to a new location.</p>
+      {% endif %}
       <p class="apos-workflow-hint">Also see below for content edited in context.</p>
     </div>
   {% endif %}
