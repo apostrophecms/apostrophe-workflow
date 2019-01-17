@@ -67,7 +67,7 @@ describe('Workflow API', function() {
   });
 
   // block repeats
-  it('Commmit a change', (done) => {
+  it('Commit a change', (done) => {
     var req = apos.tasks.getReq({locale: 'default-draft'});
 
     async.waterfall([getProductDraft, updateProductDraft, commitUpdate], (err, res) => {
@@ -226,6 +226,55 @@ describe('Workflow API', function() {
       apos.products.find(req).toArray().then(docs => {
         cb(null, docs);
       }).catch(cb);
+    }
+  });
+
+  it('Test revert to live', done => {
+    const req = apos.tasks.getReq({ locale: 'default-draft' });
+
+    async.waterfall([ getProduct, revertToLive, check ], (err, docs) => {
+      assert(!err);
+      assert(docs[0].title === 'new title 2');
+      assert(!docs[0].trash);
+      done();
+    });
+
+    function getProduct (cb) {
+      apos.products.find(req).toObject(cb);
+    }
+
+    function revertToLive (product, cb) {
+      apos.workflow.revertToLive(req, product._id, (err, res) => {
+        assert(!err);
+        cb(err);
+      });
+    }
+
+    function check (cb) {
+      var req = apos.tasks.getReq({locale: 'default-draft'});
+      apos.products.find(req).toArray(cb);
+    }
+  });
+
+  it('1 doc committable after a modification to product, 0 after commit', done => {
+    const req = apos.tasks.getReq({ locale: 'default-draft' });
+    async.waterfall([ getProductDraft, updateProductDraft ], function(err) {
+      assert(!err);
+      apos.workflow.getCommittable(req, {}, function(err, committable) {
+        assert(!err);
+        assert(committable.length === 1);
+        assert(committable[0].title === 'new title 3');
+        done();
+      });
+    });
+
+    function getProductDraft(cb) {
+      apos.products.find(req).toObject(cb);
+    }
+
+    function updateProductDraft(product, cb) {
+      product.title = 'new title 3';
+      apos.products.update(req, product, cb);
     }
   });
 });

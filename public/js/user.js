@@ -387,6 +387,7 @@ apos.define('apostrophe-workflow', {
       });
     };
 
+    // Revert to a specific commit id (which implies a particular doc)
     self.enableRevert = function() {
       apos.ui.link('apos-workflow-revert', null, function($el, id) {
         apos.ui.globalBusy(true);
@@ -405,7 +406,29 @@ apos.define('apostrophe-workflow', {
           }
 
           return apos.notify('Document reverted to commit!');
-          // @@TODO - where do we go now?
+        });
+      });
+    };
+
+    // Revert to what is currently live for the given doc id
+    self.enableRevertToLive = function() {
+      apos.ui.link('apos-workflow-revert-to-live', null, function($el, id) {
+        apos.ui.globalBusy(true);
+        self.api('revert-to-live', { id: id }, function (result) {
+          apos.ui.globalBusy(false);
+          if (result.status && result.status !== 'ok') {
+            return apos.notify('Error reverting document to live:' + result.status);
+          } else if (!result.status) {
+            return apos.notify('Error reverting document to live');
+          }
+
+          if (result.redirect) {
+            window.location.href = result.redirect;
+          } else {
+            apos.emit('change', result.type);
+          }
+
+          return apos.notify('Draft document reverted to current live content.');
         });
       });
     };
