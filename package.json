@@ -1,6 +1,6 @@
 {
   "_from": "apostrophe-workflow",
-  "_id": "apostrophe-workflow@2.14.0",
+  "_id": "apostrophe-workflow@2.15.0",
   "_inBundle": false,
   "_integrity": "sha512-NSOzLPQFBSR+xulY6Y3g131ItvGMidm9FqHMDoWeRQOZB223FFnxkUeEbTuiU0l3xxSeD5FbmaabHTvMkeHRXQ==",
   "_location": "/apostrophe-workflow",
@@ -71,7 +71,7 @@
     "url": "git+https://github.com/punkave/apostrophe-workflow.git"
   },
   "scripts": {
-    "test": "mocha test/test1.js && mocha test/test2.js && mocha test/test3.js && mocha test/testApi.js && eslint ."
+    "test": "mocha && eslint ."
   },
-  "version": "2.14.0"
+  "version": "2.15.0"
 }
