@@ -258,14 +258,9 @@ describe('Workflow API', function() {
 
   it('1 doc committable after a modification to product, 0 after commit', done => {
     const req = apos.tasks.getReq({ locale: 'default-draft' });
-    async.waterfall([ getProductDraft, updateProductDraft ], function(err) {
+    async.waterfall([ getProductDraft, updateProductDraft, _.partial(checkCommittable, 1, 'new title 3'), commit, _.partial(checkCommittable, 0) ], function(err) {
       assert(!err);
-      apos.workflow.getCommittable(req, {}, function(err, committable) {
-        assert(!err);
-        assert(committable.length === 1);
-        assert(committable[0].title === 'new title 3');
-        done();
-      });
+      done();
     });
 
     function getProductDraft(cb) {
@@ -276,5 +271,21 @@ describe('Workflow API', function() {
       product.title = 'new title 3';
       apos.products.update(req, product, cb);
     }
+
+    function commit(product, db) {
+      apos.workflow.commitLatest(req, product._id, cb);
+    }
+
+    function checkCommittable(n, title0) {
+      apos.workflow.getCommittable(req, {}, function(err, committable) {
+        assert(!err);
+        assert(committable.length === n);
+        if ((n > 0) && (title0)) {
+          assert(committable[0].title === title0);
+        }
+        done();
+      });
+    }
+
   });
 });

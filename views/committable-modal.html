@@ -11,7 +11,7 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('All Committable Documents') }}
+  {{ __('Modified Documents') }}
 {%- endblock -%}
 
 {% block instructions %}
@@ -52,8 +52,8 @@
                 {% else %}
                   <a href="#" data-apos-edit-{{ doc.type }}="{{ doc._id }}">{{ __('Edit') }}</a>
                 {% endif %}
-                <a href="#" data-apos-workflow-commit="{{ doc._id }}">{{ __('Commit')</a>
-                <a href="#" data-apos-workflow-revert-to-live="{{ doc._id }}">{{ __('Revert')</a>
+                <a href="#" data-apos-workflow-commit="{{ doc._id }}">{{ __('Commit') }}</a>
+                <a href="#" data-apos-workflow-revert-to-live="{{ doc._id }}">{{ __('Revert') }}</a>
               </td>
             </tr>
           {% endfor %}

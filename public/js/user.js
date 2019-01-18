@@ -13,7 +13,9 @@ apos.define('apostrophe-workflow', {
     self.enableExport();
     self.enableReview();
     self.enableRevert();
+    self.enableRevertToLive();
     self.enableManageModal();
+    self.enableCommittableModal();
     self.enableLocalePickerModal();
     self.enableForceExport();
     self.enableForceExportWidget();
@@ -421,14 +423,17 @@ apos.define('apostrophe-workflow', {
           } else if (!result.status) {
             return apos.notify('Error reverting document to live');
           }
-
+          apos.notify('Draft document reverted to current live content.');
           if (result.redirect) {
-            window.location.href = result.redirect;
+            // Allow time for notification to be sent before
+            // we end the browser world
+            setTimeout(function() {
+              window.location.href = result.redirect;
+            }, 100);
           } else {
             apos.emit('change', result.type);
           }
-
-          return apos.notify('Draft document reverted to current live content.');
+          console.log('notifying');
         });
       });
     };
@@ -578,6 +583,16 @@ apos.define('apostrophe-workflow', {
 
     self.launchManageModal = function() {
       return apos.create(self.__meta.name + '-manage-modal', _.assign({ manager: self }, options));
+    };
+
+    self.enableCommittableModal = function() {
+      apos.adminBar.link(self.__meta.name + '-committable-modal', function() {
+        self.launchCommittableModal();
+      });
+    };
+
+    self.launchCommittableModal = function() {
+      return apos.create(self.__meta.name + '-committable-modal', _.assign({ manager: self }, options));
     };
 
     self.launchCommitModal = function(options, callback) {
