@@ -36,7 +36,7 @@
         </thead>
         <tbody data-list>
           {% for doc in data.committable %}
-            <tr data-apos-workflow-submission="{{ doc._id }}">
+            <tr data-apos-workflow-committable="{{ doc._id }}">
               {% if apos.utils.beginsWith(doc.slug, '/') %}
                 <td><a href="{{ doc._url }}">{{ doc.title or doc.slug }}</a></td>
               {% else %}

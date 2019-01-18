@@ -60,6 +60,11 @@ apos.define('apostrophe-workflow', {
       apos.on('workflowSubmitted', function() {
         self.updateWorkflowControls();
       });
+      apos.on('ready', function() {
+        // Page refreshed, for instance after a change event,
+        // content may no longer be committable
+        self.updateWorkflowControls();
+      });
     };
 
     self.updateWorkflowControls = function() {
@@ -404,7 +409,7 @@ apos.define('apostrophe-workflow', {
           if (result.redirect) {
             window.location.href = result.redirect;
           } else {
-            apos.emit('change', result.type);
+            apos.change(result.type);
           }
 
           return apos.notify('Document reverted to commit!');
@@ -431,9 +436,9 @@ apos.define('apostrophe-workflow', {
               window.location.href = result.redirect;
             }, 100);
           } else {
-            apos.emit('change', result.type);
+            apos.change(result.type);
+            apos.emit('workflowRevertedToLive', id);
           }
-          console.log('notifying');
         });
       });
     };

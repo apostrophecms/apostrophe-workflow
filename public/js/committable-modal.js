@@ -7,8 +7,31 @@ apos.define('apostrophe-workflow-committable-modal', {
   source: 'committable-modal',
 
   construct: function(self, options) {
+
     self.manager = options.manager;
-    // The route already rendered the content with normal links, so there's nothing more to do here,
-    // unless we add pagination
+
+    var superBeforeShow = self.beforeShow;
+    self.beforeShow = function(callback) {
+      apos.on('workflowCommitted', self.removeRows);
+      apos.on('workflowRevertedToLive', self.removeRow);
+      return superBeforeShow(callback);
+    };
+
+    self.afterHide = function() {
+      apos.off('workflowCommitted', self.removeRows);
+      apos.off('workflowRevertedToLive', self.removeRow);
+    };
+
+    self.removeRows = function(ids) {
+      _.each(ids, function(id) {
+        self.removeRow(id);
+      });
+    };
+
+    self.removeRow = function(id) {
+      self.$el.find('[data-apos-workflow-committable="' + id + '"]').remove();
+    };
+
   }
+
 });
