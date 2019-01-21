@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.15.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+Certain frequently accessed, long-running API routes of this module were causing session storage race conditions, with observed consequences such as draft content being received when live content should have been, et cetera. This was fixed by marking those routes as read-only with respect to the session via the `apos.utils.readOnlySession(req)` API. Note that `apostrophe` 2.75.0 (or better) must be used with this version of `apostrophe-workflow`.
+
 ## 2.15.0
 
 Unit tests passing.
