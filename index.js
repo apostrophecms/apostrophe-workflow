@@ -73,6 +73,7 @@ module.exports = {
     self.enableCrossDomainSessionCache();
     self.refineOptimizeKey();
     self.composeApiCalls();
+    self.addWorkflowModifiedMigration();
     return async.series([
       self.enableCollection,
       self.enableFacts,
