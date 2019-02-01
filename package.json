@@ -33,21 +33,21 @@
   "dependencies": {
     "@sailshq/lodash": "^3.10.3",
     "async": "^1.5.2",
-    "bluebird": "^3.5.1",
+    "bluebird": "^3.5.3",
     "deep-get-set": "^1.1.0",
     "eslint-config-apostrophe": "^2.0.2",
     "express-session": "^1.15.6",
     "jsondiffpatch": "^0.2.5",
     "minimatch": "^3.0.4",
-    "qs": "^6.5.2"
+    "qs": "^6.6.0"
   },
   "deprecated": false,
   "description": "Workflow, approvals, localization and internationalization for Apostrophe 2.x",
   "devDependencies": {
-    "apostrophe": "^2.64.0",
+    "apostrophe": "^2.75.1",
     "eslint": "^4.15.0",
     "eslint-config-standard": "^11.0.0-beta.0",
-    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-node": "^5.2.1",
     "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
@@ -73,5 +73,5 @@
   "scripts": {
     "test": "mocha && eslint ."
   },
-  "version": "2.15.1"
+  "version": "2.15.2"
 }
