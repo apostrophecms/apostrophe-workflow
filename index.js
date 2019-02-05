@@ -12,7 +12,8 @@ var modules = [
   'apostrophe-workflow-images',
   'apostrophe-workflow-admin-bar',
   'apostrophe-workflow-tasks',
-  'apostrophe-workflow-assets'
+  'apostrophe-workflow-assets',
+  'apostrophe-workflow-committables'
 ];
 
 // ## Options
