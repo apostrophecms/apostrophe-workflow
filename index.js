@@ -67,6 +67,7 @@ module.exports = {
     self.enableRemoveNumberedParkedPagesTask();
     self.enableResolveJoinIdsTask();
     self.enableHarmonizeWorkflowGuidsByParkedIdTask();
+    self.enableDiffDraftAndLiveTask();
     self.pushAssets();
     self.addToAdminBar();
     self.apos.pages.addAfterContextMenu(self.menu);
