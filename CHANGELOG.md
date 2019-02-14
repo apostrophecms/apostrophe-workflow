@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.15.2
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Suppress loader recursion warnings for `getEditable`, which is not part of normal page rendering.
+These warnings made the console of the server very noisy
+and are not significant in this particular case. When encountered in ordinary page rendering they are
+quite significant because they typically mean joins have not been locked down with projections and
+excessive queries are being made due to recursion.
+
+## 2.15.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+Certain frequently accessed, long-running API routes of this module were causing session storage race conditions, with observed consequences such as draft content being received when live content should have been, et cetera. This was fixed by marking those routes as read-only with respect to the session via the `apos.utils.readOnlySession(req)` API. Note that `apostrophe` 2.75.0 (or better) must be used with this version of `apostrophe-workflow`.
+
 ## 2.15.0
 
 Unit tests passing.
