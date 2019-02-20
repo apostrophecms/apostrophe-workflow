@@ -83,14 +83,15 @@ Start by installing apostrophe-workflow.
 npm install --save apostrophe-workflow
 ```
 
-Then configure the `apostrophe-workflow` module in `app.js` with the rest of your modules. We'll start with a simple configuration just providing workflow:
+Then configure the `apostrophe-workflow` module in `app.js` with the rest of your modules. We'll start with a simple configuration just providing workflow. We will also turn on the very handy "Modified Documents" dialog box by turning on the `apostrophe-workflow-committables` module, which comes bundled inside `apostrophe-workflow`. You do not have to separately install it.
 
 ```
 'apostrophe-workflow': {
   // IMPORTANT: if you follow the examples below,
   // be sure to set this so the templates work
   alias: 'workflow'
-}
+},
+'apostrophe-workflow-committables': {}
 ```
 
 ### Adding `parkedId` to your parked pages
@@ -821,6 +822,14 @@ However, if you need to work directly with MongoDB while respecting a specific l
 **Again, this is often unnecessary.** Code that is already operating on specific docs as specified by `_id` will already touch only one locale, because docs are replicated across locales with different `_id` properties. The localized versions of each doc will have **different `_id` properties, but the same `workflowGuid` property.**
 
 In general, you should use Apostrophe's own methods rather than direct MongoDB access unless you have a compelling reason, such as access to `$set` or `$inc`. See also `setPropertiesAcrossLocales`, below, for a convenient way to access `$set`.
+
+### `workflowModified`: must be set `true` if you make changes subject to workflow
+
+Apostrophe automatically sets `workflowModified: true` on any draft document when it is modified via Apostrophe's `update` or `insert` APIs.
+
+However, if you modify documents directly via MongoDB, you will need to set the `workflowModified` property to `true` yourself.
+
+> If you missed this, and encounter difficulties later because Apostrophe does not invite the user to commit the document, you can refresh the `workflowModified` property of all draft documents by running the `apostrophe-workflow:recompute-modified` command line task. Just bear in mind that you shouldn't have to use this task on a regular basis! It is completely automatic unless (1) you have made direct modifications via MongoDB and (2) you wish the document to become "committable" in that situation.
 
 ### `setPropertiesAcrossLocales`: modifying a document programmatically across locales
 
