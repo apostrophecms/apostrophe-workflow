@@ -30,10 +30,6 @@ describe('Workflow API', function() {
           ]
         },
         'apostrophe-workflow': {
-          settings: {
-            locales: ['default'],
-            defaultLocale: 'default'
-          },
           alias: 'workflow' // for testing only!
         },
         'products': {
@@ -67,7 +63,7 @@ describe('Workflow API', function() {
   });
 
   // block repeats
-  it('Commmit a change', (done) => {
+  it('Commit a change', (done) => {
     var req = apos.tasks.getReq({locale: 'default-draft'});
 
     async.waterfall([getProductDraft, updateProductDraft, commitUpdate], (err, res) => {
@@ -76,27 +72,27 @@ describe('Workflow API', function() {
       done();
     });
 
-    function getProductDraft(cb) {
+    function getProductDraft(callback) {
       apos.products.find(req).toArray().then(docs => {
         assert(docs[0]);
-        return cb(null, docs[0]);
+        return callback(null, docs[0]);
       })
         .catch(e => {
-          return cb(e);
+          return callback(e);
         });
     }
 
-    function updateProductDraft(product, cb) {
+    function updateProductDraft(product, callback) {
       product.title = 'new title';
       apos.products.update(req, product, (err, res) => {
-        return cb(err, res);
+        return callback(err, res);
       });
     }
 
-    function commitUpdate(product, cb) {
+    function commitUpdate(product, callback) {
       apos.workflow.commitLatest(req, product._id, (err, res) => {
         revertId = res;
-        return cb(err, res);
+        return callback(err, res);
       });
     }
   });
@@ -122,26 +118,26 @@ describe('Workflow API', function() {
       done();
     });
 
-    function getProductDraft(cb) {
+    function getProductDraft(callback) {
       apos.products.find(req).toArray().then(docs => {
         assert(docs[0]);
-        return cb(null, docs[0]);
+        return callback(null, docs[0]);
       })
         .catch(e => {
-          return cb(e);
+          return callback(e);
         });
     }
 
-    function updateProductDraft(product, cb) {
+    function updateProductDraft(product, callback) {
       product.title = 'new title 2';
       apos.products.update(req, product, (err, res) => {
-        return cb(err, res);
+        return callback(err, res);
       });
     }
 
-    function commitUpdate(product, cb) {
+    function commitUpdate(product, callback) {
       apos.workflow.commitLatest(req, product._id, (err, res) => {
-        return cb(err, res);
+        return callback(err, res);
       });
     }
     // end block repeats
@@ -168,26 +164,26 @@ describe('Workflow API', function() {
       done();
     });
 
-    function getProductDraft(cb) {
+    function getProductDraft(callback) {
       apos.products.find(req).toArray().then(docs => {
         assert(docs[0]);
-        return cb(null, docs[0]);
+        return callback(null, docs[0]);
       })
         .catch(e => {
-          return cb(e);
+          return callback(e);
         });
     }
 
-    function updateProductDraft(product, cb) {
+    function updateProductDraft(product, callback) {
       delete product.tags;
       apos.products.update(req, product, (err, res) => {
-        return cb(err, res);
+        return callback(err, res);
       });
     }
 
-    function commitUpdate(product, cb) {
+    function commitUpdate(product, callback) {
       apos.workflow.commitLatest(req, product._id, (err, res) => {
-        return cb(err, res);
+        return callback(err, res);
       });
     }
     // end block repeats
@@ -214,18 +210,83 @@ describe('Workflow API', function() {
       done();
     });
 
-    function revert (cb) {
+    function revert (callback) {
       apos.workflow.revert(req, revertId, (err, res) => {
         assert(!err);
-        cb(err);
+        callback(err);
       });
     }
 
-    function check (cb) {
+    function check (callback) {
       var req = apos.tasks.getReq({locale: 'default-draft'});
       apos.products.find(req).toArray().then(docs => {
-        cb(null, docs);
-      }).catch(cb);
+        callback(null, docs);
+      }).catch(callback);
     }
   });
+
+  it('Test revert to live', done => {
+    const req = apos.tasks.getReq({ locale: 'default-draft' });
+
+    async.waterfall([ getProduct, revertToLive, check ], (err, docs) => {
+      assert(!err);
+      assert(docs[0].title === 'new title 2');
+      assert(!docs[0].trash);
+      done();
+    });
+
+    function getProduct (callback) {
+      apos.products.find(req).toObject(callback);
+    }
+
+    function revertToLive (product, callback) {
+      apos.workflow.revertToLive(req, product._id, (err, res) => {
+        assert(!err);
+        callback(err);
+      });
+    }
+
+    function check (callback) {
+      var req = apos.tasks.getReq({locale: 'default-draft'});
+      apos.products.find(req).toArray(callback);
+    }
+  });
+
+  it('1 doc committable after a modification to product, 0 after commit', done => {
+    const req = apos.tasks.getReq({ locale: 'default-draft' });
+    var product;
+    async.series([ getProductDraft, updateProductDraft, _.partial(checkCommittable, 1, 'new title 3'), commit, _.partial(checkCommittable, 0, false) ], function(err) {
+      assert(!err);
+      done();
+    });
+
+    function getProductDraft(callback) {
+      apos.products.find(req).toObject(function(err, _product) {
+        product = _product;
+        return callback(err);
+      });
+    }
+
+    function updateProductDraft(callback) {
+      product.title = 'new title 3';
+      apos.products.update(req, product, callback);
+    }
+
+    function commit(callback) {
+      apos.workflow.commitLatest(req, product._id, callback);
+    }
+
+    function checkCommittable(n, title0, callback) {
+      apos.products.find(req, { workflowModified: true }).toArray(function(err, docs) {
+        assert(!err);
+        assert(docs.length === n);
+        if ((n > 0) && title0) {
+          assert(docs[0].title === title0);
+        }
+        return callback(null);
+      });
+    }
+
+  });
+
 });

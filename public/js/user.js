@@ -13,6 +13,7 @@ apos.define('apostrophe-workflow', {
     self.enableExport();
     self.enableReview();
     self.enableRevert();
+    self.enableRevertToLive();
     self.enableManageModal();
     self.enableLocalePickerModal();
     self.enableForceExport();
@@ -56,6 +57,11 @@ apos.define('apostrophe-workflow', {
         self.updateWorkflowControls();
       });
       apos.on('workflowSubmitted', function() {
+        self.updateWorkflowControls();
+      });
+      apos.on('ready', function() {
+        // Page refreshed, for instance after a change event,
+        // content may no longer be committable
         self.updateWorkflowControls();
       });
     };
@@ -387,6 +393,7 @@ apos.define('apostrophe-workflow', {
       });
     };
 
+    // Revert to a specific commit id (which implies a particular doc)
     self.enableRevert = function() {
       apos.ui.link('apos-workflow-revert', null, function($el, id) {
         apos.ui.globalBusy(true);
@@ -401,11 +408,36 @@ apos.define('apostrophe-workflow', {
           if (result.redirect) {
             window.location.href = result.redirect;
           } else {
-            apos.emit('change', result.type);
+            apos.change(result.type);
           }
 
           return apos.notify('Document reverted to commit!');
-          // @@TODO - where do we go now?
+        });
+      });
+    };
+
+    // Revert to what is currently live for the given doc id
+    self.enableRevertToLive = function() {
+      apos.ui.link('apos-workflow-revert-to-live', null, function($el, id) {
+        apos.ui.globalBusy(true);
+        self.api('revert-to-live', { id: id }, function (result) {
+          apos.ui.globalBusy(false);
+          if (result.status && result.status !== 'ok') {
+            return apos.notify('Error reverting document to live:' + result.status);
+          } else if (!result.status) {
+            return apos.notify('Error reverting document to live');
+          }
+          apos.notify('Draft document reverted to current live content.');
+          if (result.redirect) {
+            // Allow time for notification to be sent before
+            // we end the browser world
+            setTimeout(function() {
+              window.location.href = result.redirect;
+            }, 100);
+          } else {
+            apos.change(result.type);
+            apos.emit('workflowRevertedToLive', id);
+          }
         });
       });
     };

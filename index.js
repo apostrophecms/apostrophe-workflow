@@ -12,7 +12,8 @@ var modules = [
   'apostrophe-workflow-images',
   'apostrophe-workflow-admin-bar',
   'apostrophe-workflow-tasks',
-  'apostrophe-workflow-assets'
+  'apostrophe-workflow-assets',
+  'apostrophe-workflow-committables'
 ];
 
 // ## Options
@@ -66,6 +67,7 @@ module.exports = {
     self.enableRemoveNumberedParkedPagesTask();
     self.enableResolveJoinIdsTask();
     self.enableHarmonizeWorkflowGuidsByParkedIdTask();
+    self.enableDiffDraftAndLiveTask();
     self.pushAssets();
     self.addToAdminBar();
     self.apos.pages.addAfterContextMenu(self.menu);
@@ -73,6 +75,7 @@ module.exports = {
     self.enableCrossDomainSessionCache();
     self.refineOptimizeKey();
     self.composeApiCalls();
+    self.addWorkflowModifiedMigration();
     return async.series([
       self.enableCollection,
       self.enableFacts,
