@@ -15,7 +15,6 @@ apos.define('apostrophe-workflow', {
     self.enableRevert();
     self.enableRevertToLive();
     self.enableManageModal();
-    self.enableCommittableModal();
     self.enableLocalePickerModal();
     self.enableForceExport();
     self.enableForceExportWidget();
@@ -588,16 +587,6 @@ apos.define('apostrophe-workflow', {
 
     self.launchManageModal = function() {
       return apos.create(self.__meta.name + '-manage-modal', _.assign({ manager: self }, options));
-    };
-
-    self.enableCommittableModal = function() {
-      apos.adminBar.link(self.__meta.name + '-committable-modal', function() {
-        self.launchCommittableModal();
-      });
-    };
-
-    self.launchCommittableModal = function() {
-      return apos.create(self.__meta.name + '-committable-modal', _.assign({ manager: self }, options));
     };
 
     self.launchCommitModal = function(options, callback) {
