@@ -1,5 +1,59 @@
 # Changelog
 
+## 2.16.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+### Feature addition: the "Modified Documents" dialog box, and related changes
+
+> Many thanks to Michelin for making these improvements possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+
+* Added a "Modified Documents" dialog box. This new dialog box provides an interface similar to "Manage Pieces," allowing you to browse all of the documents that are considered modified and could potentially be committed. In particular, clicking the "select everything" box and then selecting a batch operation like "commit" or "revert" is very useful here. You can also filter by document type, filter by whether documents were submitted for review, etc.
+
+By default this dialog box is not enabled, but we recommend that you enable it by configuring the `apostrophe-workflow-modified-documents` module in app.js. You do not need to pass any options, just turn it on, like this:
+
+```javascript
+// in app.js
+
+require('apostrophe')({
+  'modules': {
+    'apostrophe-workflow': { ... various config here },
+    'apostrophe-workflow-modified-documents': {}
+  }
+});
+```
+
+You do not need to separately install it, you just need to turn it on in `app.js`.
+
+If you have grouped your admin bar, you'll want to add it to your "Workflow" group as `apostrophe-workflow-modified-documents`.
+
+With this module in place, the "Submitted" dialog box is a bit redundant. If you wish, you can disable it by setting the `submittedModal` option of `apostrophe-workflow` to `false`.
+
+* This release includes a database migration. If that migration is not run, you will not see the "Commit" button on any pages until it is run.
+
+> You should *always* run the `apostrophe-migrations:migrate` command line task after upgrading apostroules phe modin your dev environment. In production, running that task should always be part of your deployment process, and if you are using our Stagecoach deployment scripts then it already is.
+
+You can run the migration task like this:
+```
+node app apostrophe-migrations:migrate
+```
+
+You only need to run this task right after upgrades and as part of deployments. You can also [write your own migrations](https://apostrophecms.org/docs/modules/apostrophe-migrations/index.html#add).
+
+* Major performance improvements to workflow. These optimizations, and the modified documents dialog box feature, are the reasons why the migration is needed.
+
+* The `exportAfterCommit` option, which can be set to `false` to disable the "Export" modal that otherwise appears after each commit, can now be set via [apostrophe-override-options](https://github.com/apostrophecms/apostrophe-override-options).
+
+* The mechanism that adds missing locales for documents as needed now has a final failsafe that will operate correctly if all other heuristics fail to spot a missing document.
+
+* The mechanism that determines whether the "Commit" button should appear produces far fewer false positives.
+
+### Additional updates
+
+* 404 handling for the "switch locale" mechanism has been improved. Rather than a custom log message the user is now redirected to a reasonable guess (based on the slug) in the desired locale, typically leading to a normal 404 page that is more helpful to the user. Thanks to Fredrik Ekelund.
+
 ## 2.15.2
 
 Unit tests passing.
