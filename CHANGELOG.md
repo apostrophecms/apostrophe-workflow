@@ -33,7 +33,7 @@ With this module in place, the "Submitted" dialog box is a bit redundant. If you
 
 * This release includes a database migration. If that migration is not run, you will not see the "Commit" button on any pages until it is run.
 
-> You should *always* run the `apostrophe-migrations:migrate` command line task after upgrading apostroules phe modin your dev environment. In production, running that task should always be part of your deployment process, and if you are using our Stagecoach deployment scripts then it already is.
+> You should *always* run the `apostrophe-migrations:migrate` command line task after upgrading apostrophe modules in your dev environment. In production, running that task should always be part of your deployment process, and if you are using our Stagecoach deployment scripts then it already is.
 
 You can run the migration task like this:
 ```
