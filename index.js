@@ -13,7 +13,7 @@ var modules = [
   'apostrophe-workflow-admin-bar',
   'apostrophe-workflow-tasks',
   'apostrophe-workflow-assets',
-  'apostrophe-workflow-committables'
+  'apostrophe-workflow-modified-documents'
 ];
 
 // ## Options

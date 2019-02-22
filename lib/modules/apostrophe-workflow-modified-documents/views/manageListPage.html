@@ -9,7 +9,7 @@
     {% endif %}
     <td>{{ piece.type }}</td>
     <td>{{ piece.updatedAt | date('YYYY-MM-DD') }}</td>
-    <td>{{ piece._lastEditor }}</td>
+    <td>{{ piece.workflowLastEditor }}</td>
     <td>{% if piece.workflowSubmitted %}{{ __('Yes') }}{% else %}{{ __('No') }}{% endif %}</td>
     <td>
       {% if apos.utils.beginsWith(piece.slug, '/') %}
