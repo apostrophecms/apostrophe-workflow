@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.16.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Bug fix: don't crash if a document is updated during application startup, after `apostrophe-docs` is initialized but before `apostrophe-workflow`. Note that for best results with workflow it is not recommended to write documents to the database prior to the `apostrophe:modulesReady` event unless the document types are exempt from workflow.
+
 ## 2.16.0
 
 Unit tests passing.
