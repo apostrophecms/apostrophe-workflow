@@ -761,11 +761,11 @@ If you do not supply an implementation, a message indicating that no preview is 
 
 ### Command line tasks and workflow
 
-#### Using the `-workflow-locale` option
+#### Using the `--workflow-locale` option
 
 By default, command line tasks that use Apostrophe's `find`, `insert` and `update` methods see and modify the content of the default locale (not the draft version of it).
 
-You can change this by adding the `-workflow-locale` option to your command line:
+You can change this by adding the `--workflow-locale` option to your command line:
 
 ```
 node app my-module:my-task --workflow-locale=en

@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.16.2
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Setting `submittedModal` to `false` now works as expected. Thanks to Fredrik Ekelund for the fix.
+* As the documentation has always stated, if a command line task is invoked without the `--workflow-locale` option, the default locale is assumed. Beginning with this release, `req.locale` is always populated accordingly, eliminating the risk that code will not explicitly check for a missing `req.locale` setting when workflow is known to be present.
+
 ## 2.16.1
 
 Unit tests passing.
