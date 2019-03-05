@@ -274,7 +274,7 @@ This allows for editors fluent in the other locale to complete any necessary tra
 
 #### If you find this option appears too frequently
 
-Do you export rarely? If so, you may want to set the `exportAfterCommit` option of the `apostrophe-workflow` module to `false`.
+Do you export rarely? If so, you may want to set the `exportAfterCommit` option of the `apostrophe-workflow` module to `false`, or set `disableExportAfterCommit` to `true`. The latter is useful if you are using the `apostrophe-override-options` module to creaqte an editable boolean field for this purpose.
 
 If you do so, the "export" dialog box will not appear right after every commit. Instead the user must choose to access it. The option can be found on the "workflow" dropdown menu, accessed via "Page Settings" or via the editing dialog box for any piece type, including "global."
 
