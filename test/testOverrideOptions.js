@@ -92,7 +92,7 @@ describe('Override Options', function() {
     });
   });
 
-  it('verify simulated admin login and on all requests', () => {
+  it('verify simulated admin login and that "exportAfterCommit":false comes through', () => {
     return request('http://localhost:7900').then((html) => {
       assert(html.match(/logout/));
       assert(html.match(/"exportAfterCommit":false/));
