@@ -1,6 +1,6 @@
 var assert = require('assert');
 
-describe('Workflow API', function() {
+describe('Resolve Relationships', function() {
   this.timeout(5000);
   var apos;
 

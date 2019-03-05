@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.17.0
+
+Unit tests passing.
+
+* Added the `disableExportAfterCommit` option, for compatibility with how boolean editable
+fields work in the `apostrophe-override-options` module.
+* Unit test coverage to verify that the new support for adding default values from the schema
+for new fields of the global doc does not break in the presence of workflow.
+
 ## 2.16.2
 
 Unit tests passing.

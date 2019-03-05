@@ -40,12 +40,14 @@
     "json-diff": "^0.5.3",
     "jsondiffpatch": "^0.2.5",
     "minimatch": "^3.0.4",
-    "qs": "^6.6.0"
+    "qs": "^6.6.0",
+    "request-promise": "^4.2.4"
   },
   "deprecated": false,
   "description": "Workflow, approvals, localization and internationalization for Apostrophe 2.x",
   "devDependencies": {
     "apostrophe": "^2.75.1",
+    "apostrophe-override-options": "^2.2.0",
     "eslint": "^4.15.0",
     "eslint-config-standard": "^11.0.0-beta.0",
     "eslint-plugin-import": "^2.16.0",
