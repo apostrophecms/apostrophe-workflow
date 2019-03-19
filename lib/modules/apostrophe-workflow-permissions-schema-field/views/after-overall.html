@@ -5,24 +5,26 @@ the draft content but cannot commit changes to the live site on their own. Some
 content types may be exempt from workflow.</p>
 
 {%- import "apostrophe-workflow:locale-tree.html" as localeTree -%}
-{{ localeTree.tree(
-  field.name + 'Locales', [
-  {
-    type: 'select',
-    choices: [
-      {
-        label: 'None',
-        value: ''
-      },
-      {
-        label: 'Draft Only',
-        value: 'edit'
-      },
-      {
-        label: 'Can Commit',
-        value: 'commit'
-      }
-    ]
-  } ],
-  field.nestedLocales)
-}}
+<div class="apos-workflow-permissions-locale-tree">
+  {{ localeTree.tree(
+    field.name + 'Locales', [
+    {
+      type: 'select',
+      choices: [
+        {
+          label: 'None',
+          value: ''
+        },
+        {
+          label: 'Draft Only',
+          value: 'edit'
+        },
+        {
+          label: 'Can Commit',
+          value: 'commit'
+        }
+      ]
+    } ],
+    field.nestedLocales)
+  }}
+</div>
