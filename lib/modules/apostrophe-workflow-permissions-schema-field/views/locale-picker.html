@@ -1,13 +1,12 @@
 <h4>Locales</h4>
-<p>The permissions you grant will apply only to the locales for which you select
+<p>The permissions you grant below will apply only to the locales for which you select
 "Draft Only" or "Can Commit" here. If you select "Draft Only," users can edit
-the draft content but cannot commit changes to the live site on their own. Some
-content types may be exempt from workflow.</p>
+the draft content but cannot commit changes to the live site on their own.</p>
 
 {%- import "apostrophe-workflow:locale-tree.html" as localeTree -%}
 <div class="apos-workflow-permissions-locale-tree">
   {{ localeTree.tree(
-    field.name + 'Locales', [
+    data.field.name + 'Locales', [
     {
       type: 'select',
       choices: [
@@ -25,6 +24,6 @@ content types may be exempt from workflow.</p>
         }
       ]
     } ],
-    field.nestedLocales)
+    data.field.nestedLocales)
   }}
 </div>
