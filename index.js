@@ -76,6 +76,7 @@ module.exports = {
     self.refineOptimizeKey();
     self.composeApiCalls();
     self.addWorkflowModifiedMigration();
+    self.addWorkflowLastCommittedMigration();
     return async.series([
       self.enableCollection,
       self.enableFacts,
