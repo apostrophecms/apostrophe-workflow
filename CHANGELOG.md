@@ -1,8 +1,20 @@
 # Changelog
 
+## 2.18.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Added a sortable "Last Commit" column to the "Manage Pieces" view. Click once to display the most recently committed pieces first. This is helpful when many users are committing and you don't have time for a "submit" process but still want to keep tabs on what is happening.
+
+Many thanks to Michelin for making this feature possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+
 ## 2.17.0
 
 Unit tests passing.
+
+Regression tests passing.
 
 * Added the `disableExportAfterCommit` option, for compatibility with how boolean editable
 fields work in the `apostrophe-override-options` module.
