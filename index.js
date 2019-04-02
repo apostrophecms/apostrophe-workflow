@@ -1,4 +1,5 @@
 var async = require('async');
+var Promise = require('bluebird');
 
 var modules = [
   'apostrophe-workflow-areas',
@@ -77,10 +78,12 @@ module.exports = {
     self.composeApiCalls();
     self.addWorkflowModifiedMigration();
     self.addWorkflowLastCommittedMigration();
+    self.on('apostrophe-pages:beforeParkAll', 'updateHistoricalPrefixesPromisified', function() {
+      return Promise.promisify(self.updateHistoricalPrefixes)();
+    });
     return async.series([
       self.enableCollection,
-      self.enableFacts,
-      self.updateHistoricalPrefixes
+      self.enableFacts
     ], callback);
   },
 

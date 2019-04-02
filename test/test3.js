@@ -214,7 +214,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
       var usEn = _.find(docs, { workflowLocale: 'us-en' });
       assert(usEn);
       assert(usEn.origin === 'us');
-      assert(usEn.slug === '/us-en/test');
+      assert.equal(usEn.slug, '/us-en/test');
       var usFr = _.find(docs, { workflowLocale: 'us-fr' });
       assert(usFr);
       assert(usFr.origin === 'us');
@@ -309,7 +309,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
       var usEn = _.find(docs, { workflowLocale: 'us-en' });
       assert(usEn);
       assert(usEn.origin === 'us');
-      assert(usEn.slug === '/us-en/test');
+      assert.equal(usEn.slug, '/us-en/test');
       var usFr = _.find(docs, { workflowLocale: 'us-fr' });
       assert(usFr);
       assert(usFr.origin === 'us');
@@ -393,7 +393,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
       var usEn = _.find(docs, { workflowLocale: 'us-en' });
       assert(usEn);
       assert(usEn.origin === 'us');
-      assert(usEn.slug === '/test');
+      assert.equal(usEn.slug, '/test');
       var usFr = _.find(docs, { workflowLocale: 'us-fr' });
       assert(usFr);
       assert(usFr.origin === 'us');
