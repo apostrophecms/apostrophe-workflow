@@ -46,7 +46,7 @@
   "deprecated": false,
   "description": "Workflow, approvals, localization and internationalization for Apostrophe 2.x",
   "devDependencies": {
-    "apostrophe": "^2.75.1",
+    "apostrophe": "^2.86.0",
     "apostrophe-override-options": "^2.2.0",
     "eslint": "^4.15.0",
     "eslint-config-standard": "^11.0.0-beta.0",

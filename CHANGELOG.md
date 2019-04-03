@@ -11,6 +11,8 @@ Regression tests passing.
 * The "Last Edited" column can also be sorted.
 * Requires apostrophe 2.86.0.
 
+Thanks to Michelin for making these features possible through [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+
 ## 2.18.0
 
 Unit tests passing.
