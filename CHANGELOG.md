@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.19.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* The "Modified Documents" dialog box has been rebranded as the "Manage Workflow" dialog box, and now includes a "Modified" filter. Initially you see *all* documents subject to workflow; you can pick "Yes" from the "Modified" dropdown to see only those that need to be committed.
+* The "Manage Workflow" dialog box now has a "Last Commit" column, which is sortable (click the column heading). This is very handy to find recently committed documents.
+* The "Last Edited" column can also be sorted.
+
 ## 2.18.0
 
 Unit tests passing.

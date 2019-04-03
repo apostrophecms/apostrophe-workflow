@@ -8,9 +8,9 @@
       <td><a href="#" data-apos-edit-{{ piece.type }}="{{ piece._id }}">{{ piece.title or piece.slug }}</a></td>
     {% endif %}
     <td>{{ piece.type }}</td>
-    <td>{{ piece.updatedAt | date('YYYY-MM-DD') }}</td>
-    <td>{{ piece.workflowLastEditor }}</td>
+    <td>{{ piece.updatedAt | date('YYYY-MM-DD') }}<br />{{ piece.workflowLastEditor }}</td>
     <td>{% if piece.workflowSubmitted %}{{ __('Yes') }}{% else %}{{ __('No') }}{% endif %}</td>
+    <td>{{ piece.workflowLastCommitted.at | date('YYYY-MM-DD') }}<br />{{ piece.workflowLastCommitted.user.title }}</td>
     <td>
       {% if apos.utils.beginsWith(piece.slug, '/') %}
         <a href="{{ piece._url }}">{{ __('Edit') }}</a>

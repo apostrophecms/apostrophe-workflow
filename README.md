@@ -83,7 +83,7 @@ Start by installing apostrophe-workflow.
 npm install --save apostrophe-workflow
 ```
 
-Then configure the `apostrophe-workflow` module in `app.js` with the rest of your modules. We'll start with a simple configuration just providing workflow. We will also turn on the very handy "Modified Documents" dialog box by turning on the `apostrophe-workflow-modified-documents` module, which comes bundled inside `apostrophe-workflow`. You do not have to separately install it.
+Then configure the `apostrophe-workflow` module in `app.js` with the rest of your modules. We'll start with a simple configuration just providing workflow. We will also turn on the very handy "Manage Workflow" dialog box by turning on the `apostrophe-workflow-modified-documents` module, which comes bundled inside `apostrophe-workflow`. You do not have to separately install it.
 
 ```
 'apostrophe-workflow': {
@@ -138,6 +138,8 @@ If work is submitted that you have permission to edit, you can view a list of th
 ### "Why am I asked to commit so many things?"
 
 When you click "Commit" on the page, all of the documents that make up what you see on the page need to be committed in order to go live on the site. That includes the images in a slideshow, the blog posts in a blog widget, and so on. It may seem like a lot of work the first time. Just remember that you won't be asked to commit them again unless their drafts have been updated.
+
+> You can commit documents in bulk, too. The easiest way is via the "Manage Workflow" dialog box, accessed via the "Manage" option on the "Workflow" dropdown menu. If you don't see it, switch to draft mode first. If you still don't see it, make sure you enabled the `apostrophe-workflow-modified-documents` module as noted above in the installation instructions. Once you have access to this dialog box, you can use the "Select All" checkbox and the "Batch Commit" operation to expedite things.
 
 ### Workflow for pieces
 
