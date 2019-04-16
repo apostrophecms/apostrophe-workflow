@@ -81,6 +81,7 @@ module.exports = {
     self.on('apostrophe-pages:beforeParkAll', 'updateHistoricalPrefixesPromisified', function() {
       return Promise.promisify(self.updateHistoricalPrefixes)();
     });
+    self.addRoutes();
     return async.series([
       self.enableCollection,
       self.enableFacts
