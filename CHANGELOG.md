@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.20.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+Added the `replicateAcrossLocales: false` option. When this option is explicitly set `false`, the workflow module does not immediately replicate all documents across all locales. The user can still make a document available in a new locale in the following ways: Export (after commit), Force Export, Force Export of a Single Widget (if the doc is not in the locale at all yet, the entire doc exports), Switch Locale (via the locale switching UI for logged-in editors).
+
+The only difference website editors are likely to notice is that a document that doesn't exist in the locale yet cannot be found by looking under "Trash" in the locale. Instead it must be exported from a locale where it does exist.
+
+Although it is not the default for backwards compatibility, this new approach is preferred because:
+
+* It removes any database size penalty or performance penalty for scenarios where there are many locales, and a large percentage of documents are only of interest in one locale, or a few locales.
+* It removes clutter from the "trash" view of the locales where a significant percentage of docs on the site are irrelevant.
+
+When adopting this new option for an existing site, currently there is no official migration strategy for removing existing docs that are considered "irrelevant" in certain locales. It is not always possible to distinguish a document in the trash due to never having been relevant to the locale from a document that was intentionally placed there. If you wish you may remove them from the mongodb database according to your own preference and practices.
+
 ## 2.19.0
 
 Unit tests passing.
