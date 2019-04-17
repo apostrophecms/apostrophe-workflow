@@ -1,6 +1,5 @@
 let assert = require('assert');
 let _ = require('@sailshq/lodash');
-let Promise = require('bluebird');
 
 describe('Workflow with replicateAcrossLocales set to false', function() {
 
@@ -100,7 +99,7 @@ describe('Workflow with replicateAcrossLocales set to false', function() {
       assert(subpage);
       assert(subpage.slug === '/about');
       assert(subpage.workflowGuid);
-      return apos.docs.db.find({ workflowGuid: subpage.workflowGuid }).toArray(); 
+      return apos.docs.db.find({ workflowGuid: subpage.workflowGuid }).toArray();
     }).then(function(peers) {
       assert(peers.length === 2);
       assert(peers.find(function(peer) {
