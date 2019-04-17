@@ -27,7 +27,9 @@
       {{ __('That document is not currently available for editing in the %s locale.', data.locale) }}
     </p>
     <p>
-      {% if (data.status == 'inTrash') %}
+      {% if (data.status == 'notfound') %}
+        {{ __('That document does not exist yet in the %s locale. If you click "Activate," the current locale\'s content will be exported to it, and it will become available to edit as a draft.', data.locale) }}
+      {% elseif (data.status == 'inTrash') %}
         {{ __('It does look like that document has been edited in that locale in the past,
         but it is currently in the trash. If you click "Activate," it will be removed
         from the trash.') }}
