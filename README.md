@@ -69,6 +69,7 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
   * [Writing safe `afterInsert` and `docAfterInsert` handlers, etc.](#user-content-writing-safe-afterinsert-and-docafterinsert-handlers-etc)
     + [Recognizing inserts due to localization](#user-content-recognizing-inserts-due-to-localization)
     + [Always finish the job before continuing](#user-content-always-finish-the-job-before-continuing)
+  * [Avoiding Express sessions for anonymous site visitors](#avoiding-express-sessions-for-anonymous-site-visitors)
 - [Technical approach](#user-content-technical-approach)
   * [Use of jsondiffpatch](#user-content-use-of-jsondiffpatch)
   * [Patching and exporting of widgets](#user-content-patching-and-exporting-of-widgets)
@@ -910,6 +911,30 @@ If you are writing custom code that includes `afterInsert` or `afterUpdate` meth
 If you do not follow this rule when inserting a new doc, the workflow module may encounter a race condition when adding corresponding docs for other locales. In recent versions of `apostrophe-workflow`, this will result in a unique index error. In older versions it may result in duplicate docs for the same `workflowGuid + workflowLocale` combination. Either way: a bad thing.
 
 For best results, **all** implementations of Apostrophe callbacks should wait to complete their own work before invoking the callback. It produces the most predictable result. However, you can bend this rule if you are not updating the doc itself in the database.
+
+#### Avoiding Express sessions for anonymous site visitors
+
+By default, ApostropheCMS will require session storage for all site visitors, even anonymous, logged-out visitors. Of course this has a performance impact.
+
+It can be avoided by configuring the `apostrophe-express` core module as follows:
+
+```javascript
+// in app.js
+modules: {
+  'apostrophe-express': {
+    csrf: {
+      disableAnonSession: true
+    }
+  }
+}
+```
+
+If you choose to do this, there is one consequence for workflow: **locale switching will not work unless
+either (a) you have fully distinguished all of your locales with URL prefixes and domains, or
+(b) the user is logged in.** Since it is always a best SEO practice to always fully distinguish locales
+in this way, you shouldn't have any problems in production with this setting. Just remember that in
+early development you may not want to enable it unless you have already set up URL prefixes
+for all locales.
 
 ## Technical approach
 
