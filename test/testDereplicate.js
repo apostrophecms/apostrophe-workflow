@@ -88,11 +88,6 @@ describe('Workflow dereplicate task', function() {
     return apos.tasks.invoke('apostrophe-workflow:dereplicate', [], {});
   });
 
-  it('dump slugs', function() {
-    return apos.docs.db.find({}, { slug: 1, workflowLocale: 1, workflowGuid: 1, trash: true }).toArray().then(function(docs) {
-    });
-  });
-
   it('newly inserted subpage is no longer replicated to extra locales', function() {
     return apos.docs.db.findOne({ slug: '/about' }).then(function(subpage) {
       assert(subpage);
