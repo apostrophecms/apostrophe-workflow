@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.21.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Fixed bugs in the "force export" logic for individual widgets, introduced in 2.20.0.
+* `apostrophe-workflow:dereplicate` task. This task makes sense to run only once, when transitioning to the new `replicateAcrossLocales: false` option.
+* If `apostrophe-express.csrf.disableAnonSession` is set, do not store the current locale in the session. Note that this means all locales must be distinguished by hostname, prefix or a combination of the two. If this is not yet the case in your configuration, you should fix that in any case, because for SEO purposes the same URL should never yield two different pages. 
+
 ## 2.20.0
 
 Unit tests passing.

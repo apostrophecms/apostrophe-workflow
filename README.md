@@ -5,6 +5,7 @@ The `apostrophe-workflow` module adds powerful workflow and localization capabil
 We'll begin with the steps needed simply to add workflow to your project. Then we'll examine the changes needed for localization (also known as i18n or internationalization).
 
 - [Before getting started](#user-content-before-getting-started)
+  * [Turning off automatic replication across locales](#turning-off-automatic-replication-across-locales)
   * [Adding `parkedId` to your parked pages](#user-content-adding-parkedid-to-your-parked-pages)
   * [Adding workflow to your database](#user-content-adding-workflow-to-your-database)
 - [Using the workflow feature](#user-content-using-the-workflow-feature)
@@ -90,10 +91,23 @@ Then configure the `apostrophe-workflow` module in `app.js` with the rest of you
 'apostrophe-workflow': {
   // IMPORTANT: if you follow the examples below,
   // be sure to set this so the templates work
-  alias: 'workflow'
+  alias: 'workflow',
+  // Recommended to save database space. You can still
+  // export explicitly between locales
+  replicateAcrossLocales: true
 },
 'apostrophe-workflow-modified-documents': {}
 ```
+
+### Turning off automatic replication across locales
+
+For historical reasons, in the default configuration, documents automatically replicate between
+locales (languages), starting out in the trash in other locales until they are made active there.
+
+Our own clients have found this wastes a lot of database space. So, set `replicateAcrossLocales: false`
+as shown above. Users can still export documents between locales as you'll see later on.
+
+> Did you already start a large project with replicated documents? You can use the `apostrophe-workflow:dereplicate` command line task to remove documents from all other locales if they are outside the trash in only one locale. We recommend backing up your database first.
 
 ### Adding `parkedId` to your parked pages
 
@@ -899,6 +913,8 @@ callback);
 #### Recognizing inserts due to localization
 
 When a document is "born" in one locale, it is immediately replicated to all others, although it will initially be in the trash in many of them.
+
+> If the `replicateAcrossLocales` option is set to `false`, this does not occur. However documents are always replicated at least between the draft and live versions of the same locale.
 
 In some cases, the work you do in your `beforeInsert` handlers, etc. should not be done in this situation, for instance because you are inserting many repetitions of an event, and that will already happen when the original document is created in the first locale.
 
