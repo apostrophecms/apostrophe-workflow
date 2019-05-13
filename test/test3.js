@@ -203,202 +203,202 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
     });
   });
 
-  // it('new locale appears, existing locales have updated prefixes', function() {
-  //   return apos2.docs.db.findWithProjection({ title: 'test' }).toArray().then(function(docs) {
-  //     assert(docs);
-  //     assert(docs.length === 12);
-  //     var fr = _.find(docs, { workflowLocale: 'fr' });
-  //     assert(fr);
-  //     assert(fr.origin === 'default');
-  //     assert(fr.slug === '/test');
-  //     var usEn = _.find(docs, { workflowLocale: 'us-en' });
-  //     assert(usEn);
-  //     assert(usEn.origin === 'us');
-  //     assert.equal(usEn.slug, '/us-en/test');
-  //     var usFr = _.find(docs, { workflowLocale: 'us-fr' });
-  //     assert(usFr);
-  //     assert(usFr.origin === 'us');
-  //     assert(usFr.slug === '/us-fr/test');
-  //   });
-  // });
+  it('new locale appears, existing locales have updated prefixes', function() {
+    return apos2.docs.db.findWithProjection({ title: 'test' }).toArray().then(function(docs) {
+      assert(docs);
+      assert(docs.length === 12);
+      var fr = _.find(docs, { workflowLocale: 'fr' });
+      assert(fr);
+      assert(fr.origin === 'default');
+      assert(fr.slug === '/test');
+      var usEn = _.find(docs, { workflowLocale: 'us-en' });
+      assert(usEn);
+      assert(usEn.origin === 'us');
+      assert.equal(usEn.slug, '/us-en/test');
+      var usFr = _.find(docs, { workflowLocale: 'us-fr' });
+      assert(usFr);
+      assert(usFr.origin === 'us');
+      assert(usFr.slug === '/us-fr/test');
+    });
+  });
 
-  // it('can spin up third instance where a prefix is removed', function(done) {
-  //   apos3 = require('apostrophe')({
-  //     testModule: true,
+  it('can spin up third instance where a prefix is removed', function(done) {
+    apos3 = require('apostrophe')({
+      testModule: true,
 
-  //     modules: {
-  //       'apostrophe-express': {
-  //         port: 7998
-  //       },
-  //       'apostrophe-pages': {
-  //         park: [],
-  //         types: [
-  //           {
-  //             name: 'home',
-  //             label: 'Home'
-  //           },
-  //           {
-  //             name: 'testPage',
-  //             label: 'Test Page'
-  //           }
-  //         ]
-  //       },
-  //       'apostrophe-workflow': {
-  //         prefixes: {
-  //           // Even private locales must be distinguishable by hostname and/or prefix
-  //           'default': '/default',
-  //           'us': '/us',
-  //           'us-en': '/us-en',
-  //           'us-es': '/us-es'
-  //           // us-fr removed
-  //           // We don't need prefixes for plain fr because
-  //           // that hostname is not shared with other
-  //           // locales
-  //         },
-  //         locales: [
-  //           {
-  //             name: 'default',
-  //             label: 'Default',
-  //             private: true,
-  //             children: [
-  //               {
-  //                 name: 'fr'
-  //               },
-  //               {
-  //                 name: 'us',
-  //                 private: true,
-  //                 children: [
-  //                   {
-  //                     name: 'us-en'
-  //                   },
-  //                   {
-  //                     name: 'us-es'
-  //                   },
-  //                   {
-  //                     name: 'us-fr'
-  //                   }
-  //                 ]
-  //               }
-  //             ]
-  //           }
-  //         ],
-  //         defaultLocale: 'default'
-  //       }
-  //     },
-  //     afterInit: function(callback) {
-  //       assert(apos3.modules['apostrophe-workflow']);
-  //       // Should NOT have an alias!
-  //       assert(!apos3.workflow);
-  //       return callback(null);
-  //     },
-  //     afterListen: function(err) {
-  //       assert(!err);
-  //       done();
-  //     }
-  //   });
-  // });
+      modules: {
+        'apostrophe-express': {
+          port: 7998
+        },
+        'apostrophe-pages': {
+          park: [],
+          types: [
+            {
+              name: 'home',
+              label: 'Home'
+            },
+            {
+              name: 'testPage',
+              label: 'Test Page'
+            }
+          ]
+        },
+        'apostrophe-workflow': {
+          prefixes: {
+            // Even private locales must be distinguishable by hostname and/or prefix
+            'default': '/default',
+            'us': '/us',
+            'us-en': '/us-en',
+            'us-es': '/us-es'
+            // us-fr removed
+            // We don't need prefixes for plain fr because
+            // that hostname is not shared with other
+            // locales
+          },
+          locales: [
+            {
+              name: 'default',
+              label: 'Default',
+              private: true,
+              children: [
+                {
+                  name: 'fr'
+                },
+                {
+                  name: 'us',
+                  private: true,
+                  children: [
+                    {
+                      name: 'us-en'
+                    },
+                    {
+                      name: 'us-es'
+                    },
+                    {
+                      name: 'us-fr'
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          defaultLocale: 'default'
+        }
+      },
+      afterInit: function(callback) {
+        assert(apos3.modules['apostrophe-workflow']);
+        // Should NOT have an alias!
+        assert(!apos3.workflow);
+        return callback(null);
+      },
+      afterListen: function(err) {
+        assert(!err);
+        done();
+      }
+    });
+  });
 
-  // it('prefix removed', function() {
-  //   return apos3.docs.db.findWithProjection({ title: 'test' }).toArray().then(function(docs) {
-  //     assert(docs);
-  //     assert(docs.length === 12);
-  //     var fr = _.find(docs, { workflowLocale: 'fr' });
-  //     assert(fr);
-  //     assert(fr.origin === 'default');
-  //     assert(fr.slug === '/test');
-  //     var usEn = _.find(docs, { workflowLocale: 'us-en' });
-  //     assert(usEn);
-  //     assert(usEn.origin === 'us');
-  //     assert.equal(usEn.slug, '/us-en/test');
-  //     var usFr = _.find(docs, { workflowLocale: 'us-fr' });
-  //     assert(usFr);
-  //     assert(usFr.origin === 'us');
-  //     assert(usFr.slug === '/test');
-  //   });
-  // });
+  it('prefix removed', function() {
+    return apos3.docs.db.findWithProjection({ title: 'test' }).toArray().then(function(docs) {
+      assert(docs);
+      assert(docs.length === 12);
+      var fr = _.find(docs, { workflowLocale: 'fr' });
+      assert(fr);
+      assert(fr.origin === 'default');
+      assert(fr.slug === '/test');
+      var usEn = _.find(docs, { workflowLocale: 'us-en' });
+      assert(usEn);
+      assert(usEn.origin === 'us');
+      assert.equal(usEn.slug, '/us-en/test');
+      var usFr = _.find(docs, { workflowLocale: 'us-fr' });
+      assert(usFr);
+      assert(usFr.origin === 'us');
+      assert(usFr.slug === '/test');
+    });
+  });
 
-  // it('can spin up fourth instance with no prefix config', function(done) {
-  //   apos4 = require('apostrophe')({
-  //     testModule: true,
+  it('can spin up fourth instance with no prefix config', function(done) {
+    apos4 = require('apostrophe')({
+      testModule: true,
 
-  //     modules: {
-  //       'apostrophe-express': {
-  //         port: 7997
-  //       },
-  //       'apostrophe-pages': {
-  //         park: [],
-  //         types: [
-  //           {
-  //             name: 'home',
-  //             label: 'Home'
-  //           },
-  //           {
-  //             name: 'testPage',
-  //             label: 'Test Page'
-  //           }
-  //         ]
-  //       },
-  //       'apostrophe-workflow': {
-  //         locales: [
-  //           {
-  //             name: 'default',
-  //             label: 'Default',
-  //             private: true,
-  //             children: [
-  //               {
-  //                 name: 'fr'
-  //               },
-  //               {
-  //                 name: 'us',
-  //                 private: true,
-  //                 children: [
-  //                   {
-  //                     name: 'us-en'
-  //                   },
-  //                   {
-  //                     name: 'us-es'
-  //                   },
-  //                   {
-  //                     name: 'us-fr'
-  //                   }
-  //                 ]
-  //               }
-  //             ]
-  //           }
-  //         ],
-  //         defaultLocale: 'default'
-  //       }
-  //     },
-  //     afterInit: function(callback) {
-  //       assert(apos4.modules['apostrophe-workflow']);
-  //       // Should NOT have an alias!
-  //       assert(!apos4.workflow);
-  //       return callback(null);
-  //     },
-  //     afterListen: function(err) {
-  //       assert(!err);
-  //       done();
-  //     }
-  //   });
-  // });
+      modules: {
+        'apostrophe-express': {
+          port: 7997
+        },
+        'apostrophe-pages': {
+          park: [],
+          types: [
+            {
+              name: 'home',
+              label: 'Home'
+            },
+            {
+              name: 'testPage',
+              label: 'Test Page'
+            }
+          ]
+        },
+        'apostrophe-workflow': {
+          locales: [
+            {
+              name: 'default',
+              label: 'Default',
+              private: true,
+              children: [
+                {
+                  name: 'fr'
+                },
+                {
+                  name: 'us',
+                  private: true,
+                  children: [
+                    {
+                      name: 'us-en'
+                    },
+                    {
+                      name: 'us-es'
+                    },
+                    {
+                      name: 'us-fr'
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          defaultLocale: 'default'
+        }
+      },
+      afterInit: function(callback) {
+        assert(apos4.modules['apostrophe-workflow']);
+        // Should NOT have an alias!
+        assert(!apos4.workflow);
+        return callback(null);
+      },
+      afterListen: function(err) {
+        assert(!err);
+        done();
+      }
+    });
+  });
 
-  // it('prefix removed from everything', function() {
-  //   return apos4.docs.db.findWithProjection({ title: 'test' }).toArray().then(function(docs) {
-  //     assert(docs);
-  //     assert(docs.length === 12);
-  //     var fr = _.find(docs, { workflowLocale: 'fr' });
-  //     assert(fr);
-  //     assert(fr.origin === 'default');
-  //     assert(fr.slug === '/test');
-  //     var usEn = _.find(docs, { workflowLocale: 'us-en' });
-  //     assert(usEn);
-  //     assert(usEn.origin === 'us');
-  //     assert.equal(usEn.slug, '/test');
-  //     var usFr = _.find(docs, { workflowLocale: 'us-fr' });
-  //     assert(usFr);
-  //     assert(usFr.origin === 'us');
-  //     assert(usFr.slug === '/test');
-  //   });
-  // });
+  it('prefix removed from everything', function() {
+    return apos4.docs.db.findWithProjection({ title: 'test' }).toArray().then(function(docs) {
+      assert(docs);
+      assert(docs.length === 12);
+      var fr = _.find(docs, { workflowLocale: 'fr' });
+      assert(fr);
+      assert(fr.origin === 'default');
+      assert(fr.slug === '/test');
+      var usEn = _.find(docs, { workflowLocale: 'us-en' });
+      assert(usEn);
+      assert(usEn.origin === 'us');
+      assert.equal(usEn.slug, '/test');
+      var usFr = _.find(docs, { workflowLocale: 'us-fr' });
+      assert(usFr);
+      assert(usFr.origin === 'us');
+      assert(usFr.slug === '/test');
+    });
+  });
 
 });
