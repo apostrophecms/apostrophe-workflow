@@ -507,7 +507,6 @@ describe('Workflow Core', function() {
 
   it('localization urls make sense without global prefix', function() {
     var req = apos.tasks.getReq();
-    var home;
     return apos.pages.find({ path: '/' }).toObject().then(function(home) {
       return Promise.promisify(apos.modules['apostrophe-workflow'].getLocalizations)(req, home.workflowGuid, false);
     }).then(function(localizations) {
@@ -518,7 +517,6 @@ describe('Workflow Core', function() {
   it('localization urls make sense with global prefix', function() {
     apos.prefix = '/prefix';
     var req = apos.tasks.getReq();
-    var home;
     return apos.pages.find({ path: '/' }).toObject().then(function(home) {
       return Promise.promisify(apos.modules['apostrophe-workflow'].getLocalizations)(req, home.workflowGuid, false);
     }).then(function(localizations) {

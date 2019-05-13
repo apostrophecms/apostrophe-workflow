@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.21.1
+
+Unit tests passing.
+
+* Improved compatibility with the global apostrophe `prefix` option, which is now included in locale-switcher links.
+
 ## 2.21.0
 
 Unit tests passing.
