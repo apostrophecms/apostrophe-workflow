@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.21.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* localization urls should include the global prefix if any, thanks to Sebastian Gassner for flagging the issue.
+
 ## 2.21.0
 
 Unit tests passing.
