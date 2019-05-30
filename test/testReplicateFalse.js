@@ -42,6 +42,7 @@ describe('Workflow with replicateAcrossLocales set to false: initial locales', f
     return instantiate(locales, function(err, _apos) {
       assert(!err);
       apos = _apos;
+      done();
     });
   });
 
@@ -63,6 +64,17 @@ describe('Workflow with replicateAcrossLocales set to false: initial locales', f
       const globalLocales = _.pluck(globals, 'workflowLocale');
       assert(!Object.keys(apos.workflow.locales).find(function(locale) {
         return (!(globalLocales.indexOf(locale) !== -1));
+      }));
+    });
+  });
+
+  it('parked test page should be replicated', function() {
+    return apos.docs.db.find({ slug: '/parked-test-page' }).toArray().then(function(test) {
+      assert(test);
+      assert(test.length === 8);
+      const testLocales = _.pluck(test, 'workflowLocale');
+      assert(!Object.keys(apos.workflow.locales).find(function(locale) {
+        return (!(testLocales.indexOf(locale) !== -1));
       }));
     });
   });
@@ -130,6 +142,7 @@ describe('Workflow with replicateAcrossLocales set to false: expanded locales', 
     return instantiate(locales, function(err, _apos) {
       assert(!err);
       apos = _apos;
+      done();
     });
   });
 
@@ -155,21 +168,22 @@ describe('Workflow with replicateAcrossLocales set to false: expanded locales', 
     });
   });
 
-  it('Normally inserted subpage exists but was not replicated to extra locale', function() {
+  it('parked test page should be replicated', function() {
+    return apos.docs.db.find({ slug: '/parked-test-page' }).toArray().then(function(test) {
+      assert(test);
+      assert(test.length === 10);
+      const testLocales = _.pluck(test, 'workflowLocale');
+      assert(!Object.keys(apos.workflow.locales).find(function(locale) {
+        return (!(testLocales.indexOf(locale) !== -1));
+      }));
+    });
+  });
+
+  it('Normally inserted subpage exists but was not replicated to new locale', function() {
     let req = apos.tasks.getReq();
-    return apos.pages.find(req, { slug: '/about' }).toObject().then(function(subpage) {
-      assert(subpage);
-      assert(subpage.slug === '/about');
-      assert(subpage.workflowGuid);
-      return apos.docs.db.find({ workflowGuid: subpage.workflowGuid }).toArray();
-    }).then(function(peers) {
-      assert(peers.length === 2);
-      assert(peers.find(function(peer) {
-        return peer.workflowLocale === apos.workflow.liveify(req.locale);
-      }));
-      assert(peers.find(function(peer) {
-        return peer.workflowLocale === apos.workflow.draftify(req.locale);
-      }));
+    return apos.docs.db.find({ slug: '/about' }).toArray().then(function(docs) {
+      // Only default and default-draft
+      assert(docs.length === 2);
     });
   });
 
@@ -181,7 +195,12 @@ function instantiate(locales, callback) {
 
     modules: {
       'apostrophe-pages': {
-        park: [],
+        park: [
+          {
+            type: 'testPage',
+            slug: '/parked-test-page'
+          }
+        ],
         types: [
           {
             name: 'home',
