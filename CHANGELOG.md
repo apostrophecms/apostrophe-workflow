@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.21.2
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Various issues fixed when using `replicateAcrossLocales: false`. These centered on the overly simplified implementation of replication for parked pages and the global doc. We now use the same full-strength algorithm for these special docs that has historically been applied to all docs when `replicateAcrossLocales` is `true` (the default).
+
+Thanks to Michelin for making these fixes possible through [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+
 ## 2.21.1
 
 Unit tests passing.

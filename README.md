@@ -94,7 +94,7 @@ Then configure the `apostrophe-workflow` module in `app.js` with the rest of you
   alias: 'workflow',
   // Recommended to save database space. You can still
   // export explicitly between locales
-  replicateAcrossLocales: true
+  replicateAcrossLocales: false
 },
 'apostrophe-workflow-modified-documents': {}
 ```
