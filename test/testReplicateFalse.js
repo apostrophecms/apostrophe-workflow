@@ -1,5 +1,6 @@
-let assert = require('assert');
-let _ = require('@sailshq/lodash');
+const assert = require('assert');
+const _ = require('@sailshq/lodash');
+const Promise = require('bluebird');
 
 describe('Workflow with replicateAcrossLocales set to false: initial locales', function() {
 
@@ -100,6 +101,15 @@ describe('Workflow with replicateAcrossLocales set to false: initial locales', f
     });
   });
 
+  it('make sure locale of all docs can be distinguished easily for testing who replicated from whom', function() {
+    return apos.docs.db.find({}).toArray().then(function(docs) {
+      return Promise.mapSeries(docs, function(doc) {
+        doc.title = doc.slug + ': original locale: ' + doc.workflowLocale;
+        return apos.docs.db.update({ _id: doc._id }, doc);
+      });
+    });
+  });
+
 });
 
 describe('Workflow with replicateAcrossLocales set to false: expanded locales', function() {
@@ -131,10 +141,12 @@ describe('Workflow with replicateAcrossLocales set to false: expanded locales', 
             name: 'us'
           },
           {
-            name: 'es'
-          },
-          {
-            name: 'ch'
+            name: 'es',
+            children: [
+              {
+                name: 'es-mx'
+              }
+            ]
           }
         ]
       }
@@ -179,6 +191,13 @@ describe('Workflow with replicateAcrossLocales set to false: expanded locales', 
     });
   });
 
+  it('es-mx-draft parked page should get content of es-draft, not default', function() {
+    return apos.docs.db.find({ slug: '/parked-test-page', workflowLocale: 'es-mx-draft' }).toArray().then(function(pages) {
+      assert(pages && pages[0]);
+      assert(pages[0].title === '/parked-test-page: original locale: es-draft');
+    });
+  });
+
   it('Normally inserted subpage exists but was not replicated to new locale', function() {
     return apos.docs.db.find({ slug: '/about' }).toArray().then(function(docs) {
       // Only default and default-draft
@@ -197,7 +216,8 @@ function instantiate(locales, callback) {
         park: [
           {
             type: 'testPage',
-            slug: '/parked-test-page'
+            slug: '/parked-test-page',
+            parkedId: 'parked-test-page'
           }
         ],
         types: [
