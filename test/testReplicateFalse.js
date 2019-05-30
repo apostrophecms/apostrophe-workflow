@@ -180,7 +180,6 @@ describe('Workflow with replicateAcrossLocales set to false: expanded locales', 
   });
 
   it('Normally inserted subpage exists but was not replicated to new locale', function() {
-    let req = apos.tasks.getReq();
     return apos.docs.db.find({ slug: '/about' }).toArray().then(function(docs) {
       // Only default and default-draft
       assert(docs.length === 2);
@@ -229,4 +228,3 @@ function instantiate(locales, callback) {
     }
   });
 }
-
