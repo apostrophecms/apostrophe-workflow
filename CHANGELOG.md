@@ -4,7 +4,9 @@
 
 Unit tests passing.
 
-* Improved compatibility with the global apostrophe `prefix` option, which is now included in locale-switcher links.
+Regression tests passing.
+
+* localization urls should include the global prefix if any, thanks to Sebastian Gassner for flagging the issue.
 
 ## 2.21.0
 
