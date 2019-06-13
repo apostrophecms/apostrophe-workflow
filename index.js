@@ -60,6 +60,12 @@ module.exports = {
     directory: 'lib/modules'
   },
 
+  beforeConstruct: function(self, options) {
+    if (options.replicateAcrossLocales === undefined) {
+      options.replicateAcrossLocales = true;
+    }
+  },
+
   afterConstruct: function(self, callback) {
     self.composeLocales();
     self.composeOptions();

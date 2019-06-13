@@ -2,7 +2,7 @@ const assert = require('assert');
 const _ = require('@sailshq/lodash');
 const Promise = require('bluebird');
 
-describe('Workflow with replicateAcrossLocales set to false: initial locales', function() {
+describe('Workflow with replicateAcrossLocales set to \'related\': initial locales', function() {
 
   let apos;
 
@@ -91,6 +91,7 @@ describe('Workflow with replicateAcrossLocales set to false: initial locales', f
       assert(subpage.workflowGuid);
       return apos.docs.db.find({ workflowGuid: subpage.workflowGuid }).toArray();
     }).then(function(peers) {
+      console.log(peers.length);
       assert(peers.length === 2);
       assert(peers.find(function(peer) {
         return peer.workflowLocale === apos.workflow.liveify(req.locale);
@@ -117,12 +118,21 @@ describe('Workflow with replicateAcrossLocales set to false: initial locales', f
         title: 'product ' + n
       };
     });
-    let last = null;
+    const _ids = [];
     return Promise.mapSeries(products, function(product, i) {
-      if (i < 5) {
-        product.relatedId = last && last._id;
-      }
-      return apos.products.insert(req, product);
+      return apos.products.insert(req, product).then(function(product) {
+        _ids.push(product._id);
+      });
+    }).then(function() {
+      return Promise.mapSeries(_ids.slice(0, 4), function(_id, i) {
+        return apos.docs.db.update({
+          _id: _id
+        }, {
+          $set: {
+            relatedId: _ids[i + 1]
+          }
+        });
+      });
     }).then(function() {
       return apos.docs.db.find({ level: 0 }).toArray();
     }).then(function(homes) {
@@ -143,7 +153,7 @@ describe('Workflow with replicateAcrossLocales set to false: initial locales', f
   });
 });
 
-describe('Workflow with replicateAcrossLocales set to false: expanded locales', function() {
+describe('Workflow with replicateAcrossLocales set to \'related\': expanded locales and check of relationships', function() {
 
   let apos;
 
@@ -200,6 +210,35 @@ describe('Workflow with replicateAcrossLocales set to false: expanded locales', 
     });
   });
 
+  it('first product should be replicated due to relationship with homepage', function() {
+    return apos.docs.db.find({ title: 'product 0' }).toArray().then(function(products) {
+      assert(products);
+      assert(products.length === 10);
+      const productLocales = _.pluck(products, 'workflowLocale');
+      assert(!Object.keys(apos.workflow.locales).find(function(locale) {
+        return (!(productLocales.indexOf(locale) !== -1));
+      }));
+    });
+  });
+
+  it('fifth product should be replicated due to recursive relationship with homepage', function() {
+    return apos.docs.db.find({ title: 'product 4' }).toArray().then(function(products) {
+      assert(products);
+      assert(products.length === 10);
+      const productLocales = _.pluck(products, 'workflowLocale');
+      assert(!Object.keys(apos.workflow.locales).find(function(locale) {
+        return (!(productLocales.indexOf(locale) !== -1));
+      }));
+    });
+  });
+
+  it('sixth product should NOT be replicated because it lacks a recursive relationship with homepage', function() {
+    return apos.docs.db.find({ title: 'product 5' }).toArray().then(function(products) {
+      assert(products);
+      assert(products.length === 2);
+    });
+  });
+
   it('global doc page should be replicated', function() {
     return apos.docs.db.find({ type: 'apostrophe-global' }).toArray().then(function(globals) {
       assert(globals);
@@ -225,6 +264,7 @@ describe('Workflow with replicateAcrossLocales set to false: expanded locales', 
   it('es-mx-draft parked page should get content of es-draft, not default', function() {
     return apos.docs.db.find({ slug: '/parked-test-page', workflowLocale: 'es-mx-draft' }).toArray().then(function(pages) {
       assert(pages && pages[0]);
+      console.log(pages[0].title);
       assert(pages[0].title === '/parked-test-page: original locale: es-draft');
     });
   });
@@ -275,7 +315,7 @@ function instantiate(locales, callback) {
       'apostrophe-workflow': {
         alias: 'workflow',
         locales: locales,
-        replicateAcrossLocales: false
+        replicateAcrossLocales: 'related'
       }
     },
     afterInit: function(callback) {
