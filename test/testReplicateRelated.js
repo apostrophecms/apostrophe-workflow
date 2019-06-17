@@ -9,8 +9,7 @@ describe('Workflow with replicateAcrossLocales set to \'related\': initial local
   this.timeout(20000);
 
   after(function(done) {
-    // Do not destroy database yet, second block explores what happens
-    // when we add locales to it
+    // Do not remove database yet, later blocks explore consequences of a restart
     apos.destroy(function(err) {
       assert(!err);
       done();
@@ -151,6 +150,82 @@ describe('Workflow with replicateAcrossLocales set to \'related\': initial local
       });
     });
   });
+});
+
+describe('Workflow with replicateAcrossLocales set to \'related\': check relationships after a restart', function() {
+
+  let apos;
+
+  this.timeout(20000);
+
+  after(function(done) {
+    // Do not remove database yet, third block explores what happens
+    // when we add locales to it
+    apos.destroy(function(err) {
+      assert(!err);
+      done();
+    });
+  });
+
+  /// ///
+  // EXISTENCE
+  /// ///
+
+  it('should be a property of the apos object', function(done) {
+    var locales = [
+      {
+        name: 'default',
+        label: 'Default',
+        private: true,
+        children: [
+          {
+            name: 'fr'
+          },
+          {
+            name: 'us'
+          },
+          {
+            name: 'es'
+          }
+        ]
+      }
+    ];
+    return instantiate(locales, function(err, _apos) {
+      assert(!err);
+      apos = _apos;
+      done();
+    });
+  });
+
+  it('first product should be replicated due to relationship with homepage', function() {
+    return apos.docs.db.find({ title: 'product 0' }).toArray().then(function(products) {
+      assert(products);
+      assert(products.length === 8);
+      const productLocales = _.pluck(products, 'workflowLocale');
+      assert(!Object.keys(apos.workflow.locales).find(function(locale) {
+        return (!(productLocales.indexOf(locale) !== -1));
+      }));
+    });
+  });
+
+  it('fifth product should be replicated due to recursive relationship with homepage', function() {
+    return apos.docs.db.find({ title: 'product 4' }).toArray().then(function(products) {
+      assert(products);
+      assert(products.length === 8);
+      const productLocales = _.pluck(products, 'workflowLocale');
+      assert(!Object.keys(apos.workflow.locales).find(function(locale) {
+        return (!(productLocales.indexOf(locale) !== -1));
+      }));
+    });
+  });
+
+  it('sixth product should NOT be replicated because it lacks a recursive relationship with homepage', function() {
+    return apos.docs.db.find({ title: 'product 5' }).toArray().then(function(products) {
+      assert(products);
+      assert(products.length === 2);
+    });
+  });
+
 });
 
 describe('Workflow with replicateAcrossLocales set to \'related\': expanded locales and check of relationships', function() {
