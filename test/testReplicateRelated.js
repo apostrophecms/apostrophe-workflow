@@ -90,7 +90,6 @@ describe('Workflow with replicateAcrossLocales set to \'related\': initial local
       assert(subpage.workflowGuid);
       return apos.docs.db.find({ workflowGuid: subpage.workflowGuid }).toArray();
     }).then(function(peers) {
-      console.log(peers.length);
       assert(peers.length === 2);
       assert(peers.find(function(peer) {
         return peer.workflowLocale === apos.workflow.liveify(req.locale);
@@ -342,7 +341,6 @@ describe('Workflow with replicateAcrossLocales set to \'related\': expanded loca
   it('es-mx-draft parked page should get content of es-draft, not default', function() {
     return apos.docs.db.find({ slug: '/parked-test-page', workflowLocale: 'es-mx-draft' }).toArray().then(function(pages) {
       assert(pages && pages[0]);
-      console.log(pages[0].title);
       assert(pages[0].title === '/parked-test-page: original locale: es-draft');
     });
   });
