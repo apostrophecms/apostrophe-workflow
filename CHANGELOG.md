@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.22.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* You are now invited to optionally export as well after performing a batch commit, similar to a regular commit. Thanks to Javier Mabarca.
+* This module now emits `apostrophe-workflow:afterCommit`, `apostrophe-workflow:afterExport`, `apostrophe-workflow:afterForceExport` and `apostrophe-workflow:afterForceExportWidget` events, for use with the new module `apostrophe-external-notifications`, which can send a notice to Slack in these situations.
+
 ## 2.21.2
 
 Unit tests passing.
