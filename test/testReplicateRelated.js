@@ -252,8 +252,8 @@ describe('Workflow replication of related docs for new locales: expanded locales
     });
   });
 
-  it('home page should be replicated everywhere', function() {
-    return apos.docs.db.find({ level: 0, slug: '/' }).toArray().then(function(homes) {
+  it('home page should be replicated everywhere, never in trash', function() {
+    return apos.docs.db.find({ level: 0, slug: '/', trash: { $ne: true } }).toArray().then(function(homes) {
       assert(homes);
       assert(homes.length === 10);
       const homeLocales = _.pluck(homes, 'workflowLocale');
@@ -265,8 +265,8 @@ describe('Workflow replication of related docs for new locales: expanded locales
 
   let firstProduct;
 
-  it('first product should be replicated to new locale due to relationship with homepage', function() {
-    return apos.docs.db.find({ title: 'product 0', workflowLocale: { $in: [ 'es-mx', 'es-mx-draft' ] } }).toArray().then(function(products) {
+  it('first product should be replicated to new locale due to relationship with homepage, not in trash', function() {
+    return apos.docs.db.find({ title: 'product 0', trash: { $ne: true }, workflowLocale: { $in: [ 'es-mx', 'es-mx-draft' ] } }).toArray().then(function(products) {
       assert(products);
       assert(products.length === 2);
       firstProduct = _.find(products, { workflowLocale: 'es-mx-draft' });
@@ -274,9 +274,9 @@ describe('Workflow replication of related docs for new locales: expanded locales
     });
   });
 
-  it('homepage of new locale should correctly reference first product in new locale', function() {
+  it('homepage of new locale should correctly reference first product in new locale, not in trash', function() {
     return Promise.try(function() {
-      return apos.docs.db.findOne({ level: 0, slug: '/', workflowLocale: 'es-mx-draft' });
+      return apos.docs.db.findOne({ level: 0, trash: { $ne: true }, slug: '/', workflowLocale: 'es-mx-draft' });
     }).then(function(home) {
       return apos.docs.db.findOne({ _id: home.relatedId }).then(function(doc) {
         assert(home.relatedId === firstProduct._id);
@@ -284,15 +284,15 @@ describe('Workflow replication of related docs for new locales: expanded locales
     });
   });
 
-  it('fifth product should be replicated to new locale due to recursive relationship with homepage', function() {
-    return apos.docs.db.find({ title: 'product 4', workflowLocale: { $in: [ 'es-mx', 'es-mx-draft' ] } }).toArray().then(function(products) {
+  it('fifth product should be replicated to new locale due to recursive relationship with homepage, not in trash', function() {
+    return apos.docs.db.find({ title: 'product 4', trash: { $ne: true }, workflowLocale: { $in: [ 'es-mx', 'es-mx-draft' ] } }).toArray().then(function(products) {
       assert(products);
       assert(products.length === 2);
     });
   });
 
-  it('products in new locale should correctly reference each other', function() {
-    return apos.docs.db.find({ type: /^product/, workflowLocale: 'es-mx-draft'  }).sort({ slug: 1 }).toArray().then(function(products) {
+  it('products in new locale should correctly reference each other, not in trash', function() {
+    return apos.docs.db.find({ type: /^product/, trash: { $ne: true }, workflowLocale: 'es-mx-draft'  }).sort({ slug: 1 }).toArray().then(function(products) {
       assert(products);
       assert(products.length === 5);
       for (let i = 0; (i < 5); i++) {
@@ -312,8 +312,8 @@ describe('Workflow replication of related docs for new locales: expanded locales
     });
   });
 
-  it('global doc page should be replicated everywhere', function() {
-    return apos.docs.db.find({ type: 'apostrophe-global' }).toArray().then(function(globals) {
+  it('global doc page should be replicated everywhere, not in trash', function() {
+    return apos.docs.db.find({ type: 'apostrophe-global', trash: { $ne: true } }).toArray().then(function(globals) {
       assert(globals);
       assert(globals.length === 10);
       const globalLocales = _.pluck(globals, 'workflowLocale')
