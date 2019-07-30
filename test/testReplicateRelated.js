@@ -209,12 +209,6 @@ describe('Workflow replication of related docs for new locales: expanded locales
     });
   });
 
-  // it('check', function() {
-  //   return apos.docs.db.find({ type: 'product' }).toArray().then(function(products) {
-  //     console.log(products);
-  //   });
-  // });
-
   let firstProduct;
 
   it('first product should be replicated to new locale due to relationship with homepage', function() {
@@ -230,12 +224,7 @@ describe('Workflow replication of related docs for new locales: expanded locales
     return Promise.try(function() {
       return apos.docs.db.findOne({ level: 0, slug: '/', workflowLocale: 'es-mx-draft' });
     }).then(function(home) {
-      assert(home);
-      console.log(home);
-      return home;
-    }).then(function(home) {
       return apos.docs.db.findOne({ _id: home.relatedId }).then(function(doc) {
-        console.log(doc && doc.workflowLocale);
         assert(home.relatedId === firstProduct._id);
       });
     });
@@ -251,8 +240,8 @@ describe('Workflow replication of related docs for new locales: expanded locales
   it('products in new locale should correctly reference each other', function() {
     return apos.docs.db.find({ type: /^product/, workflowLocale: 'es-mx-draft'  }).sort({ slug: 1 }).toArray().then(function(products) {
       assert(products);
-      assert(products.length === 10);
-      for (let i = 0; (i < 10); i++) {
+      assert(products.length === 5);
+      for (let i = 0; (i < 5); i++) {
         if (i < 4) {
           assert(products[i].relatedId === products[i + 1]._id);
         } else {
