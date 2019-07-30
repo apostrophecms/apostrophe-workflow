@@ -79,12 +79,39 @@ describe('Workflow replication of related docs for new locales: initial locales'
     });
   });
 
-  it('newly inserted subpage is only replicated draft/live', function() {
-    let req = apos.tasks.getReq();
-    return apos.pages.find(req, { slug: '/' }).toObject().then(function(home) {
+  it('inserted subpage without relationships is only replicated draft/live', function() {
+    let req = apos.tasks.getReq({ locale: 'es-draft' });
+    let home, subpage, grandchild;
+    return apos.pages.find(req, { slug: '/' }).toObject().then(function(_home) {
+      home = _home;
+      assert(home);
+      return apos.pages.insert(req, home._id, { title: 'Simple Subpage', slug: '/simple-subpage', type: 'testPage', published: true });
+    }).then(function(_subpage) {
+      subpage = _subpage;
+      assert(subpage);
+      assert(subpage.slug === '/simple-subpage');
+      assert(subpage.workflowGuid);
+      return apos.docs.db.find({ workflowGuid: subpage.workflowGuid }).toArray();
+    }).then(function(peers) {
+      assert(peers.length === 2);
+      assert(peers.find(function(peer) {
+        return peer.workflowLocale === apos.workflow.liveify(req.locale);
+      }));
+      assert(peers.find(function(peer) {
+        return peer.workflowLocale === apos.workflow.draftify(req.locale);
+      }));
+    });
+  });
+
+  it('newly inserted subtree is initially only replicated draft/live', function() {
+    let req = apos.tasks.getReq({ locale: 'es-draft' });
+    let home, subpage, grandchild;
+    return apos.pages.find(req, { slug: '/' }).toObject().then(function(_home) {
+      home = _home;
       assert(home);
       return apos.pages.insert(req, home._id, { title: 'About', slug: '/about', type: 'testPage', published: true });
-    }).then(function(subpage) {
+    }).then(function(_subpage) {
+      subpage = _subpage;
       assert(subpage);
       assert(subpage.slug === '/about');
       assert(subpage.workflowGuid);
@@ -97,6 +124,33 @@ describe('Workflow replication of related docs for new locales: initial locales'
       assert(peers.find(function(peer) {
         return peer.workflowLocale === apos.workflow.draftify(req.locale);
       }));
+    }).then(function() {
+      return apos.pages.insert(req, subpage._id, { title: 'People', slug: '/about/people', type: 'testPage', published: true });
+    }).then(function(_grandchild) {
+      grandchild = _grandchild;
+      assert(grandchild);
+      assert(grandchild.slug === '/about/people');
+      assert(grandchild.level === 2);
+      assert(grandchild.workflowGuid);
+      return apos.docs.db.find({ workflowGuid: grandchild.workflowGuid }).toArray();
+    }).then(function(peers) {
+      assert(peers.length === 2);
+      assert(peers.find(function(peer) {
+        return peer.workflowLocale === apos.workflow.liveify(req.locale);
+      }));
+      assert(peers.find(function(peer) {
+        return peer.workflowLocale === apos.workflow.draftify(req.locale);
+      }));
+    }).then(function() {
+      return apos.docs.db.update({
+        _id: home._id
+      }, {
+        $set: {
+          // Deliberately swap the order as a stress test of the
+          // tree structure's preservation upon replication
+          coolPagesIds: [ grandchild._id, subpage._id ]
+        }
+      });
     });
   });
 
@@ -287,10 +341,28 @@ describe('Workflow replication of related docs for new locales: expanded locales
     });
   });
 
-  it('Normally inserted subpage exists but was not replicated to new locale', function() {
-    return apos.docs.db.find({ slug: '/about' }).toArray().then(function(docs) {
+  it('First normally inserted subpage exists but was not replicated to new locale', function() {
+    return apos.docs.db.find({ slug: '/simple-subpage' }).toArray().then(function(docs) {
       // Only default and default-draft
       assert(docs.length === 2);
+      assert(docs[0].level === 1);
+      assert(docs[1].level === 1);
+    });
+  });
+
+  it('Normally inserted subtree that is referenced by joins should be replicated to new locale at correct page tree level', function() {
+    return apos.docs.db.find({ slug: '/about' }).toArray().then(function(docs) {
+      assert(docs.length === 4);
+      for (i = 0; (i < docs.length); i++) {
+        assert(docs[i].level === 1);
+      }
+    }).then(function() {
+      return apos.docs.db.find({ slug: '/about/people' }).toArray();
+    }).then(function(docs) {
+      assert(docs.length === 4);
+      for (i = 0; (i < docs.length); i++) {
+        assert(docs[i].level === 2);
+      }
     });
   });
 
