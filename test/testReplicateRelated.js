@@ -109,7 +109,22 @@ describe('Workflow replication of related docs for new locales: initial locales'
     return apos.pages.find(req, { slug: '/' }).toObject().then(function(_home) {
       home = _home;
       assert(home);
-      return apos.pages.insert(req, home._id, { title: 'About', slug: '/about', type: 'testPage', published: true });
+      return apos.pages.insert(req, home._id, {
+        title: 'About',
+        slug: '/about',
+        type: 'testPage',
+        published: true,
+        body: {
+          type: 'area',
+          items: [
+            {
+              type: 'apostrophe-rich-text',
+              id: 'test1',
+              content: '<h4>Test</h4>'
+            }
+          ]
+        }
+      });
     }).then(function(_subpage) {
       subpage = _subpage;
       assert(subpage);
@@ -355,6 +370,11 @@ describe('Workflow replication of related docs for new locales: expanded locales
       assert(docs.length === 4);
       for (i = 0; (i < docs.length); i++) {
         assert(docs[i].level === 1);
+        assert(docs[i].body);
+        assert(docs[i].body.type === 'area');
+        assert(docs[i].body.items.length === 1);
+        assert(docs[i].body.items[0].type === 'apostrophe-rich-text');
+        assert(docs[i].body.items[0].content === '<h4>Test</h4>');
       }
     }).then(function() {
       return apos.docs.db.find({ slug: '/about/people' }).toArray();
