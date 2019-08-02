@@ -15,10 +15,10 @@
 			<span class="apos-button-label">Mode: {{ workflowMode | capitalize }}</span>
 		</a>
 		<ul class="apos-dropdown-items" data-apos-dropdown-items="">
-      {% if data.isPreview %}
+      {% if workflowMode == 'preview' %}
         <li class="apos-dropdown-item" data-apos-workflow-mode="live">Live</li>
         <li class="apos-dropdown-item" data-apos-workflow-mode="draft">Draft</li>
-			{% elseif data.workflowMode == 'draft' %}
+			{% elseif workflowMode == 'draft' %}
 				<li class="apos-dropdown-item" data-apos-workflow-mode="live">Live</li>
         <li class="apos-dropdown-item" data-apos-workflow-mode="preview">Preview</li>
 			{% else %}
