@@ -1,5 +1,10 @@
 {%- import 'apostrophe-ui:components/buttons.html' as buttons -%}
 
+{%- set workflowMode = data.workflowMode -%}
+{% if data.isPreview %}
+  {%- set workflowMode = 'preview' -%}
+{% endif %}
+
 <div class="apos-workflow-menu" data-apos-workflow-menu>
   {% if data.localized %}
   	{{ buttons.normal('Locale: ' + data.workflow.locale, { action: 'admin-bar-item', value: 'apostrophe-workflow-locale-picker-modal' }, 'apos-workflow-locale-button' ) }}
@@ -7,13 +12,18 @@
 
 	<div class="apos-dropdown apos-dropdown--button apos-dropdown--up apos-workflow-state" data-apos-dropdown="up" data-apos-actionable="">
 		<a class="apos-button apos-workflow-state-toggle" data-apos-dropdown-button-label="" style="padding-right: 20px;">
-			<span class="apos-button-label">Mode: {{ data.workflowMode | capitalize }}</span>
+			<span class="apos-button-label">Mode: {{ workflowMode | capitalize }}</span>
 		</a>
 		<ul class="apos-dropdown-items" data-apos-dropdown-items="">
-			{% if data.workflowMode == 'draft' %}
+      {% if data.isPreview %}
+        <li class="apos-dropdown-item" data-apos-workflow-mode="live">Live</li>
+        <li class="apos-dropdown-item" data-apos-workflow-mode="draft">Draft</li>
+			{% elseif data.workflowMode == 'draft' %}
 				<li class="apos-dropdown-item" data-apos-workflow-mode="live">Live</li>
+        <li class="apos-dropdown-item" data-apos-workflow-mode="preview">Preview</li>
 			{% else %}
 				<li class="apos-dropdown-item" data-apos-workflow-mode="draft">Draft</li>
+        <li class="apos-dropdown-item" data-apos-workflow-mode="preview">Preview</li>
 			{% endif %}
 		</ul>
   </div>
