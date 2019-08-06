@@ -1,7 +1,7 @@
 {%- import 'apostrophe-ui:components/buttons.html' as buttons -%}
 
 {%- set workflowMode = data.workflowMode -%}
-{% if data.isPreview %}
+{% if data.workflowPreview %}
   {%- set workflowMode = 'preview' -%}
 {% endif %}
 
