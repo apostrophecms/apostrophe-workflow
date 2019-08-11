@@ -2,6 +2,10 @@
 
 ## 2.23.0
 
+Unit tests passing.
+
+Regression tests passing.
+
 * A new "preview" mode is available. Pull down the usual "Live / Draft" menu and you will discover a "Preview" option. When selected, "preview" mode shows draft content, but without the editing interface, so you can better evaluate what will happen if you commit the changes. Thanks to Siddharth Joshi for this contribution.
 
 ## 2.22.0
