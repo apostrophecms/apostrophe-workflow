@@ -12,13 +12,17 @@
     <td>{% if piece.workflowSubmitted %}{{ __('Yes') }}{% else %}{{ __('No') }}{% endif %}</td>
     <td>{{ piece.workflowLastCommitted.at | date('YYYY-MM-DD') }}<br />{{ piece.workflowLastCommitted.user.title }}</td>
     <td>
-      {% if apos.utils.beginsWith(piece.slug, '/') %}
-        <a href="{{ piece._url }}">{{ __('Edit') }}</a>
-      {% else %}
-        <a href="#" data-apos-edit-{{ piece.type }}="{{ piece._id }}">{{ __('Edit') }}</a>
+      {% if piece._edit %}
+        {% if apos.utils.beginsWith(piece.slug, '/') %}
+          <a href="{{ piece._url }}">{{ __('Edit') }}</a>
+        {% else %}
+          <a href="#" data-apos-edit-{{ piece.type }}="{{ piece._id }}">{{ __('Edit') }}</a>
+        {% endif %}
+        {% if apos.modules['apostrophe-workflow'].committable(piece) %}
+          <a href="#" data-apos-workflow-commit="{{ piece._id }}">{{ __('Commit') }}</a>
+          <a href="#" data-apos-workflow-revert-to-live="{{ piece._id }}">{{ __('Revert') }}</a>
+        {% endif %}
       {% endif %}
-      <a href="#" data-apos-workflow-commit="{{ piece._id }}">{{ __('Commit') }}</a>
-      <a href="#" data-apos-workflow-revert-to-live="{{ piece._id }}">{{ __('Revert') }}</a>
     </td>
   </tr>
 {% endfor %}
