@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.23.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Those with editing privileges, but not committing privileges, can now see the submit button properly.
+* The "manage workflow" modal now displays edit buttons, commit buttons, etc. only to appropriate parties. (Inappropriate parties were never able to actually do these things, there was no security issue.)
+* Silenced more promise warnings.
+
 ## 2.23.0
 
 Unit tests passing.
