@@ -32,6 +32,7 @@ describe('Workflow Reorganize', function() {
             }
           ]
         },
+        products: {},
         'apostrophe-workflow': {
           locales: [
             {

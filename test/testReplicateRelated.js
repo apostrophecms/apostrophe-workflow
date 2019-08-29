@@ -81,7 +81,7 @@ describe('Workflow replication of related docs for new locales: initial locales'
 
   it('inserted subpage without relationships is only replicated draft/live', function() {
     let req = apos.tasks.getReq({ locale: 'es-draft' });
-    let home, subpage, grandchild;
+    let home, subpage;
     return apos.pages.find(req, { slug: '/' }).toObject().then(function(_home) {
       home = _home;
       assert(home);
@@ -307,7 +307,7 @@ describe('Workflow replication of related docs for new locales: expanded locales
   });
 
   it('products in new locale should correctly reference each other, not in trash', function() {
-    return apos.docs.db.find({ type: /^product/, trash: { $ne: true }, workflowLocale: 'es-mx-draft'  }).sort({ slug: 1 }).toArray().then(function(products) {
+    return apos.docs.db.find({ type: /^product/, trash: { $ne: true }, workflowLocale: 'es-mx-draft' }).sort({ slug: 1 }).toArray().then(function(products) {
       assert(products);
       assert(products.length === 5);
       for (let i = 0; (i < 5); i++) {
@@ -331,7 +331,7 @@ describe('Workflow replication of related docs for new locales: expanded locales
     return apos.docs.db.find({ type: 'apostrophe-global', trash: { $ne: true } }).toArray().then(function(globals) {
       assert(globals);
       assert(globals.length === 10);
-      const globalLocales = _.pluck(globals, 'workflowLocale')
+      const globalLocales = _.pluck(globals, 'workflowLocale');
       assert(!Object.keys(apos.workflow.locales).find(function(locale) {
         return (!(globalLocales.indexOf(locale) !== -1));
       }));
@@ -368,7 +368,7 @@ describe('Workflow replication of related docs for new locales: expanded locales
   it('Normally inserted subtree that is referenced by joins should be replicated to new locale at correct page tree level', function() {
     return apos.docs.db.find({ slug: '/about' }).toArray().then(function(docs) {
       assert(docs.length === 4);
-      for (i = 0; (i < docs.length); i++) {
+      for (let i = 0; (i < docs.length); i++) {
         assert(docs[i].level === 1);
         assert(docs[i].body);
         assert(docs[i].body.type === 'area');
@@ -380,7 +380,7 @@ describe('Workflow replication of related docs for new locales: expanded locales
       return apos.docs.db.find({ slug: '/about/people' }).toArray();
     }).then(function(docs) {
       assert(docs.length === 4);
-      for (i = 0; (i < docs.length); i++) {
+      for (let i = 0; (i < docs.length); i++) {
         assert(docs[i].level === 2);
       }
     });

@@ -18,6 +18,7 @@ describe('test global def', function() {
           secret: 'xxx',
           port: 7900
         },
+        'products': {},
         'apostrophe-global': {
           addFields: [
             {
@@ -81,6 +82,7 @@ describe('test global def', function() {
           secret: 'xxx',
           port: 7901
         },
+        'products': {},
         'apostrophe-global': {
           addFields: [
             {

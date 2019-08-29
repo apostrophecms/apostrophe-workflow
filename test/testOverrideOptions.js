@@ -18,6 +18,7 @@ describe('Override Options', function() {
         'apostrophe-express': {
           port: 7900
         },
+        'products': {},
         'apostrophe-pages': {
           park: [],
           types: [

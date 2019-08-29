@@ -21,6 +21,7 @@ describe('Workflow Subdomains and Prefixes', function() {
       testModule: true,
 
       modules: {
+        'products': {},
         'apostrophe-pages': {
           park: [],
           types: [

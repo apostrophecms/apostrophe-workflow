@@ -41,6 +41,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
             }
           ]
         },
+        'products': {},
         'apostrophe-workflow': {
           prefixes: {
             // Even private locales must be distinguishable by hostname and/or prefix
@@ -135,6 +136,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
         'apostrophe-express': {
           port: 7999
         },
+        'products': {},
         'apostrophe-pages': {
           park: [],
           types: [
@@ -230,6 +232,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
         'apostrophe-express': {
           port: 7998
         },
+        'products': {},
         'apostrophe-pages': {
           park: [],
           types: [
@@ -325,6 +328,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
         'apostrophe-express': {
           port: 7997
         },
+        'products': {},
         'apostrophe-pages': {
           park: [],
           types: [

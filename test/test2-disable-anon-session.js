@@ -26,6 +26,7 @@ describe('Workflow Subdomains and Prefixes', function() {
             disableAnonSession: true
           }
         },
+        products: {},
         'apostrophe-pages': {
           park: [],
           types: [
