@@ -110,6 +110,37 @@ describe('Workflow with replicateAcrossLocales set to false: initial locales', f
     });
   });
 
+  it('insert test products and establish relationships', function() {
+    const req = apos.tasks.getReq();
+    const products = _.range(0, 10).map(function(n) {
+      return {
+        title: 'product ' + n
+      };
+    });
+    let last = null;
+    return Promise.mapSeries(products, function(product, i) {
+      if (i < 5) {
+        product.relatedId = last && last._id;
+      }
+      return apos.products.insert(req, product);
+    }).then(function() {
+      return apos.docs.db.find({ level: 0 }).toArray();
+    }).then(function(homes) {
+      return Promise.mapSeries(homes, function(home) {
+        return Promise.try(function() {
+          return apos.docs.db.findOne({ title: 'product 0' }, { workflowLocale: home.workflowLocale });
+        }).then(function(product) {
+          return apos.docs.db.update({
+            _id: home._id
+          }, {
+            $set: {
+              relatedId: product._id
+            }
+          });
+        });
+      });
+    });
+  });
 });
 
 describe('Workflow with replicateAcrossLocales set to false: expanded locales', function() {
@@ -212,6 +243,15 @@ function instantiate(locales, callback) {
     testModule: true,
 
     modules: {
+      'apostrophe-custom-pages': {
+        addFields: [
+          {
+            name: '_featured',
+            type: 'joinByOne',
+            withType: 'product'
+          }
+        ]
+      },
       'apostrophe-pages': {
         park: [
           {
