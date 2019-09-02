@@ -345,6 +345,8 @@ apos.define('apostrophe-workflow', {
     };
 
     self.forceExport = function(id, callback) {
+      self.commitAllRelated = false;
+      self.skipAllRelated = false;
       return apos.areas.saveAllIfNeeded(function() {
         return apos.create('apostrophe-workflow-force-export-modal',
           _.assign({

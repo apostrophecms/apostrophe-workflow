@@ -20,6 +20,16 @@
   <p>
     {{ __('You are forcing an export, which will copy this draft verbatim to other locales. Select them below, then click Export. Selecting the %s locale may still be helpful to select sub-locales.', data.doc.workflowLocale, data.doc.workflowLocale) }}
   </p>
+  {% if not data.lead %}
+    <p>
+      {{ __('This related item may also be visible. Please consider exporting it too for a more complete result.') }}
+    </p>
+    <p>
+      {# Despite the data attribute name this will do the right operation here #}
+      <a class="apos-workflow-shortcut" data-commit-all-related href="#">{{ __('Force Export all like this') }}</a>
+      <a class="apos-workflow-shortcut" data-skip-all-related href="#">{{ __('Skip all like this') }}</a>
+    </p>
+  {% endif %}
 {% endblock %}
 
 {%- block body -%}
