@@ -1,6 +1,6 @@
 {
   "name": "apostrophe-workflow",
-  "version": "0.5.14",
+  "version": "0.5.15",
   "description": "Provides optional approval workflow for the Apostrophe CMS. For most projects this is overkill.",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/punkave/apostrophe-workflow"
+    "url": "https://github.com/apostrophecms/apostrophe-workflow"
   },
   "keywords": [
     "workflow",
@@ -21,9 +21,9 @@
   "author": "P'unk Avenue LLC",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/punkave/apostrophe-workflow/issues"
+    "url": "https://github.com/apostrophecms/apostrophe-workflow/issues"
   },
-  "homepage": "https://github.com/punkave/apostrophe-workflow",
+  "homepage": "https://github.com/apostrophecms/apostrophe-workflow",
   "dependencies": {
     "async": "^0.9.0",
     "lodash": "^2.4.1",
