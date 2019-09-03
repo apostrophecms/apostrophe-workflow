@@ -1,7 +1,3 @@
-var _ = require('lodash');
-var async = require('async');
-var moment = require('moment');
-
 module.exports = workflow;
 
 function workflow(options, callback) {
@@ -41,7 +37,7 @@ workflow.Construct = function(options, callback) {
 
   self._app.get(options.loadUrl || self._action + '/load', function(req, res) {
     var criteria = {
-      submitDraft: { $exists: 1 },
+      submitDraft: { $exists: 1 }
     };
     if (self._apos.options.workflow && self._apos.options.workflow.forPublishers) {
       criteria.draftAuthoredById = { $ne: req.user._id };
@@ -87,4 +83,3 @@ workflow.Construct = function(options, callback) {
     process.nextTick(function() { return callback(null); });
   }
 };
-
