@@ -245,12 +245,12 @@ apos.define('apostrophe-workflow', {
       });
       $('body').on('click', '[data-commit-all-related]', function() {
         self.commitAllRelated = true;
-        $('[data-apos-save]:visible').click();
+        apos.modalSupport.getTopModalOrBody().find('[data-apos-save]:visible').click();
         return false;
       });
       $('body').on('click', '[data-skip-all-related]', function() {
         self.skipAllRelated = true;
-        $('[data-apos-cancel]:visible').click();
+        apos.modalSupport.getTopModalOrBody().find('[data-apos-cancel]:visible').click();
         return false;
       });
     };
@@ -351,7 +351,7 @@ apos.define('apostrophe-workflow', {
         return apos.create('apostrophe-workflow-force-export-modal',
           _.assign({
             manager: self,
-            body: { id: id },
+            body: { id: id, lead: true },
             after: callback
           }, options)
         );

@@ -26,11 +26,32 @@ apos.define('apostrophe-workflow-force-export-modal', {
         }
         return async.eachSeries(all, function(id, callback) {
           if (self.manager.commitAllRelated) {
-
+            return self.api('force-export', {
+              id: id,
+              locales: locales 
+            }, function(info) {
+              if (info.status !== 'ok') {
+                return callback(info.status);
+              }
+              return callback(null);
+            }, callback);
           } else if (self.manager.skipAllRelated) {
             return setImmediate(callback);
           } else {
-            return self.manager.forceExport(id, callback);
+            return apos.create('apostrophe-workflow-force-export-modal',
+              _.assign(
+                {},
+                options,
+                {
+                  body: {
+                    id: id,
+                    lead: false
+                  },
+                  // This is throwing Types do not match in indicateCurrentModal
+                  after: callback
+                }
+              )
+            );
           }
         }, function(err) {
           return callback && callback(err);
