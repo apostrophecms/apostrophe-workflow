@@ -28,7 +28,7 @@ apos.define('apostrophe-workflow-force-export-modal', {
           if (self.manager.commitAllRelated) {
             return self.api('force-export', {
               id: id,
-              locales: locales 
+              locales: locales
             }, function(info) {
               if (info.status !== 'ok') {
                 return callback(info.status);
