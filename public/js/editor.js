@@ -143,7 +143,7 @@ function AposWorkflowManager() {
       // we can add new subpages but that's really about it. Don't
       // let mere editors do things for which we don't have
       // a workflow UI
-      $('[data-new-page]').siblings().remove();
+      $('.apos-page-bar [class*="apos-new"]').siblings().remove();
     }
     if (document.location.href.match(/\?workflowEditMode/)) {
       $('[data-workflow-mode="draft"]').click();
