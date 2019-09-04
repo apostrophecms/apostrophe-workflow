@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.24.0
+
+* `replicateAcrossLocales: false` is now much more usable. Formerly, upon adding a new locale with this setting enabled, the new locale was completely empty except for parked pages and the global doc. In practice this is too little content because of the missing documents that those documents are closely joined to, such as their images. Now, the documents just one hop away from the "foundational documents" are also replicated to a new locale.
+* When "Force Export" is selected for an entire page or piece, you are now invited to "Force Export" related documents as well. This complements the change above with a more flexible solution when manually exporting more content to other locales. Note that a similar feature already exists for "Commit" and for the regular "Export" feature that follows it.
+* For a good user experience for non-admin users with some editing privileges, this version ensures that the "context menu," including the locale picker and draft/live switch, are present on the page even in Apostrophe 2.96.0, which otherwise would be more aggressive about removing this markup when the user lacks editing privileges on the current page.
+
 ## 2.23.1
 
 Unit tests passing.
