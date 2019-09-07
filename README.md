@@ -502,7 +502,7 @@ First, make sure to **remove the `groups` option in the `apostrophe-users` modul
 // ],
 ```
 
-Next, using the command line, create the `amdin` group and the `admin` user:
+Next, using the command line, create the `admin` group and the `admin` user:
 
 ```shell
 cd /app
