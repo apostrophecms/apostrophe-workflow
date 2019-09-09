@@ -491,24 +491,7 @@ These features are helpful when a large team manages a site together. If your te
 
 ### Setting up for permissions: enabling group management
 
-First, launch your site with the usual `groups` setting for the `apostrophe-users` module, or with this minimal one:
-
-```javascript
-groups: [
-  {
-    title: 'admin',
-    permissions: [ 'admin' ]
-  }
-],
-```
-
-Now, **if you haven't already,** follow the usual procedure to add a single user to the `admin` group:
-
-```
-node app apostrophe-users:add admin admin
-```
-
-Then, **remove the `groups` option or comment it out:**
+First, make sure to **remove the `groups` option in the `apostrophe-users` module or comment it out:**
 
 ```javascript
 // groups: [
@@ -519,7 +502,17 @@ Then, **remove the `groups` option or comment it out:**
 // ],
 ```
 
-Now restart the site. This will enable the user interface in the admin bar for managing groups. (We plan to add command-line tasks for creating an admin group as an alternative to temporarily setting the `groups` option.)
+Next, using the command line, create the `admin` group and the `admin` user:
+
+```shell
+cd /app
+# Add group 'admin' with permission 'admin'.
+node app.js apostrophe-groups:add admin admin
+# Add user 'admin', who is a member of group 'admin'.
+node app.js apostrophe-users:add admin admin
+```
+
+Now launch your site.
 
 #### Removing the legacy groups
 
