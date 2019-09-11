@@ -161,6 +161,19 @@
   }
 }
 
+.apos-ui .apos-workflow-export-option {
+  margin-top: 6px;
+  max-width: 740px;
+  padding-top: 12px;
+  margin-left: 220px;
+  padding-left: 24px;
+  input {
+    margin-right: 12px;
+  }
+  height: 48px;
+  background-color: @apos-white;
+}
+
 .apos-ui .apos-workflow-locale-picker,
 .apos-ui .apos-workflow-export-locales {
   height: 100%;
@@ -168,6 +181,9 @@
   margin-left: 220px;
   padding-top: @apos-padding-2;
   background-color: @apos-white;
+  &.apos-workflow-export-locales--option {
+    height: ~"calc(100% - 60px)";
+  }
 }
 
 .apos-ui .apos-workflow-locale-picker-items,
