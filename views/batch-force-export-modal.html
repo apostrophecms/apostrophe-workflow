@@ -23,7 +23,7 @@
 {% endblock %}
 
 {%- block body -%}
-<div class="apos-workflow-export-locales">
+<div class="apos-workflow-export-locales apos-workflow-export-locales--option">
   {{ localeTree.tree(
     'locales',
     [
@@ -34,6 +34,9 @@
     data.nestedLocales)
   }}
 </div>
+<p class="apos-workflow-export-option">
+  <input type="checkbox" name="related">Also force export related documents, such as images
+</p>
 {%- endblock -%}
 
 {%- block footerContainer -%}{%- endblock -%}

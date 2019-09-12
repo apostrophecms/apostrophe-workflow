@@ -17,10 +17,12 @@ apos.define('apostrophe-workflow-batch-force-export-modal', {
         apos.notify('Select at least one locale to export to.', { type: 'error' });
         return callback('user');
       }
+      var related = self.$el.findByName('related').prop('checked');
       // Modifying the `body` object passed to us
       // by batchForceExportGetLocales allows that
       // method to see the locales that were chosen
       self.options.body.locales = locales;
+      self.options.body.related = related;
       return callback(null);
     };
 
