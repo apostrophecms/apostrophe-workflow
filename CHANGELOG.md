@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.25.0
+
+* When using the batch "Force Export" option via the "Manage Workflow" modal, users are now also invited to force export "related documents" such as images.
+
+Thanks to Michelin for making this feature possible through [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+
+* The "Commit" button now appears properly after moving pages via "reorganize." Thanks to Bharathkumar-Chandrasekaran of Freshworks for this fix.
+
 ## 2.24.0
 
 * `replicateAcrossLocales: false` is now much more usable. Formerly, upon adding a new locale with this setting enabled, the new locale was completely empty except for parked pages and the global doc. In practice this is too little content because of the missing documents that those documents are closely joined to, such as their images. Now, the documents just one hop away from the "foundational documents" are also replicated to a new locale.
