@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.25.1
+
+* Moved "also force export related documents, such as images" to the top of the modal to prevent conflict when there are many locales and to make it easier to find.
+
 ## 2.25.0
 
 * When using the batch "Force Export" option via the "Manage Workflow" modal, users are now also invited to force export "related documents" such as images.
