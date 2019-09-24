@@ -193,7 +193,7 @@ To enable localization, configure more than one locale in `app.js`:
       ]
     },
   ],
-  defaultLocale: 'default',
+  defaultLocale: 'en-gb',
   // IMPORTANT: if you follow the examples below,
   // be sure to set this
   alias: 'workflow'
@@ -208,7 +208,7 @@ What about the `default` locale? What does `private` do? Private locales cannot 
 
 **If you use private locales, you *must* give the "view private locales" permission to any Apostrophe groups that should be able to see those locales when logged in.** This is a simple permission that can be granted to a group via the "Groups" option on the admin bar or, if you are using hardcoded groups, via the "groups" option to the `apostrophe-users` module (the latter requires a restart to push the new permission). If you're using workflow, it's probably a good idea to comment out the `groups` option, which allows you to manage your groups through Apostrophe's interface instead.
 
-Note that if you do not have a locale named `default`, you must set the `defaultLocale` option to the name of a locale you do have. Also note that if you started out with no locales for simple workflow, Apostrophe already created a `default` locale implicitly. Leaving that out of your locale configuration would give you no way to access the existing content.
+Note that if you do not have a locale named `default`, you must set the `defaultLocale` option to the name of a locale you do have. If the `default` locale is private, a public locale should be set as `defaultLocale` instead (e.g., `'en-gb'` above). Also note that if you started out with no locales for simple workflow, Apostrophe already created a `default` locale implicitly. Leaving that out of your locale configuration would give you no way to access the existing content.
 
 The parent-child relationship between locales is just a convenience for quickly exporting content to them, as you'll see below. You can nest `children` as many levels deep as you wish.
 
