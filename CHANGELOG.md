@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.25.2
+
+* Improved getting started documentation: the `defaultLocale` option should never specify a private locale, as this is detrimental to the experience of site visitors (if the locale cannot be inferred from prefix or hostname, the first page they visit is a 404). No code changes.
+
 ## 2.25.1
 
 * Moved "also force export related documents, such as images" to the top of the modal to prevent conflict when there are many locales and to make it easier to find.
