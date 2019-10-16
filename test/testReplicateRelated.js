@@ -169,6 +169,72 @@ describe('Workflow replication of related docs for new locales: initial locales'
     });
   });
 
+  it('secondary newly inserted subtree is initially only replicated draft/live', function() {
+    let req = apos.tasks.getReq({ locale: 'es-draft' });
+    let home, subpage, grandchild;
+    return apos.pages.find(req, { slug: '/' }).toObject().then(function(_home) {
+      home = _home;
+      assert(home);
+      return apos.pages.insert(req, home._id, {
+        title: 'Cheeses',
+        slug: '/cheeses',
+        type: 'testPage',
+        published: true,
+        body: {
+          type: 'area',
+          items: [
+            {
+              type: 'apostrophe-rich-text',
+              id: 'test1',
+              content: '<h4>Test</h4>'
+            }
+          ]
+        }
+      });
+    }).then(function(_subpage) {
+      subpage = _subpage;
+      assert(subpage);
+      assert(subpage.slug === '/cheeses');
+      assert(subpage.workflowGuid);
+      return apos.docs.db.find({ workflowGuid: subpage.workflowGuid }).toArray();
+    }).then(function(peers) {
+      assert(peers.length === 2);
+      assert(peers.find(function(peer) {
+        return peer.workflowLocale === apos.workflow.liveify(req.locale);
+      }));
+      assert(peers.find(function(peer) {
+        return peer.workflowLocale === apos.workflow.draftify(req.locale);
+      }));
+    }).then(function() {
+      return apos.pages.insert(req, subpage._id, { title: 'Camembert', slug: '/cheeses/camembert', type: 'testPage', published: true });
+    }).then(function(_grandchild) {
+      grandchild = _grandchild;
+      assert(grandchild);
+      assert(grandchild.slug === '/cheeses/camembert');
+      assert(grandchild.level === 2);
+      assert(grandchild.workflowGuid);
+      return apos.docs.db.find({ workflowGuid: grandchild.workflowGuid }).toArray();
+    }).then(function(peers) {
+      assert(peers.length === 2);
+      assert(peers.find(function(peer) {
+        return peer.workflowLocale === apos.workflow.liveify(req.locale);
+      }));
+      assert(peers.find(function(peer) {
+        return peer.workflowLocale === apos.workflow.draftify(req.locale);
+      }));
+    }).then(function() {
+      return apos.docs.db.update({
+        _id: home._id
+      }, {
+        $addToSet: {
+          // This time only the grandchild is "cool," which will trigger logic
+          // to resolve the impact on the page tree
+          coolPagesIds: [ grandchild._id ]
+        }
+      });
+    });
+  });
+
   it('make sure locale of all docs can be distinguished easily for testing who replicated from whom', function() {
     return apos.docs.db.find({}).toArray().then(function(docs) {
       return Promise.mapSeries(docs, function(doc) {
@@ -386,6 +452,45 @@ describe('Workflow replication of related docs for new locales: expanded locales
     });
   });
 
+  it('Grandchild replicated via relationship is available in new locale via children({ depth: 2 })', function() {
+    var req = apos.tasks.getReq({ locale: 'es-mx-draft' });
+    return apos.pages.find(req, { slug: '/' }).children({ depth: 2 }).toObject().then(function(home) {
+      assert(home);
+      var about = _.find(home._children, { slug: '/about' });
+      assert(about);
+      var people = _.find(about._children, { slug: '/about/people' });
+      assert(people);
+    });
+  });
+
+  it('Child not replicated via relationship is not available in new locale via children({ depth: 1 })', function() {
+    var req = apos.tasks.getReq({ locale: 'es-mx-draft' });
+    return apos.pages.find(req, { slug: '/' }).children({ depth: 1 }).toObject().then(function(home) {
+      assert(home);
+      var about = _.find(home._children, { slug: '/about' });
+      assert(about);
+      var simpleSubpage = _.find(home._children, { slug: '/simple-subpage' });
+      assert(!simpleSubpage);
+    });
+  });
+
+  it('Replicated grandchild whose parent is not replicated appears in new locale', function() {
+    var req = apos.tasks.getReq({ locale: 'es-mx-draft' });
+    return apos.pages.find(req, { slug: '/cheeses/camembert' }).toObject().then(function(camembert) {
+      assert(camembert);
+    });
+  });
+
+  it('Replicated grandchild whose parent is not replicated appears in new locale as direct child of homepage', function() {
+    var req = apos.tasks.getReq({ locale: 'es-mx-draft' });
+    return apos.pages.find(req, { slug: '/' }).children({ depth: 1 }).toObject().then(function(home) {
+      assert(home);
+      var camembert = _.find(home._children, { slug: '/cheeses/camembert' });
+      assert(camembert);
+      camembert = _.find(home._children, { path: '/camembert' });
+      assert(camembert);
+    });
+  });
 });
 
 function instantiate(locales, callback) {
