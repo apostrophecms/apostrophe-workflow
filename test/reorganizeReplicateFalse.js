@@ -43,6 +43,9 @@ describe('Workflow Reorganize with replicate:false', function() {
                 },
                 {
                   name: 'fr'
+                },
+                {
+                  name: 'es'
                 }
               ]
             }
@@ -188,6 +191,29 @@ describe('Workflow Reorganize with replicate:false', function() {
     return page2IsNestedUnderPage1('en-draft');
   });
 
+  it('... and still nonexistent in the unrelated es-draft', function() {
+    return page2DoesNotExist('es-draft');
+  });
+
+  it('can force export page2 and page1 to es-draft, in that order (reversed)', function() {
+    const req = apos.tasks.getReq({ locale: 'default-draft' });
+    const workflow = apos.modules['apostrophe-workflow'];
+    const forceExport = Promise.promisify(workflow.forceExport);
+    let home;
+    return Promise.try(function() {
+      return apos.pages.find(req, { slug: '/' }).children({ depth: 2 }).toObject();
+    }).then(function(_home) {
+      home = _home;
+      return forceExport(req, home._children[0]._children[0]._id, [ 'es' ]);
+    }).then(function() {
+      return forceExport(req, home._children[0]._id, [ 'es' ]);
+    });
+  });
+
+  it('after force exports page1 and page2 are peers, in reverse order, in es-draft because the parent was not available when the child first arrived', function() {
+    return page1AndPage2ArePeersReversed('es-draft');
+  });
+
   function page1AndPage2ArePeers(locale) {
     return Promise.try(function() {
       return apos.docs.db.find({ workflowLocale: locale }).toArray();
@@ -197,6 +223,24 @@ describe('Workflow Reorganize with replicate:false', function() {
       assert(home);
       const page1 = home._children[0];
       const page2 = home._children[1];
+      assert(page1.title === 'page1');
+      assert(page1.path === '/page1');
+      assert(page1.level === 1);
+      assert(page2.title === 'page2');
+      assert(page2.path === '/page2');
+      assert(page2.level === 1);
+    });
+  }
+
+  function page1AndPage2ArePeersReversed(locale) {
+    return Promise.try(function() {
+      return apos.docs.db.find({ workflowLocale: locale }).toArray();
+    }).then(function(docs) {
+      return apos.pages.find(apos.tasks.getReq({ locale: locale }), { slug: '/' }).children({ depth: 2, trash: null }).toObject();
+    }).then(function(home) {
+      assert(home);
+      const page2 = home._children[0];
+      const page1 = home._children[1];
       assert(page1.title === 'page1');
       assert(page1.path === '/page1');
       assert(page1.level === 1);
