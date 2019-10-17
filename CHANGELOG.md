@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.25.3
+
+* Fix crashing bug when a child page is force exported but its parent is not in the target locale, which should make it a child of the home page in that locale. Unit test for that situation (test fails without the fix in place). Guarantee that "Force Export" processes pages parent first, to minimize odd page tree outcomes.
+* Unit tests of reorganize, commit, export, batch export operations with `replicateAcrossLocales: false`.
+* If the hostname is a configured one for workflow and no prefix match is present but `defaultLocalesByHostname` is set, treat that as a clear signal that should always set `req.locale` rather than deferring to preexisting values in `req.locale`.
+
 ## 2.25.2
 
 * Improved getting started documentation: the `defaultLocale` option should never specify a private locale, as this is detrimental to the experience of site visitors (if the locale cannot be inferred from prefix or hostname, the first page they visit is a 404). No code changes.
