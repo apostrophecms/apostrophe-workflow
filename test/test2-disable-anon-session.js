@@ -161,6 +161,10 @@ describe('Workflow Subdomains and Prefixes', function() {
         Host: parsed.host
       }[propName];
     };
+    req.res.redirect = function(url) {
+      req.url = url;
+      after(req);
+    };
 
     var workflow = apos.modules['apostrophe-workflow'];
     assert(workflow);
@@ -203,6 +207,13 @@ describe('Workflow Subdomains and Prefixes', function() {
   it('can detect a root-level locale via middleware - case 2', function (done) {
     tryMiddleware('http://example.com/some-url', function (req) {
       assert(req.locale === 'us-en');
+      done();
+    });
+  });
+
+  it('can find a defaultLocaleByHostname-determined locale via middleware', function(done) {
+    tryMiddleware('http://tt.com', function(req) {
+      assert(req.locale === 'tt-one');
       done();
     });
   });
@@ -858,14 +869,6 @@ describe('Workflow Subdomains and Prefixes', function() {
     });
     apos.modules['apostrophe-workflow'].guessLocale(req);
     assert(req.locale === 'default');
-    req = apos.tasks.getAnonReq({
-      locale: false,
-      get: function() {
-        return 'tt.com';
-      }
-    });
-    apos.modules['apostrophe-workflow'].guessLocale(req);
-    assert(req.locale === 'tt-one');
   });
 
 });
