@@ -1,3 +1,5 @@
+test/locales
+test/public
 npm-debug.log
 *.DS_Store
 node_modules
