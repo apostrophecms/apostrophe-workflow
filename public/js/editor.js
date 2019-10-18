@@ -142,8 +142,9 @@ function AposWorkflowManager() {
       // When workflow is active and we don't have publish permission,
       // we can add new subpages but that's really about it. Don't
       // let mere editors do things for which we don't have
-      // a workflow UI
-      $('.apos-page-bar [class*="apos-new"]').siblings().remove();
+      // a workflow UI. Don't do this inside the admin bar, only
+      // in the context menu
+      $('.apos-pages-menu .apos-page-bar [class*="apos-new"]').siblings().remove();
     }
     if (document.location.href.match(/\?workflowEditMode/)) {
       $('[data-workflow-mode="draft"]').click();
