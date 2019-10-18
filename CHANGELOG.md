@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.25.4
+
+* Version 2.25.3 introduced a regression that broke routing to locales determined by both prefix and hostname in the presence of a matching defaultHostnameByLocale. Version 2.25.4 corrects this bug and introduces an additional unit test to make sure none of these cases break in the future.
+
 ## 2.25.3
 
 * Fix crashing bug when a child page is force exported but its parent is not in the target locale, which should make it a child of the home page in that locale. Unit test for that situation (test fails without the fix in place). Guarantee that "Force Export" processes pages parent first, to minimize odd page tree outcomes.

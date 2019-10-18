@@ -212,6 +212,13 @@ describe('Workflow Subdomains and Prefixes', function() {
     });
   });
 
+  it('can find a jointly determined locale via middleware when a defaultLocaleByHostname is also present', function(done) {
+    tryMiddleware('http://tt.com/two', function(req) {
+      assert(req.locale === 'tt-two');
+      done();
+    });
+  });
+
   it('does not misinterpret an API URL as cause for a locale change', function (done) {
     tryMiddleware('http://example.com/modules/apostrophe-workflow/test', function (req) {
       assert(req.locale === 'default');
