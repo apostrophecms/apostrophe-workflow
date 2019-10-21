@@ -19,6 +19,7 @@ apos.define('apostrophe-workflow', {
     self.enableForceExport();
     self.enableForceExportWidget();
     self.enableCrossDomainSessionToken();
+    self.enableLocaleHeader();
   },
 
   construct: function(self, options) {
@@ -740,6 +741,14 @@ apos.define('apostrophe-workflow', {
         window.location.href = href;
       });
     };
-
+    self.enableLocaleHeader = function() {
+      // AJAX requests include a locale header to work around the fact
+      // that we only prefix page URLs with a locale prefix
+      $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+        if ((options.type !== 'OPTIONS') && (!options.crossDomain)) {
+          jqXHR.setRequestHeader('Apostrophe-Locale', self.locale);
+        }
+      });
+    };
   }
 });
