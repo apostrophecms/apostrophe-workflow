@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.25.5
+
+* Versions 2.25.3 and above treat a default locale for a hostname as a firm signal of the appropriate locale. This makes sense for pages and is necessary when other middleware and modules may have set `req.locale` incorrectly prior to the workflow middleware's execution. However, Apostrophe's internal APIs do not carry a workflow prefix. As a result, this change broke editing API calls for locales that have a prefix when a default locale for a particular hostname is also present. To resolve this, beginning with 2.25.5 all editing API calls now carry an `Apostrophe-Locale` header which is authoritative.
+
 ## 2.25.4
 
 * Version 2.25.3 introduced a regression that broke routing to locales determined by both prefix and hostname in the presence of a matching defaultHostnameByLocale. Version 2.25.4 corrects this bug and introduces an additional unit test to make sure none of these cases break in the future.
