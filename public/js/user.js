@@ -359,6 +359,24 @@ apos.define('apostrophe-workflow', {
       });
     };
 
+    self.enableForceExportRelated = function() {
+      apos.ui.link('apos-workflow-force-export-related', null, function($el, id) {
+        self.forceExportRelated(id);
+      });
+    };
+
+    self.forceExportRelated = function(id, callback) {
+      return apos.areas.saveAllIfNeeded(function() {
+        return apos.create('apostrophe-workflow-force-export-related-modal',
+          _.assign({
+            manager: self,
+            body: { id: id, lead: true },
+            after: callback
+          }, options)
+        );
+      });
+    };
+
     self.launchBatchForceExportModal = function(options, callback) {
       return apos.create('apostrophe-workflow-batch-force-export-modal',
         _.assign({}, self.options, {
