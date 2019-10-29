@@ -17,6 +17,7 @@ apos.define('apostrophe-workflow', {
     self.enableManageModal();
     self.enableLocalePickerModal();
     self.enableForceExport();
+    self.enableForceExportRelated();
     self.enableForceExportWidget();
     self.enableCrossDomainSessionToken();
     self.enableLocaleHeader();
@@ -356,6 +357,61 @@ apos.define('apostrophe-workflow', {
             after: callback
           }, options)
         );
+      });
+    };
+
+    self.enableForceExportRelated = function() {
+      apos.ui.link('apos-workflow-force-export-related', null, function($el, id) {
+        self.forceExportRelated(id);
+      });
+    };
+
+    self.forceExportRelated = function(docId, callback) {
+      self.commitAllRelated = false;
+      self.skipAllRelated = false;
+      return apos.areas.saveAllIfNeeded(function() {
+        return self.getEditable({ ids: [ docId ], related: true }, function(err, result) {
+          if (err) {
+            return callback(err);
+          }
+          var all = result.modified.concat(result.unmodified).filter(function(id) {
+            return id !== docId;
+          });
+          if (!all.length) {
+            apos.notify('There were no related documents.', { dismiss: true });
+            return callback && callback(null);
+          }
+          return async.eachSeries(all, function(id, callback) {
+            if (self.commitAllRelated) {
+              return self.api('force-export', {
+                id: id
+              }, function(info) {
+                if (info.status !== 'ok') {
+                  return callback(info.status);
+                }
+                return callback(null);
+              }, callback);
+            } else if (self.skipAllRelated) {
+              return setImmediate(callback);
+            } else {
+              return apos.create('apostrophe-workflow-force-export-modal',
+                _.assign(
+                  {},
+                  options,
+                  {
+                    body: {
+                      id: id,
+                      lead: false
+                    },
+                    after: callback
+                  }
+                )
+              );
+            }
+          }, function(err) {
+            return callback && callback(err);
+          });
+        });
       });
     };
 
