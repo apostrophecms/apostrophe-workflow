@@ -366,16 +366,16 @@ apos.define('apostrophe-workflow', {
       });
     };
 
-    self.forceExportRelated = function(id, callback) {
+    self.forceExportRelated = function(docId, callback) {
       self.commitAllRelated = false;
       self.skipAllRelated = false;
       return apos.areas.saveAllIfNeeded(function() {
-        return self.getEditable({ ids: [ id ], related: true }, function(err, result) {
+        return self.getEditable({ ids: [ docId ], related: true }, function(err, result) {
           if (err) {
             return callback(err);
           }
-          var all = result.modified.concat(result.unmodified).filter(function(_id) {
-            return _id !== id;
+          var all = result.modified.concat(result.unmodified).filter(function(id) {
+            return id !== docId;
           });
           if (!all.length) {
             apos.notify('There were no related documents.', { dismiss: true });
