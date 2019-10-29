@@ -384,8 +384,7 @@ apos.define('apostrophe-workflow', {
           return async.eachSeries(all, function(id, callback) {
             if (self.commitAllRelated) {
               return self.api('force-export', {
-                id: id,
-                locales: locales
+                id: id
               }, function(info) {
                 if (info.status !== 'ok') {
                   return callback(info.status);
