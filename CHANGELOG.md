@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.26.0
+
+* A "Force Export Related" option has been added to the Workflow menu of Page Settings and the edit view of pieces. This option is identical to exporting related documents after a force export, except that the current document is *not* force exported again — just the related documents. Thanks to Freshworks for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+* Workflow is now more compatible with the global `prefix` option of Apostrophel. Thanks to Sebastian Gassner for the well-analyzed bug report.
+* The last modification date is now displayed when committing a document, and n overflow issue with commit previews was resolved. Thanks to Bharathkumar Chandrasekaran of Freshworks for these contributions.
+
 ## 2.25.5
 
 * Versions 2.25.3 and above treat a default locale for a hostname as a firm signal of the appropriate locale. This makes sense for pages and is necessary when other middleware and modules may have set `req.locale` incorrectly prior to the workflow middleware's execution. However, Apostrophe's internal APIs do not carry a workflow prefix. As a result, this change broke editing API calls for locales that have a prefix when a default locale for a particular hostname is also present. To resolve this, beginning with 2.25.5 all editing API calls now carry an `Apostrophe-Locale` header which is authoritative.
