@@ -14,10 +14,6 @@
 
 {%- block label -%}
   {{ __('[%s of %s] Committing %s', data.index, data.total, data.doc.title or data.doc.slug) }}
-
-  {% if data.doc.workflowLastEditor | length %}
-    <p class="apos-workflow-last-modified">Last modified by {{data.doc.workflowLastEditor}}</p>
-  {% endif %}
 {%- endblock -%}
 
 {% block instructions %}
