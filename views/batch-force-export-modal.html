@@ -23,9 +23,11 @@
 {% endblock %}
 
 {%- block body -%}
-<p class="apos-workflow-export-option">
+<div class="apos-workflow-export-option">
   <input type="checkbox" name="related">Also force export related documents, such as images
-</p>
+  <div class="apos-workflow-export-related-types" data-related-types></div>
+</div>
+{# ajax populates me #}
 <div class="apos-workflow-export-locales apos-workflow-export-locales--option">
   {{ localeTree.tree(
     'locales',

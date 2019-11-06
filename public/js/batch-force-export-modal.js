@@ -11,6 +11,35 @@ apos.define('apostrophe-workflow-batch-force-export-modal', {
 
   construct: function(self, options) {
 
+    var superBeforeShow = self.beforeShow;
+    var relatedByType;
+
+    self.beforeShow = function(callback) {
+      return superBeforeShow(function(err) {
+        if (err) {
+          return callback(err);
+        }
+        self.$el.on('change', '[name="related"]', function() {
+          if (!relatedByType) {
+            apos.ui.globalBusy(true);
+            self.api('count-related-by-type', {
+              ids: self.options.body.ids
+            }, function(data) {
+              apos.ui.globalBusy(false);
+              if (data.status !== 'ok') {
+                return callback(data.status);
+              }
+              self.$el.find('[data-related-types]').html(data.html); 
+            }, function(err) {
+              apos.ui.globalBusy(false);
+              return callback(err);
+            });
+          }
+        });
+        return callback(null);
+      });
+    };
+
     self.saveContent = function(callback) {
       var locales = self.getLocales();
       if (!locales.length) {
@@ -23,6 +52,11 @@ apos.define('apostrophe-workflow-batch-force-export-modal', {
       // method to see the locales that were chosen
       self.options.body.locales = locales;
       self.options.body.related = related;
+      self.options.body.relatedTypes = [];
+      self.$el.find('[name="relatedTypes"]:checked').each(function() {
+        self.options.body.relatedTypes.push($(this).attr('value'));
+      });
+      console.log(self.options.body.relatedTypes);
       return callback(null);
     };
 
