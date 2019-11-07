@@ -56,7 +56,6 @@ apos.define('apostrophe-workflow-batch-force-export-modal', {
       self.$el.find('[name="relatedTypes"]:checked').each(function() {
         self.options.body.relatedTypes.push($(this).attr('value'));
       });
-      console.log(self.options.body.relatedTypes);
       return callback(null);
     };
 
