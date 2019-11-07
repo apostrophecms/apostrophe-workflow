@@ -29,7 +29,7 @@ apos.define('apostrophe-workflow-batch-force-export-modal', {
               if (data.status !== 'ok') {
                 return callback(data.status);
               }
-              self.$el.find('[data-related-types]').html(data.html); 
+              self.$el.find('[data-related-types]').html(data.html);
             }, function(err) {
               apos.ui.globalBusy(false);
               return callback(err);
