@@ -174,20 +174,15 @@
   input {
     margin-right: 12px;
   }
-  height: 48px;
   background-color: @apos-white;
 }
 
 .apos-ui .apos-workflow-locale-picker,
 .apos-ui .apos-workflow-export-locales {
-  height: 100%;
   max-width: 740px;
   margin-left: 220px;
   padding-top: @apos-padding-2;
   background-color: @apos-white;
-  &.apos-workflow-export-locales--option {
-    height: ~"calc(100% - 60px)";
-  }
 }
 
 .apos-ui .apos-workflow-locale-picker-items,
@@ -265,4 +260,11 @@
 
 .apos-field-apply-to-subpages .apos-workflow-field-controls {
   display: none;
+}
+
+.apos-ui .apos-workflow-export-related-types {
+  margin: 16px 0;
+  li {
+    margin-left: 24px;
+  }
 }
