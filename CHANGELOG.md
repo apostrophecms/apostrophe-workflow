@@ -2,7 +2,7 @@
 
 ## 2.27.0
 
-* When using "Batch Force Export," if you check the box to also force export related documents, you are now prompted to confirm whether you want to force export each related document type. This allows you to avoid inadvertently exporting pages that are joined via link widgets, for instance, when you only had images and files in mind. Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+* When using "Batch Force Export," if you check the box to also force export related documents, you are now prompted to confirm whether you want to force export each related document type. This allows you to avoid inadvertently exporting pages that are joined via link widgets, for instance, when you only had images and files in mind. A similar change is likely to come to the individual "force export" options in page settings and the pieces editor soon. Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
 
 ## 2.26.0
 
