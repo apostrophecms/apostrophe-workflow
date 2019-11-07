@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.27.0
+
+* When using "Batch Force Export," if you check the box to also force export related documents, you are now prompted to confirm whether you want to force export each related document type. This allows you to avoid inadvertently exporting pages that are joined via link widgets, for instance, when you only had images and files in mind. Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+
 ## 2.26.0
 
 * A "Force Export Related" option has been added to the Workflow menu of Page Settings and the edit view of pieces. This option is identical to exporting related documents after a force export, except that the current document is *not* force exported again — just the related documents. Thanks to Freshworks for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
