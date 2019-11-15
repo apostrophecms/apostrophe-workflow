@@ -697,7 +697,7 @@ As with pieces, change "Trash" to "No." The "Trash" field will be located right 
 
 ## Removing workflow from a project
 
-It is possible to remove workflow from a project.
+It is possible to remove workflow from a project. If you want localization and/or an approval process, you want to keep it. But if you don't want *either* of those things anymore, read on.
 
 **WHEN YOU REMOVE WORKFLOW, ALL CONTENT IS DELETED FOREVER, EXCEPT FOR THE ONE LOCALE YOU CHOOSE TO KEEP, AND EITHER THE DRAFT OR THE LIVE CONTENT, WHICHEVER YOU CHOOSE TO KEEP.** We **strongly** recommend backing up your database with `mongodump` before you remove workflow.
 
@@ -714,10 +714,19 @@ This command will remove workflow from a project with locales. ONLY THE `en` LOC
 
 ```
 # Keep ONLY the "draft" content fron the "en" locale
-node app apostrophe-workflow:remove --en --draft
+node app apostrophe-workflow:remove --locale=en --draft
 ```
 
 > "Why does it work this way?" If there is no workflow module to interpret URLs across locales, or determine whether you are in draft or live mode, then there is no way to serve more than one home page, etc. If you want to keep these features, you must keep the workflow module.
+
+### Removing workflow in production
+
+Some notes on removing workflow from a site that is already in production:
+
+1. Always back up the database first (`mongodump`).
+2. Plan for downtime. You need to shut the site down while running the `apostrophe-workflow:remove` task so that it does not attempt to reinsert workflow-related things.
+3. Run the task on the server while the site is shut down.
+4. Redeploy your site with the `apostrophe-workflow` module removed from the configuration.
 
 ## Other developer concerns
 
