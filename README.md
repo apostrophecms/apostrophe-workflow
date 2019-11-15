@@ -59,6 +59,7 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
     + [Working with the "fr-committers" account](#user-content-working-with-the-fr-committers-account)
     + [Exporting](#user-content-exporting)
     + [Accessing newly created pages in other locales](#user-content-accessing-newly-created-pages-in-other-locales)
+- [Removing workflow from a project](#removing-workflow-from-a-project)
 - [Other developer concerns](#user-content-other-developer-concerns)
   * [Aliasing the module](#user-content-aliasing-the-module)
   * [Previewing piece types without an index page](#user-content-previewing-piece-types-without-an-index-page)
@@ -117,7 +118,7 @@ If you are using the `park` option with `apostrophe-pages`, and you have not alr
 
 Odds are, you already have a database. Either from an existing project, or for a new one, since Apostrophe creates the database on the very first run. So, follow these steps to add workflow to your database.
 
-1. **FOR EXISTING PROJECTS, BACK UP YOUR DATABASE,** In case you decide this module is not for you. Currently there is no command to stop using workflow once you start.
+1. **For existing projects, we recommend backing up your database first,** to make it easier to change your mind. However, there is an `apostrophe-workflow:remove` task available if you choose to remove workflow later.
 
 You should initially experiment with this module with a *local* copy of your site, not your live production content.
 
@@ -693,6 +694,39 @@ For pieces, it is straightforward to switch locales, click to edit that type of 
 For pages, it is almost as straightforward. Click on "Pages" in the admin bar to access the "reorganize" view. Here you can locate a page in the trash at any level. Just locate its parent page, then click on the trash can displayed at that level in the tree to open the trash and find the page you want.
 
 As with pieces, change "Trash" to "No." The "Trash" field will be located right after the "Published" field. When you click save, the page will be live in this locale.
+
+## Removing workflow from a project
+
+It is possible to remove workflow from a project. If you want localization and/or an approval process, you want to keep it. But if you don't want *either* of those things anymore, read on.
+
+**WHEN YOU REMOVE WORKFLOW, ALL CONTENT IS DELETED FOREVER, EXCEPT FOR THE ONE LOCALE YOU CHOOSE TO KEEP, AND EITHER THE DRAFT OR THE LIVE CONTENT, WHICHEVER YOU CHOOSE TO KEEP.** We **strongly** recommend backing up your database with `mongodump` before you remove workflow.
+
+This command will remove workflow from a project without locales (a project which has a "commit" button, but no language picker):
+
+```
+# Keep the live content, DISCARD the draft content
+node app apostrophe-workflow:remove --live
+```
+
+You may also specify `--draft`. You may NOT specify both draft and live.
+
+This command will remove workflow from a project with locales. ONLY THE `en` LOCALE IS KEPT IN THIS EXAMPLE. EVERYTHING ELSE IS DELETED:
+
+```
+# Keep ONLY the "draft" content fron the "en" locale
+node app apostrophe-workflow:remove --locale=en --draft
+```
+
+> "Why does it work this way?" If there is no workflow module to interpret URLs across locales, or determine whether you are in draft or live mode, then there is no way to serve more than one home page, etc. If you want to keep these features, you must keep the workflow module.
+
+### Removing workflow in production
+
+Some notes on removing workflow from a site that is already in production:
+
+1. Always back up the database first (`mongodump`).
+2. Plan for downtime. You need to shut the site down while running the `apostrophe-workflow:remove` task so that it does not attempt to reinsert workflow-related things.
+3. Run the task on the server while the site is shut down.
+4. Redeploy your site with the `apostrophe-workflow` module removed from the configuration.
 
 ## Other developer concerns
 
