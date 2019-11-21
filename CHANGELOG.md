@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.28.0
+
+* Joins in `object` fields now remap properly when committing. Thanks to Eric Wong for this contribution.
+* The new `apostrophe-workflow:remove` task removes workflow from a project. YOU MUST remove `apostrophe-workflow` from `app.js` immediately AFTER you run this task. NOTE: if you are localizing content, you will lose ALL BUT ONE of your locales if you remove workflow! You really should READ THE DOCUMENTATION for more information about the consequences and the right way to use this in production.
+
 ## 2.27.0
 
 * When using "Batch Force Export," if you check the box to also force export related documents, you are now prompted to confirm whether you want to force export each related document type. This allows you to avoid inadvertently exporting pages that are joined via link widgets, for instance, when you only had images and files in mind. A similar change is likely to come to the individual "force export" options in page settings and the pieces editor soon. Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
