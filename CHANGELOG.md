@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.28.1
+
+* When exporting a commit to another locale, a change in an attachment property is now properly applied as part of the patch.
+
 ## 2.28.0
 
 * Joins in `object` fields now remap properly when committing. Thanks to Eric Wong for this contribution.
