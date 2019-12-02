@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.28.1
+
+* Fixed a bug that sometimes prevented editing from working properly in draft mode, generating errors similar to "item does not exist." This bug was caused by a conflict between the `i18n` module and `apostrophe-workflow` in their understanding of draft locales.
+
 ## 2.28.0
 
 * Joins in `object` fields now remap properly when committing. Thanks to Eric Wong for this contribution.
