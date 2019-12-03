@@ -1,8 +1,12 @@
 # Changelog
 
-## 2.28.1
+## 2.28.2
 
 * When exporting a commit to another locale, a change in an attachment property is now properly applied as part of the patch.
+
+## 2.28.1
+
+* Fixed a bug that sometimes prevented editing from working properly in draft mode, generating errors similar to "item does not exist." This bug was caused by a conflict between the `i18n` module and `apostrophe-workflow` in their understanding of draft locales.
 
 ## 2.28.0
 

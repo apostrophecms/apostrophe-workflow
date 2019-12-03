@@ -6,7 +6,7 @@ describe('Workflow Subdomains and Prefixes', function() {
 
   var apos;
 
-  this.timeout(5000);
+  this.timeout(20000);
 
   after(function(done) {
     require('apostrophe/test-lib/util').destroy(apos, done);
