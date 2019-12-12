@@ -139,6 +139,9 @@ apos.define('apostrophe-workflow', {
     //
     // If `options.related` is truthy then related documents,
     // i.e. related via joins or widgets, are also included.
+    // However, if `options.onlyIfNewIn` is present, then
+    // related documents are returned only if they do NOT
+    // yet exist in at least ONE of the the locales in that array.
     //
     // If `options.ids` is specified, those ids are
     // considered rather than those found on the page.
