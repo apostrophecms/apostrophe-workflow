@@ -67,7 +67,7 @@ apos.define('apostrophe-workflow-force-export-modal', {
             return apos.create('apostrophe-workflow-force-export-modal',
               _.assign(
                 {},
-                options,
+                _.omit(options, [ 'source', 'verb' ]),
                 {
                   body: {
                     id: id,

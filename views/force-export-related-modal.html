@@ -1,0 +1,45 @@
+{%- extends "apostrophe-modal:base.html" -%}
+{%- import "apostrophe-modal:macros.html" as modals -%}
+{%- import "apostrophe-ui:components/buttons.html" as buttons with context -%}
+{%- import "locale-tree.html" as localeTree -%}
+
+{%- block modalClass -%}
+  apos-workflow-export-modal apos-ui-modal-no-sidebar
+{%- endblock -%}
+
+{%- block controls -%}
+  {{ buttons.minor('Skip', { action: 'cancel' }) }}
+  {{ buttons.major('Force Export Related', { action: 'save' }) }}
+{%- endblock -%}
+
+{%- block label -%}
+  {{ __('Forcing export of documents related to %s (%s)', data.doc.title, data.doc.workflowLocale) }}
+{%- endblock -%}
+
+{% block instructions %}
+  <p>
+    {{ __('You are forcing an export of documents related to this document, which will copy their drafts verbatim to other locales. Select locales below, and check the box if you wish to force export documents even if they already exist in the other locales.') }}
+  </p>
+  <div class="apos-workflow-export-option">
+    {# Here for compatibility with the inherited logic, will be hidden by JS and always checked #}
+    <label for="related"><input type="checkbox" name="related">Also offer to force export related documents, such as images</label>
+    {# Really in play #}
+    <label for="relatedExisting"><input type="checkbox" name="relatedExisting">Offer to force export related documents even if they already exist in the target locale</label>
+  </div>
+{% endblock %}
+
+{%- block body -%}
+<div class="apos-workflow-export-locales">
+  {{ localeTree.tree(
+    'locales',
+    [
+      {
+        name: 'locale'
+      }
+    ],
+    data.nestedLocales)
+  }}
+</div>
+{%- endblock -%}
+
+{%- block footerContainer -%}{%- endblock -%}

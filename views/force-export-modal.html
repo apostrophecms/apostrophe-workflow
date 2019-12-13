@@ -9,7 +9,7 @@
 
 {%- block controls -%}
   {{ buttons.minor('Skip', { action: 'cancel' }) }}
-  {{ buttons.major('Export', { action: 'save' }) }}
+  {{ buttons.major('Force Export', { action: 'save' }) }}
 {%- endblock -%}
 
 {%- block label -%}
@@ -20,12 +20,7 @@
   <p>
     {{ __('You are forcing an export, which will copy this draft verbatim to other locales. Select them below, then click Export. Selecting the %s locale may still be helpful to select sub-locales.', data.doc.workflowLocale, data.doc.workflowLocale) }}
   </p>
-  {% if data.lead %}
-    <div class="apos-workflow-export-option">
-      <label for="related"><input type="checkbox" name="related">Also offer to force export related documents, such as images</label>
-      <label for="relatedExisting"><input type="checkbox" name="relatedExisting">Offer to force export related documents even if they already exist in the target locale</label>
-    </div>
-  {% else %}
+  {% if not data.lead %}
     <p>
       {{ __('This related item may also be visible. Please consider exporting it too for a more complete result.') }}
     </p>
@@ -38,6 +33,10 @@
 {% endblock %}
 
 {%- block body -%}
+<div class="apos-workflow-export-option">
+  <label for="related"><input type="checkbox" name="related">Also offer to force export related documents, such as images</label>
+  <label for="relatedExisting"><input type="checkbox" name="relatedExisting">Offer to force export related documents even if they already exist in the target locale</label>
+</div>
 <div class="apos-workflow-export-locales">
   {{ localeTree.tree(
     'locales',
