@@ -139,6 +139,9 @@ apos.define('apostrophe-workflow', {
     //
     // If `options.related` is truthy then related documents,
     // i.e. related via joins or widgets, are also included.
+    // However, if `options.onlyIfNewIn` is present, then
+    // related documents are returned only if they do NOT
+    // yet exist in at least ONE of the the locales in that array.
     //
     // If `options.ids` is specified, those ids are
     // considered rather than those found on the page.
@@ -367,52 +370,13 @@ apos.define('apostrophe-workflow', {
     };
 
     self.forceExportRelated = function(docId, callback) {
-      self.commitAllRelated = false;
-      self.skipAllRelated = false;
-      return apos.areas.saveAllIfNeeded(function() {
-        return self.getEditable({ ids: [ docId ], related: true }, function(err, result) {
-          if (err) {
-            return callback(err);
-          }
-          var all = result.modified.concat(result.unmodified).filter(function(id) {
-            return id !== docId;
-          });
-          if (!all.length) {
-            apos.notify('There were no related documents.', { dismiss: true });
-            return callback && callback(null);
-          }
-          return async.eachSeries(all, function(id, callback) {
-            if (self.commitAllRelated) {
-              return self.api('force-export', {
-                id: id
-              }, function(info) {
-                if (info.status !== 'ok') {
-                  return callback(info.status);
-                }
-                return callback(null);
-              }, callback);
-            } else if (self.skipAllRelated) {
-              return setImmediate(callback);
-            } else {
-              return apos.create('apostrophe-workflow-force-export-modal',
-                _.assign(
-                  {},
-                  options,
-                  {
-                    body: {
-                      id: id,
-                      lead: false
-                    },
-                    after: callback
-                  }
-                )
-              );
-            }
-          }, function(err) {
-            return callback && callback(err);
-          });
-        });
-      });
+      return apos.create('apostrophe-workflow-force-export-related-modal',
+        _.assign({
+          manager: self,
+          body: { id: docId, lead: true },
+          after: callback
+        }, options)
+      );
     };
 
     self.launchBatchForceExportModal = function(options, callback) {

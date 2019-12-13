@@ -12,31 +12,41 @@ apos.define('apostrophe-workflow-batch-force-export-modal', {
   construct: function(self, options) {
 
     var superBeforeShow = self.beforeShow;
-    var relatedByType;
 
     self.beforeShow = function(callback) {
       return superBeforeShow(function(err) {
         if (err) {
           return callback(err);
         }
+        self.$el.find('[for="relatedExisting"]').hide();
         self.$el.on('change', '[name="related"]', function() {
-          if (!relatedByType) {
-            apos.ui.globalBusy(true);
-            self.api('count-related-by-type', {
-              ids: self.options.body.ids
-            }, function(data) {
-              apos.ui.globalBusy(false);
-              if (data.status !== 'ok') {
-                return callback(data.status);
-              }
-              self.$el.find('[data-related-types]').html(data.html);
-            }, function(err) {
-              apos.ui.globalBusy(false);
-              return callback(err);
-            });
+          var value = $(this).prop('checked');
+          if (!value) {
+            self.$el.find('[for="relatedExisting"]').hide();
+            self.$el.find('[data-related-types]').hide();
+            return;
           }
+          self.$el.find('[for="relatedExisting"]').show();
+          self.$el.find('[data-related-types]').show();
+          self.fetchRelatedByType();
         });
         return callback(null);
+      });
+    };
+
+    self.fetchRelatedByType = function() {
+      apos.ui.globalBusy(true);
+      self.api('count-related-by-type', {
+        ids: self.options.body.ids
+      }, function(data) {
+        apos.ui.globalBusy(false);
+        if (data.status !== 'ok') {
+          return callback(data.status);
+        }
+        self.$el.find('[data-related-types]').html(data.html);
+      }, function(err) {
+        apos.ui.globalBusy(false);
+        return callback(err);
       });
     };
 
@@ -56,6 +66,7 @@ apos.define('apostrophe-workflow-batch-force-export-modal', {
       self.$el.find('[name="relatedTypes"]:checked').each(function() {
         self.options.body.relatedTypes.push($(this).attr('value'));
       });
+      self.options.body.relatedExisting = self.$el.find('[name="relatedExisting"]').prop('checked');
       return callback(null);
     };
 
