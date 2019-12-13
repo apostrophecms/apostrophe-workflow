@@ -41,12 +41,12 @@ apos.define('apostrophe-workflow-batch-force-export-modal', {
       }, function(data) {
         apos.ui.globalBusy(false);
         if (data.status !== 'ok') {
-          return callback(data.status);
+          apos.utils.error(data.status);
         }
         self.$el.find('[data-related-types]').html(data.html);
       }, function(err) {
         apos.ui.globalBusy(false);
-        return callback(err);
+        apos.utils.error(err);
       });
     };
 
