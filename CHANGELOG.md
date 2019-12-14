@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.29.0
+
+* "Force Export" and "Force Export Related" now ask whether you really want to consider force exporting related documents that already exist in the destination locales. This pairs well with the recommended `replicateAcrossLocales: false` option, as a means of helping users to avoid doing unintentional harm with force exports. Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+
 ## 2.28.2
 
 * When exporting a commit to another locale, a change in an attachment property is now properly applied as part of the patch.
