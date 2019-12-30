@@ -484,6 +484,40 @@ This file will be pushed via a **separate `link` element in the `head`,** prior 
 
 This file currently **WILL NOT** be compiled with LESS, and it **MAY NOT** set LESS variables for other stylesheets to honor. Again, its primary purpose is to declare font face imports in a way that does not require excessive imports that are not needed in other locales.
 
+### Parked pages with localized slugs
+
+In `apostrophe-pages` configuration, you can have parked pages created automatically on server startup. The usual way is to configure a `slug` string for each parked page. If you need localized slugs, there will be a `slug` object instead:
+
+```javascript
+park: [
+  {
+    slug: '/',
+    published: true,
+    _defaults: {
+      title: 'Home',
+      type: 'home'
+    },
+    _children: [
+      {
+        slug: {
+         'en': '/products-en',
+         'fr': '/produits',
+         '_default': '/products'
+        },
+        _defaults: {
+          type: 'product-page',
+          title: 'Product'
+        },
+        published: true,
+        parkedId: 'products'
+      },
+    ]
+  }
+]
+```
+
+The slug keys must match workflow locales. Note the `_default` property for any locales not enumerated in the `slug` object.
+
 ## Workflow with permissions: limiting who can do what
 
 The workflow module supports permissions. This tutorial breaks down how to go about setting up a site with permissions and then creating permissions groups for particular locales. We'll then add new users to each of those groups and experiment with what they can and can't do.
