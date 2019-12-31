@@ -516,7 +516,80 @@ park: [
 ]
 ```
 
-The slug keys must match workflow locales. Note the `_default` property for any locales not enumerated in the `slug` object.
+The slug keys must match workflow locales. Note the `_default` property for any locales not enumerated in the `slug` object. It is mandatory if at least one locale from `apostrophe-workflow` is not mentioned.
+Also, the homepage (`'/'`) cannot be localized this way because prefixes can be configured in `apostrophe-workflow`.
+
+#### Prefixes in localized slugs
+
+If `apostrophe-workflow` has prefixes, it will be automatically to the slugs defined in `apostrophe-pages` parked pages.
+
+For example:
+
+```javascript
+// app.js
+require('apostrophe')({
+  shortName: 'test',
+  modules: {
+    'apostrophe-workflow': {
+      prefixes: {
+        'en': '/en',
+        'fr': '/fr',
+        'de': '/de'
+      }
+    },
+    'apostrophe-pages': {
+      types: [
+        {
+          name: 'home',
+          label: 'Home'
+        },
+        {
+          name: 'product-page',
+          label: 'Product'
+        }
+      ],
+      park: [
+        {
+          slug: '/',
+          published: true,
+          _defaults: {
+            title: 'Home',
+            type: 'home'
+          },
+          _children: [
+            {
+              slug: {
+              'en': '/products-en',
+              'fr': '/produits',
+              '_default': '/products'
+              },
+              _defaults: {
+                type: 'product-page',
+                title: 'Product'
+              },
+              published: true,
+              parkedId: 'products'
+            }
+          ]
+        }
+      ]
+    },
+    product: {
+      extend: 'apostrophe-pieces',
+      name: 'product',
+      label: 'Product'
+    },
+    'product-pages': {
+      extend: 'apostrophe-pieces-pages'
+    }
+  }
+});
+```
+
+With this configuration, the product page URLs created at server startup will be :
+- for the `en` locale: `en/products-en`
+- for the `fr` locale: `fr/produits`
+- for the `de` locale: `de/products`
 
 ## Workflow with permissions: limiting who can do what
 
