@@ -1,8 +1,6 @@
 var assert = require('assert');
-var _ = require('@sailshq/lodash');
-var Promise = require('bluebird');
 
-describe.only('Workflow Core', function() {
+describe('Workflow Core', function() {
 
   var apos;
 
@@ -33,9 +31,9 @@ describe.only('Workflow Core', function() {
               _children: [
                 {
                   slug: {
-                   'us-en': '/products-en',
-                   'fr': '/produits',
-                   '_default': '/products'
+                    'us-en': '/products-en',
+                    'fr': '/produits',
+                    '_default': '/products'
                   },
                   _defaults: {
                     type: 'product-page',
@@ -43,7 +41,7 @@ describe.only('Workflow Core', function() {
                   },
                   published: true,
                   parkedId: 'products'
-                },
+                }
               ]
             }
           ],
@@ -94,7 +92,7 @@ describe.only('Workflow Core', function() {
               ]
             }
           ],
-          defaultLocale: 'default',
+          defaultLocale: 'default'
         }
       },
       afterInit: function(callback) {
