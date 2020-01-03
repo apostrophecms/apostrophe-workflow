@@ -27,7 +27,7 @@
     "name": "P'unk Avenue LLC"
   },
   "bugs": {
-    "url": "https://github.com/punkave/apostrophe-workflow/issues"
+    "url": "https://github.com/apostrophecms/apostrophe-workflow/issues"
   },
   "bundleDependencies": false,
   "dependencies": {
@@ -56,7 +56,7 @@
     "eslint-plugin-standard": "^3.0.1",
     "mocha": "^5.1.1"
   },
-  "homepage": "https://github.com/punkave/apostrophe-workflow#readme",
+  "homepage": "https://github.com/apostrophecms/apostrophe-workflow#readme",
   "keywords": [
     "apostrophe",
     "apostrophecms",
@@ -71,7 +71,7 @@
   "name": "apostrophe-workflow",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/punkave/apostrophe-workflow.git"
+    "url": "git+https://github.com/apostrophecms/apostrophe-workflow.git"
   },
   "scripts": {
     "test": "mocha && eslint ."
