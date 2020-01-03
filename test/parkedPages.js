@@ -41,6 +41,11 @@ describe('Workflow Core', function() {
                   },
                   published: true,
                   parkedId: 'products'
+                }, {
+                  slug: '/test-page',
+                  type: 'product-page',
+                  published: true,
+                  parkedId: 'test-product-page'
                 }
               ]
             }
@@ -110,8 +115,9 @@ describe('Workflow Core', function() {
 
   it('should create parked pages with prefixes', function() {
     return apos.docs.db.find({ type: 'product-page', workflowLocale: 'fr' }).toArray().then(function(pages) {
-      assert(pages && pages[0]);
-      assert(pages[0].slug === '/fr/produits');
+      assert(pages && pages[0] && pages[1]);
+      assert(pages[0].slug === '/fr/produits'); // from slug object
+      assert(pages[1].slug === '/fr/test-page'); // from traditional slug string
     });
   });
 });

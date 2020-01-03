@@ -521,7 +521,7 @@ Also, the homepage (`'/'`) cannot be localized this way because prefixes can be 
 
 #### Prefixes in localized slugs
 
-If `apostrophe-workflow` has prefixes, it will be automatically to the slugs defined in `apostrophe-pages` parked pages.
+They will be automatically added to the slugs defined for parked pages, even if they are localized.
 
 For example:
 
@@ -587,9 +587,9 @@ require('apostrophe')({
 ```
 
 With this configuration, the product page URLs created at server startup will be :
-- for the `en` locale: `en/products-en`
-- for the `fr` locale: `fr/produits`
-- for the `de` locale: `de/products`
+- for the `en` locale: `/en/products-en`
+- for the `fr` locale: `/fr/produits`
+- for the `de` locale: `/de/products`
 
 ## Workflow with permissions: limiting who can do what
 
