@@ -44,7 +44,7 @@
     "request-promise": "^4.2.4"
   },
   "deprecated": false,
-  "description": "Workflow, approvals, localization and internationalization for Apostrophe 2.x",
+  "description": "Workflow, approvals, localization and internationalization for ApostropheCMS",
   "devDependencies": {
     "apostrophe": "^2.86.0",
     "apostrophe-override-options": "^2.2.0",
@@ -55,6 +55,9 @@
     "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
     "mocha": "^5.1.1"
+  },
+  "peerDependencies": {
+    "apostrophe": "^2.101.1"
   },
   "homepage": "https://github.com/apostrophecms/apostrophe-workflow#readme",
   "keywords": [
