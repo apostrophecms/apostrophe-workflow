@@ -484,6 +484,113 @@ This file will be pushed via a **separate `link` element in the `head`,** prior 
 
 This file currently **WILL NOT** be compiled with LESS, and it **MAY NOT** set LESS variables for other stylesheets to honor. Again, its primary purpose is to declare font face imports in a way that does not require excessive imports that are not needed in other locales.
 
+### Parked pages with localized slugs
+
+In `apostrophe-pages` configuration, you can have parked pages created automatically on server startup. The usual way is to configure a `slug` string for each parked page. If you need localized slugs, there will be a `slug` object instead:
+
+```javascript
+park: [
+  {
+    slug: '/',
+    published: true,
+    _defaults: {
+      title: 'Home',
+      type: 'home'
+    },
+    _children: [
+      {
+        slug: {
+         'en': '/products-en',
+         'fr': '/produits',
+         '_default': '/products'
+        },
+        _defaults: {
+          type: 'product-page',
+          title: 'Product'
+        },
+        published: true,
+        parkedId: 'products'
+      },
+    ]
+  }
+]
+```
+
+The slug keys must match workflow locales. Note the `_default` property for any locales not enumerated in the `slug` object. It is mandatory if at least one locale from `apostrophe-workflow` is not mentioned.
+Also, the homepage (`'/'`) cannot be localized this way because prefixes can be configured in `apostrophe-workflow`.
+
+#### Prefixes in localized slugs
+
+They will be automatically added to the slugs defined for parked pages, even if they are localized.
+
+For example:
+
+```javascript
+// app.js
+require('apostrophe')({
+  shortName: 'test',
+  modules: {
+    'apostrophe-workflow': {
+      prefixes: {
+        'en': '/en',
+        'fr': '/fr',
+        'de': '/de'
+      }
+    },
+    'apostrophe-pages': {
+      types: [
+        {
+          name: 'home',
+          label: 'Home'
+        },
+        {
+          name: 'product-page',
+          label: 'Product'
+        }
+      ],
+      park: [
+        {
+          slug: '/',
+          published: true,
+          _defaults: {
+            title: 'Home',
+            type: 'home'
+          },
+          _children: [
+            {
+              slug: {
+              'en': '/products-en',
+              'fr': '/produits',
+              '_default': '/products'
+              },
+              _defaults: {
+                type: 'product-page',
+                title: 'Product'
+              },
+              published: true,
+              parkedId: 'products'
+            }
+          ]
+        }
+      ]
+    },
+    product: {
+      extend: 'apostrophe-pieces',
+      name: 'product',
+      label: 'Product'
+    },
+    'product-pages': {
+      extend: 'apostrophe-pieces-pages'
+    }
+  }
+});
+```
+
+With this configuration, the product page URLs created at server startup will be :
+- for the `en` locale: `/en/products-en`
+- for the `fr` locale: `/fr/produits`
+- for the `de` locale: `/de/products`
+
 ## Workflow with permissions: limiting who can do what
 
 The workflow module supports permissions. This tutorial breaks down how to go about setting up a site with permissions and then creating permissions groups for particular locales. We'll then add new users to each of those groups and experiment with what they can and can't do.
