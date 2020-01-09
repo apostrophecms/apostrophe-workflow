@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.30.0
+
+* The `slug` property of a parked page can now be localized. Rather than a simple string, just provide an object with locale names as property names and slugs as values. You may use the property name `_default` to specify a slug to be used for all other locales. Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+
 ## 2.29.0
 
 * "Force Export" and "Force Export Related" now ask whether you really want to consider force exporting related documents that already exist in the destination locales. This pairs well with the recommended `replicateAcrossLocales: false` option, as a means of helping users to avoid doing unintentional harm with force exports. Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
