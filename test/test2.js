@@ -221,7 +221,6 @@ describe('Workflow Subdomains and Prefixes', function() {
     });
   });
 
-  
   it('can detect a root-level locale via middleware - case 2', function (done) {
     tryMiddleware('http://example.com/some-url', function (req) {
       assert(req.locale === 'us-en');
