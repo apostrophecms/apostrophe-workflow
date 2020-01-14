@@ -37,6 +37,7 @@ describe('Workflow Subdomains and Prefixes', function() {
         },
         'apostrophe-workflow': {
           hostnames: {
+            'private': 'private.com',
             'fr': 'exemple.fr',
             'default': 'example.com',
             'us': 'example.com',
@@ -122,13 +123,22 @@ describe('Workflow Subdomains and Prefixes', function() {
                 },
                 {
                   name: 'tt-three'
+                },
+                {
+                  name: 'private',
+                  private: true
+                },
+                {
+                  name: 'private2',
+                  private: true
                 }
               ]
             }
           ],
           defaultLocale: 'default',
           defaultLocalesByHostname: {
-            'tt.com': 'tt-one'
+            'tt.com': 'tt-one',
+            'private2.com': 'private2'
           }
         }
       },
@@ -146,7 +156,20 @@ describe('Workflow Subdomains and Prefixes', function() {
   });
 
   function tryMiddleware(url, after) {
-    var req = apos.tasks.getAnonReq();
+    return tryMiddlewareBody(url, {}, after);
+  }
+
+  function tryMiddlewareAdmin(url, after) {
+    return tryMiddlewareBody(url, { admin: true }, after);
+  }
+
+  function tryMiddlewareBody(url, options, after) {
+    var req;
+    if (options.admin) {
+      req = apos.tasks.getReq();
+    } else {
+      req = apos.tasks.getAnonReq();
+    }
     req.absoluteUrl = url;
     var parsed = require('url').parse(req.absoluteUrl);
     req.url = parsed.path;
@@ -198,6 +221,7 @@ describe('Workflow Subdomains and Prefixes', function() {
     });
   });
 
+  
   it('can detect a root-level locale via middleware - case 2', function (done) {
     tryMiddleware('http://example.com/some-url', function (req) {
       assert(req.locale === 'us-en');
@@ -215,6 +239,48 @@ describe('Workflow Subdomains and Prefixes', function() {
   it('can find a jointly determined locale via middleware when a defaultLocaleByHostname is also present', function(done) {
     tryMiddleware('http://tt.com/two', function(req) {
       assert(req.locale === 'tt-two');
+      done();
+    });
+  });
+
+  it('can detect a jointly determined private locale via prefix when we have permission', function(done) {
+    tryMiddlewareAdmin('http://example.com/us-private', function(req) {
+      assert(req.locale === 'us');
+      done();
+    });
+  });
+
+  it('cannot detect a jointly determined private locale via prefix when we do not have permission', function(done) {
+    tryMiddleware('http://example.com/us-private', function(req) {
+      assert(req.locale === 'us-en');
+      done();
+    });
+  });
+
+  it('can detect a hostname determined private locale via hostname when we have permission', function(done) {
+    tryMiddlewareAdmin('http://private.com/', function(req) {
+      assert(req.locale === 'private');
+      done();
+    });
+  });
+
+  it('cannot detect hostname determined private locale via prefix when we do not have permission', function(done) {
+    tryMiddleware('http://private.com/', function(req) {
+      assert(req.locale !== 'private');
+      done();
+    });
+  });
+
+  it('can detect a defaultLocaleByHostname-determined private locale via hostname when we have permission', function(done) {
+    tryMiddlewareAdmin('http://private2.com/', function(req) {
+      assert(req.locale === 'private2');
+      done();
+    });
+  });
+
+  it('cannot detect defaultLocaleByHostname-determined private locale via prefix when we do not have permission', function(done) {
+    tryMiddleware('http://private2.com/', function(req) {
+      assert(req.locale !== 'private2');
       done();
     });
   });
@@ -744,7 +810,11 @@ describe('Workflow Subdomains and Prefixes', function() {
       'tt-two',
       'tt-two-draft',
       'tt-three',
-      'tt-three-draft'
+      'tt-three-draft',
+      'private',
+      'private-draft',
+      'private2',
+      'private2-draft'
     ];
     assert(_.isEqual(locales, $in));
   });
