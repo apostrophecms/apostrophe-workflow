@@ -67,7 +67,9 @@
     "content management",
     "content management system",
     "cms",
-    "workflow"
+    "workflow",
+    "localization",
+    "editorial"
   ],
   "license": "MIT",
   "main": "index.js",
