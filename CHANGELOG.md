@@ -1,9 +1,9 @@
 # Changelog
 
-## 2.30.1
+## 2.31.0
 
 * A regression introduced into the Batch Force Export feature in version 2.29.0 has been fixed. This regression prevented the documents directly selected from being force exported, unless related documents were also selected. Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
-
+* When you log in, workflow now defaults to `draft` mode. Defaulting to `live` mode caused a great deal of user frustration as users expected to be able to edit right away. However, you can set the `defaultMode` option for the `apostrophe-workflow` module to `draft`, `live` or `preview` to override this. Thanks to J. Garijo for contributing this feature.
 * Private locales are now locked down fully even in cases where they have hostnames, subdomains, prefixes, or defaultLocaleByHostname configuration that might otherwise imply they should be visible to the public. Thanks again to Michelin.
 
 ## 2.30.0
