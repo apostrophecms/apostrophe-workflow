@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.30.1
+
+* A regression introduced into the Batch Force Export feature in version 2.29.0 has been fixed. This regression prevented the documents directly selected from being force exported, unless related documents were also selected. Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
+
+* Private locales are now locked down fully even in cases where they have hostnames, subdomains, prefixes, or defaultLocaleByHostname configuration that might otherwise imply they should be visible to the public. Thanks again to Michelin.
+
 ## 2.30.0
 
 * The `slug` property of a parked page can now be localized. Rather than a simple string, just provide an object with locale names as property names and slugs as values. You may use the property name `_default` to specify a slug to be used for all other locales. Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
