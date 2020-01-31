@@ -77,6 +77,7 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
   * [Patching and exporting of widgets](#user-content-patching-and-exporting-of-widgets)
 - [Legacy tasks](#user-content-legacy-tasks)
   * [Cleaning up duplicate homepages](#user-content-cleaning-up-duplicate-homepages)
+- [Additional options](#additional-options)
 
 ## Before getting started
 
@@ -1119,3 +1120,12 @@ node app apostrophe-workflow:remove-numbered-parked-pages
 ```
 
 **This task will permanently remove all "parked" pages with a slug that ends in one or more digits**. By default the only parked pages are `/` and `/trash`, neither of which should ever end in a digit. If your custom configuration of parked pages includes pages with slugs that *should* end in a digit, this task is not suitable for you as written. But again, you almost certainly do not need it, unless you were a user of this module prior to 2017-07-26.
+
+## Additional options
+
+The following additional options can be set on the `apostrophe-workflow` module to adjust the default behavior.
+
+### `defaultMode`
+
+By default, when a user logs in, they are in `draft` mode beginning in version 2.31.0. However, if this does not suit your use case, you may set `defaultMode` to `draft`, `live` or `preview`. Choosing `live` may make the most sense if the user cannot access a locale they are actually allowed to edit until they have logged in, but in most cases being able to edit immediately is the superior choice.
+
