@@ -244,7 +244,7 @@ describe('Workflow Subdomains and Prefixes', function() {
 
   it('can detect a jointly determined private locale via prefix when we have permission', function(done) {
     tryMiddlewareAdmin('http://example.com/us-private', function(req) {
-      assert(req.locale === 'us');
+      assert(req.locale === 'us-draft');
       done();
     });
   });
@@ -258,7 +258,7 @@ describe('Workflow Subdomains and Prefixes', function() {
 
   it('can detect a hostname determined private locale via hostname when we have permission', function(done) {
     tryMiddlewareAdmin('http://private.com/', function(req) {
-      assert(req.locale === 'private');
+      assert(req.locale === 'private-draft');
       done();
     });
   });
@@ -272,7 +272,7 @@ describe('Workflow Subdomains and Prefixes', function() {
 
   it('can detect a defaultLocaleByHostname-determined private locale via hostname when we have permission', function(done) {
     tryMiddlewareAdmin('http://private2.com/', function(req) {
-      assert(req.locale === 'private2');
+      assert(req.locale === 'private2-draft');
       done();
     });
   });

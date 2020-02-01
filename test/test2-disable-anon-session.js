@@ -59,7 +59,6 @@ describe('Workflow Subdomains and Prefixes', function() {
             'tt-three': 'tt.com'
           },
           prefixes: {
-            // Even private locales must be distinguishable by hostname and/or prefix
             'default': '/default',
             'us': '/us-private',
             // we don't add a prefix for us-en since that locale
@@ -249,7 +248,7 @@ describe('Workflow Subdomains and Prefixes', function() {
 
   it('can detect a jointly determined private locale via prefix when we have permission', function(done) {
     tryMiddlewareAdmin('http://example.com/us-private', function(req) {
-      assert(req.locale === 'us');
+      assert.equal(req.locale, 'us-draft');
       done();
     });
   });
@@ -263,7 +262,7 @@ describe('Workflow Subdomains and Prefixes', function() {
 
   it('can detect a hostname determined private locale via hostname when we have permission', function(done) {
     tryMiddlewareAdmin('http://private.com/', function(req) {
-      assert(req.locale === 'private');
+      assert(req.locale === 'private-draft');
       done();
     });
   });
@@ -277,7 +276,7 @@ describe('Workflow Subdomains and Prefixes', function() {
 
   it('can detect a defaultLocaleByHostname-determined private locale via hostname when we have permission', function(done) {
     tryMiddlewareAdmin('http://private2.com/', function(req) {
-      assert(req.locale === 'private2');
+      assert(req.locale === 'private2-draft');
       done();
     });
   });
