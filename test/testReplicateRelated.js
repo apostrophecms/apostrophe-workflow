@@ -487,7 +487,7 @@ describe('Workflow replication of related docs for new locales: expanded locales
       assert(home);
       var camembert = _.find(home._children, { slug: '/cheeses/camembert' });
       assert(camembert);
-      camembert = _.find(home._children, { path: '/camembert' });
+      camembert = _.find(home._children, { path: '/cheeses-camembert' });
       assert(camembert);
     });
   });
