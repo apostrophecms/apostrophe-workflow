@@ -1067,6 +1067,23 @@ If you do not follow this rule when inserting a new doc, the workflow module may
 
 For best results, **all** implementations of Apostrophe callbacks should wait to complete their own work before invoking the callback. It produces the most predictable result. However, you can bend this rule if you are not updating the doc itself in the database.
 
+### Workflow event hooks
+
+The module emits events for major workflow stagins, including `afterSubmit`, `afterCommit`, `afterExport`, `afterForceExport` and `afterForceExportWidget`. They were originally added with the intent to use them with the `apostrophe-external-notifications` module, but are generally available as needed. Each event includes data relevant to the related action, which can be captured with an event handler such as:
+
+```javascript
+// in lib/modules/apostrophe-workflow/index.js
+// ...
+construct: function (self, options) {
+  self.on('apostrophe-workflow:afterCommit', 'logCommitData', function (req, data) {
+    self.apos.utils.info('The commit data is', data);
+  });
+},
+// ...
+```
+
+See the documentation of ["Custom Server-side Event Handlers with Promise Events"](https://docs.apostrophecms.org/apostrophe/advanced-topics/promise-events/promise-events#promise-events-reference) for more information.
+
 ### Avoiding Express sessions for anonymous site visitors
 
 By default, ApostropheCMS will require session storage for all site visitors, even anonymous, logged-out visitors. Of course this has a performance impact.

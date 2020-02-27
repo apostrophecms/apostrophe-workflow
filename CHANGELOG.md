@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.32.0
+
+* This module now emits the `apostrophe-workflow:afterSubmit` event, for use with the module `apostrophe-external-notifications` (and other needs).
+
 ## 2.31.0
 
 * A regression introduced into the Batch Force Export feature in version 2.29.0 has been fixed. This regression prevented the documents directly selected from being force exported, unless related documents were also selected. Thanks to Michelin for making this work possible via [Apostrophe Enterprise Support](https://apostrophecms.org/support/enterprise-support).
@@ -127,7 +131,7 @@ Regression tests passing.
 
 * Fixed bugs in the "force export" logic for individual widgets, introduced in 2.20.0.
 * `apostrophe-workflow:dereplicate` task. This task makes sense to run only once, when transitioning to the new `replicateAcrossLocales: false` option.
-* If `apostrophe-express.csrf.disableAnonSession` is set, do not store the current locale in the session. Note that this means all locales must be distinguished by hostname, prefix or a combination of the two. If this is not yet the case in your configuration, you should fix that in any case, because for SEO purposes the same URL should never yield two different pages. 
+* If `apostrophe-express.csrf.disableAnonSession` is set, do not store the current locale in the session. Note that this means all locales must be distinguished by hostname, prefix or a combination of the two. If this is not yet the case in your configuration, you should fix that in any case, because for SEO purposes the same URL should never yield two different pages.
 
 ## 2.20.0
 
@@ -356,7 +360,7 @@ Unit tests passing.
 
 Regression tests passing.
 
-* Workflow-related batch operations for pages. These work just like the batch operations for pieces. You can find them in the "Reorganize" view (also reachable via "Pages" on the admin bar). 
+* Workflow-related batch operations for pages. These work just like the batch operations for pieces. You can find them in the "Reorganize" view (also reachable via "Pages" on the admin bar).
 * Option to disable "export after commit." For some users, this is only an occasionally useful feature, and it doesn't make sense to present it 100% of the time. To shut that behavior off, set the `exportAfterCommit` option to `false`. To facilitate the discovery of alternatives, the "History" workflow menu item is now labeled "History and Export." Note that you can export any commit, not just the most recent one, which is useful if you skipped several.
 
 ## 2.11.2
@@ -511,7 +515,7 @@ Unit tests passing.
 
 Regression tests passing.
 
-* Fixed race condition introduced in version 2.7.1 which could lead to incorrect remapping of joined document IDs when committing or exporting. 
+* Fixed race condition introduced in version 2.7.1 which could lead to incorrect remapping of joined document IDs when committing or exporting.
 * Fixed scenario in which a missing doc resulted in a restart. Thanks to Sylvain Chabert.
 
 ## 2.7.1
@@ -539,7 +543,7 @@ Unit tests passing.
 
 Regression tests passing.
 
-* Fixed bug in which localization helper would crash if used in a newly saved widget. The helper does not actually display localizations until page refresh due to a deeper issue but this is only a concern when editing, not for the public. 
+* Fixed bug in which localization helper would crash if used in a newly saved widget. The helper does not actually display localizations until page refresh due to a deeper issue but this is only a concern when editing, not for the public.
 * Merged helper implementations into `helpers.js` for consistency.
 
 ## 2.6.3
@@ -577,7 +581,7 @@ Regression tests passing.
 
 * The migration above now completes on very large doc collections thanks to the use of the `allowDiskUse: true` flag. Thanks to Sylvain Chabert.
 
-* 
+*
 
 ## 2.6.0
 
