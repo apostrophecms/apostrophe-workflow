@@ -19,6 +19,7 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
   * [Tags and localization: we recommend using joins instead](#user-content-tags-and-localization-we-recommend-using-joins-instead)
   * [Building a locale picker on the front end](#user-content-building-a-locale-picker-on-the-front-end)
   * [Exporting between locales](#user-content-exporting-between-locales)
+    + [If you find this option appears too frequently](#if-you-find-this-option-appears-too-frequently)
     + [Not all patches can be exported](#user-content-not-all-patches-can-be-exported)
   * [Forcing exports](#user-content-forcing-exports)
   * [Forcing export of one widget](#user-content-forcing-export-of-one-widget)
@@ -29,8 +30,8 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
     + [If you only care about subdomains](#user-content-if-you-only-care-about-subdomains)
     + [If you only care about prefixes](#user-content-if-you-only-care-about-prefixes)
     + [One login across all hostnames](#user-content-one-login-across-all-hostnames)
-    + [Locale-specific stylesheets](#user-content-locale-specific-stylesheets)
-  * [Excluding certain types and properties from workflow](#user-content-excluding-certain-types-and-properties-from-workflow)
+  * [Parked pages with localized slugs](#parked-pages-with-localized-slugs)
+    + [Prefixes in localized slugs](#prefixes-in-localized-slugs)
 - [Workflow with permissions: limiting who can do what](#user-content-workflow-with-permissions-limiting-who-can-do-what)
   * [Setting up for permissions: enabling group management](#user-content-setting-up-for-permissions-enabling-group-management)
     + [Removing the legacy groups](#user-content-removing-the-legacy-groups)
@@ -60,13 +61,16 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
     + [Exporting](#user-content-exporting)
     + [Accessing newly created pages in other locales](#user-content-accessing-newly-created-pages-in-other-locales)
 - [Removing workflow from a project](#removing-workflow-from-a-project)
+  * [Removing workflow in production](#removing-workflow-in-production)
 - [Other developer concerns](#user-content-other-developer-concerns)
   * [Aliasing the module](#user-content-aliasing-the-module)
+  * [Excluding certain types and properties from workflow](#excluding-certain-types-and-properties-from-workflow)
   * [Previewing piece types without an index page](#user-content-previewing-piece-types-without-an-index-page)
   * [Command line tasks and workflow](#user-content-command-line-tasks-and-workflow)
     + [Using the `-workflow-locale` option](#user-content-using-the-workflow-locale-option)
   * [Setting the current locale programmatically](#user-content-setting-the-current-locale-programmatically)
   * [Direct MongoDB access and workflow](#user-content-direct-mongodb-access-and-workflow)
+  * [`workflowModified`: must be set `true` if you make changes subject to workflow](#workflowmodified-must-be-set-true-if-you-make-changes-subject-to-workflow)
   * [`setPropertiesAcrossLocales`: modifying a document programmatically across locales](#user-content-setpropertiesacrosslocales-modifying-a-document-programmatically-across-locales)
   * [Writing safe `afterInsert` and `docAfterInsert` handlers, etc.](#user-content-writing-safe-afterinsert-and-docafterinsert-handlers-etc)
     + [Recognizing inserts due to localization](#user-content-recognizing-inserts-due-to-localization)
@@ -447,7 +451,7 @@ Similarly, if all of your locales use prefixes which match the name of the local
 
 The workflow module provides single sign-on across all of the hostnames, provided that you use the locale picker provided by Apostrophe's editing interface to switch between them. The user's session cookie is transferred to the other hostname as part of following that link.
 
-### Locale-specific stylesheets
+#### Locale-specific stylesheets
 
 Basic support for locale-specific stylesheets is provided. You may, if you wish, specify a stylesheet name for a locale. The primary purpose of such a stylesheet is to define font face imports and other global items, so that the regular LESS CSS build of Apostrophe can then use a consistent `font-family` setting for all locales but will in fact receive the correct actual font.
 
@@ -1080,7 +1084,7 @@ construct: function (self, options) {
 
 See the documentation of ["Custom Server-side Event Handlers with Promise Events"](https://docs.apostrophecms.org/apostrophe/advanced-topics/promise-events/promise-events#promise-events-reference) for more information.
 
-#### Avoiding Express sessions for anonymous site visitors
+### Avoiding Express sessions for anonymous site visitors
 
 By default, ApostropheCMS will require session storage for all site visitors, even anonymous, logged-out visitors. Of course this has a performance impact.
 
@@ -1145,4 +1149,3 @@ The following additional options can be set on the `apostrophe-workflow` module 
 ### `defaultMode`
 
 By default, when a user logs in, they are in `draft` mode beginning in version 2.31.0. However, if this does not suit your use case, you may set `defaultMode` to `draft`, `live` or `preview`. Choosing `live` may make the most sense if the user cannot access a locale they are actually allowed to edit until they have logged in, but in most cases being able to edit immediately is the superior choice.
-
