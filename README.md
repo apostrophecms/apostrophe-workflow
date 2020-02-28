@@ -251,7 +251,9 @@ helper function to set `lang` for you.
 So just write this in your
 `lib/modules/apostrophe-templates/views/layout.html` template, or `outerLayout.html` if you have one:
 
+```markup
 {% block locale %}{{ apos.modules['apostrophe-workflow'].lang() }}{% endblock %}
+```
 
 By default, this helper converts a string like `en-gb` to `en`, and leaves a string like `fr` alone.
 
