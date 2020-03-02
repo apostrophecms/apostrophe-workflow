@@ -3,6 +3,7 @@
 ## 2.32.0
 
 * This module now emits the `apostrophe-workflow:afterSubmit` event, for use with the module `apostrophe-external-notifications` (and other needs).
+* Various documentation corrections.
 
 ## 2.31.0
 
