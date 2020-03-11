@@ -1,6 +1,6 @@
 {
   "author": {
-    "name": "P'unk Avenue LLC"
+    "name": "Apostrophe Technologies LLC"
   },
   "bugs": {
     "url": "https://github.com/apostrophecms/apostrophe-workflow/issues"
@@ -57,5 +57,5 @@
   "scripts": {
     "test": "mocha && eslint ."
   },
-  "version": "2.32.0"
+  "version": "2.32.1"
 }

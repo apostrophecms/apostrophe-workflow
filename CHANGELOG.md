@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.32.1
+
+* Dead code elimination. No functional changes.
+
 ## 2.32.0
 
 * This module now emits the `apostrophe-workflow:afterSubmit` event, for use with the module `apostrophe-external-notifications` (and other needs).
