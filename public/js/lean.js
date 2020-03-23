@@ -1,9 +1,7 @@
 (function() {
-  console.log('executing');
   document.body.addEventListener('apos-before-get', addLocaleHeader);
   document.body.addEventListener('apos-before-post', addLocaleHeader);
   function addLocaleHeader(event) {
-    console.log('in listener');
     // Easy check for same origin
     var link = document.createElement('a');
     link.href = event.uri;
