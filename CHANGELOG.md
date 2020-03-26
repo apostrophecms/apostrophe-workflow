@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.33.0
+
+* Send the `Apostrophe-Locale` header in all Apostrophe lean mode API calls, just like we do in jQuery-based API calls. When logged out and using URL prefixes for locales, this is necessary to affect the right locale without making every single API call that any developer makes specifically locale aware, because APIs are not URL-prefixed by locale. This change fixes `apostrophe-forms` submissions for such locles.
+
 ## 2.32.1
 
 * Dead code elimination. No functional changes.
