@@ -2,7 +2,7 @@
 
 ## 2.34.1
 
-If a document is fetched without the `type` property due to a projection, opertions such as "force export" could potentially crash. This issue has been fixed.
+If a document is fetched without the `type` property due to a projection, operations such as "force export" could potentially crash. This issue has been fixed.
 
 ## 2.34.0
 
