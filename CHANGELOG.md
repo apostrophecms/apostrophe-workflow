@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.34.1
+
+If a document is fetched without the `type` property due to a projection, operations such as "force export" could potentially crash. This issue has been fixed.
+
 ## 2.34.0
 
 **Security**: required update for compatibility with version 2.106.0 of the `apostrophe` module, which fixes an issue that could lead to a leak of piece and page fields not intended for public consumption via certain APIs. See the apostrophe module changelog.
