@@ -1,12 +1,25 @@
 # Changelog
 
-## 2.32.1
+## 2.34.1
 
 If a document is fetched without the `type` property due to a projection, opertions such as "force export" could potentially crash. This issue has been fixed.
+
+## 2.34.0
+
+**Security**: required update for compatibility with version 2.106.0 of the `apostrophe` module, which fixes an issue that could lead to a leak of piece and page fields not intended for public consumption via certain APIs. See the apostrophe module changelog.
+
+## 2.33.0
+
+* Send the `Apostrophe-Locale` header in all Apostrophe lean mode API calls, just like we do in jQuery-based API calls. When logged out and using URL prefixes for locales, this is necessary to affect the right locale without making every single API call that any developer makes specifically locale aware, because APIs are not URL-prefixed by locale. This change fixes `apostrophe-forms` submissions for such locles.
+
+## 2.32.1
+
+* Dead code elimination. No functional changes.
 
 ## 2.32.0
 
 * This module now emits the `apostrophe-workflow:afterSubmit` event, for use with the module `apostrophe-external-notifications` (and other needs).
+* Various documentation corrections.
 
 ## 2.31.0
 

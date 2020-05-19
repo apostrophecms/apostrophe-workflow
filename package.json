@@ -1,30 +1,6 @@
 {
-  "_from": "apostrophe-workflow",
-  "_id": "apostrophe-workflow@2.18.0",
-  "_inBundle": false,
-  "_integrity": "sha512-NSOzLPQFBSR+xulY6Y3g131ItvGMidm9FqHMDoWeRQOZB223FFnxkUeEbTuiU0l3xxSeD5FbmaabHTvMkeHRXQ==",
-  "_location": "/apostrophe-workflow",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "tag",
-    "registry": true,
-    "raw": "apostrophe-workflow",
-    "name": "apostrophe-workflow",
-    "escapedName": "apostrophe-workflow",
-    "rawSpec": "",
-    "saveSpec": null,
-    "fetchSpec": "latest"
-  },
-  "_requiredBy": [
-    "#USER",
-    "/"
-  ],
-  "_resolved": "https://registry.npmjs.org/apostrophe-workflow/-/apostrophe-workflow-2.14.0.tgz",
-  "_shasum": "b1f6c6f599cf9e5b9e396f9849d6237f57a05d49",
-  "_spec": "apostrophe-workflow",
-  "_where": "/Users/boutell/tmp/test",
   "author": {
-    "name": "P'unk Avenue LLC"
+    "name": "Apostrophe Technologies LLC"
   },
   "bugs": {
     "url": "https://github.com/apostrophecms/apostrophe-workflow/issues"
@@ -33,24 +9,24 @@
   "dependencies": {
     "@sailshq/lodash": "^3.10.3",
     "async": "^1.5.2",
-    "bluebird": "^3.5.3",
+    "bluebird": "^3.7.2",
     "deep-get-set": "^1.1.0",
     "eslint-config-apostrophe": "^2.0.2",
     "express-session": "^1.15.6",
     "json-diff": "^0.5.3",
     "jsondiffpatch": "^0.2.5",
     "minimatch": "^3.0.4",
-    "qs": "^6.6.0",
-    "request-promise": "^4.2.4"
+    "qs": "^6.9.1",
+    "request-promise": "^4.2.5"
   },
   "deprecated": false,
   "description": "Workflow, approvals, localization and internationalization for ApostropheCMS",
   "devDependencies": {
-    "apostrophe": "^2.86.0",
+    "apostrophe": "^2.102.5",
     "apostrophe-override-options": "^2.2.0",
     "eslint": "^4.15.0",
     "eslint-config-standard": "^11.0.0-beta.0",
-    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-node": "^5.2.1",
     "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
@@ -81,5 +57,5 @@
   "scripts": {
     "test": "mocha && eslint ."
   },
-  "version": "2.32.0"
+  "version": "2.34.0"
 }

@@ -3,7 +3,7 @@ const request = require('request-promise');
 const _ = require('@sailshq/lodash');
 
 describe('Override Options', function() {
-  this.timeout(5000);
+  this.timeout(20000);
   let apos;
 
   after(function(done) {
