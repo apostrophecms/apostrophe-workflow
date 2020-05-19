@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.32.1
+
+If a document is fetched without the `type` property due to a projection, opertions such as "force export" could potentially crash. This issue has been fixed.
+
 ## 2.32.0
 
 * This module now emits the `apostrophe-workflow:afterSubmit` event, for use with the module `apostrophe-external-notifications` (and other needs).
