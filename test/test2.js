@@ -179,7 +179,12 @@ describe('Workflow Subdomains and Prefixes', function() {
         Host: parsed.host
       }[propName];
     };
-    req.res.redirect = function(url) {
+    req.res.redirect = function(status, url) {
+      if (!url) {
+        url = status;
+        status = 302;
+      }
+      req.res.status = status;
       req.url = url;
       after(req);
     };
@@ -231,6 +236,8 @@ describe('Workflow Subdomains and Prefixes', function() {
   it('can find a defaultLocaleByHostname-determined locale via middleware', function(done) {
     tryMiddleware('http://tt.com', function(req) {
       assert(req.locale === 'tt-one');
+      assert(req.url === '/one/');
+      assert(req.res.status === 302);
       done();
     });
   });

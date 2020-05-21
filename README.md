@@ -383,6 +383,26 @@ Notice that **a hostname is specified for every locale, and if a hostname is sha
     }
 ```
 
+If all of the locales that share a hostname have a prefix, you can still configure one to be the default, in which case an access to the hostname with no prefix will redirect to that locale:
+
+```javascript
+    defaultHostnamesByLocale: {
+      // 'en-us' and 'en-gb' are both mapped to example.com, with
+      // separate prefixes, but 'en-us' is the default
+      'example.com': 'en-us'
+    }
+```
+
+This will issue a 302 (temporary) direct status code. You can
+override that if you wish:
+
+```javascript
+    missingRedirectStatusCode: 301
+```
+
+> We recommend doing this only after some experience with your configuration,
+as permanent redirects may be cached by browsers for a long time.
+
 #### Default locales for individual hostnames
 
 In addition to the global `defaultLocale` option, you can set up a `defaultLocalesByHostname` object to map hostnames to default locales. This is useful if the host has several `prefixes` but a request arrives with no prefix. If the global default locale is not the best choice for `yourcompany.us`, you can map it, for instance, to `en-us`:
