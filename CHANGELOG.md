@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.35.0
+
+* Added the `missingPrefixRedirectStatusCode` option. By default access to the root of a domain that has multiple locales distinguished by prefixes will redirect to the one specified by `defaultLocalesByHostname` with status code 302. You can set this to 301 for a permanent redirect. This is not recommended until you are very comfortable it is working properly.
+* Corrected a documentation error: `defaultLocalesByHostname` was incorrectly documented as `defaultHostnamesByLocale`.
+
 ## 2.34.1
 
 If a document is fetched without the `type` property due to a projection, operations such as "force export" could potentially crash. This issue has been fixed.
