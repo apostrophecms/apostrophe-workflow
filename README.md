@@ -386,7 +386,7 @@ Notice that **a hostname is specified for every locale, and if a hostname is sha
 If all of the locales that share a hostname have a prefix, you can still configure one to be the default, in which case an access to the hostname with no prefix will redirect to that locale:
 
 ```javascript
-    defaultHostnamesByLocale: {
+    defaultLocalesByHostname: {
       // 'en-us' and 'en-gb' are both mapped to example.com, with
       // separate prefixes, but 'en-us' is the default
       'example.com': 'en-us'
@@ -397,7 +397,7 @@ This will issue a 302 (temporary) direct status code. You can
 override that if you wish:
 
 ```javascript
-    missingRedirectStatusCode: 301
+    missingPrefixRedirectStatusCode: 301
 ```
 
 > We recommend doing this only after some experience with your configuration,
