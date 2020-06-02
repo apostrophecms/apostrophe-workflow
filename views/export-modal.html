@@ -13,12 +13,12 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Exporting changes from %s (%s)', data.commit.to.title or data.commit.to.slug, data.commit.locale) }}
+  {{ __ns('apostrophe', 'Exporting changes from %s (%s)', data.commit.to.title or data.commit.to.slug, data.commit.locale) }}
 {%- endblock -%}
 
 {% block instructions %}
   <p>
-    {{ __('This change is already committed for the %s locale. To push this change to additional locales, select them below, then click Export. Selecting the %s locale may still be helpful to select sub-locales.', data.commit.locale, data.commit.locale) }}
+    {{ __ns('apostrophe', 'This change is already committed for the %s locale. To push this change to additional locales, select them below, then click Export. Selecting the %s locale may still be helpful to select sub-locales.', data.commit.locale, data.commit.locale) }}
   </p>
 {% endblock %}
 

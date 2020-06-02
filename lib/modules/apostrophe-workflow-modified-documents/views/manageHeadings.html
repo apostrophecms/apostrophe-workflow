@@ -1,13 +1,13 @@
 {%- import "apostrophe-ui:components/fields.html" as fields -%}
 {%- macro renderColumn(column) -%}
-<th class="apos-manage-column apos-manage-modified-{{ column.name | css }}{% if column.sort %} apos-manage-column--sortable{% endif %}" {% if column.sort %}data-sort data-default-sort-direction="{{ column.defaultSortDirection or '1' }}" {% endif %}data-column-name="{{ column.name }}">{{ __(column.label) }}</th>
+<th class="apos-manage-column apos-manage-modified-{{ column.name | css }}{% if column.sort %} apos-manage-column--sortable{% endif %}" {% if column.sort %}data-sort data-default-sort-direction="{{ column.defaultSortDirection or '1' }}" {% endif %}data-column-name="{{ column.name }}">{{ __ns('apostrophe', column.label) }}</th>
 {%- endmacro -%}
 <tr>
   <td>{{fields.checkbox('select-all')}}</td>
-  <th class="apos-manage-column">{{ __('Document') }}</th>
-  <th class="apos-manage-column">{{ __('Type') }}</th>
+  <th class="apos-manage-column">{{ __ns('apostrophe', 'Document') }}</th>
+  <th class="apos-manage-column">{{ __ns('apostrophe', 'Type') }}</th>
   {{ renderColumn({ name: 'updatedAt', label: 'Last Edit', sort: { updatedAt: -1 }, defaultSortDirection: '-1' }) }}
-  <th class="apos-manage-column">{{ __('Submitted?') }}</th>
+  <th class="apos-manage-column">{{ __ns('apostrophe', 'Submitted?') }}</th>
   {{ renderColumn({ name: 'workflowLastCommitted', label: 'Last Commit', sort: { workflowLastCommitted: -1 }, defaultSortDirection: '-1' }) }}
-  <th class="apos-manage-column">{{ __('Actions') }}</th>
+  <th class="apos-manage-column">{{ __ns('apostrophe', 'Actions') }}</th>
 </tr>

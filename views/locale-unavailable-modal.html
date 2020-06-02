@@ -12,29 +12,29 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Activate document for editing in new locale') }}
+  {{ __ns('apostrophe', 'Activate document for editing in new locale') }}
 {%- endblock -%}
 
 {% block instructions %}
   <p>
-    {{ __('Click Activate to make the document available for editing in the new locale.') }}
+    {{ __ns('apostrophe', 'Click Activate to make the document available for editing in the new locale.') }}
   </p>
 {% endblock %}
 
 {%- block body -%}
   <div class="apos-workflow-locale-unavailable-body">
     <p>
-      {{ __('That document is not currently available for editing in the %s locale.', data.locale) }}
+      {{ __ns('apostrophe', 'That document is not currently available for editing in the %s locale.', data.locale) }}
     </p>
     <p>
       {% if (data.status == 'notfound') %}
-        {{ __('That document does not exist yet in the %s locale. If you click "Activate," the current locale\'s content will be exported to it, and it will become available to edit as a draft.', data.locale) }}
+        {{ __ns('apostrophe', 'That document does not exist yet in the %s locale. If you click "Activate," the current locale\'s content will be exported to it, and it will become available to edit as a draft.', data.locale) }}
       {% elseif (data.status == 'inTrash') %}
-        {{ __('It does look like that document has been edited in that locale in the past,
+        {{ __ns('apostrophe', 'It does look like that document has been edited in that locale in the past,
         but it is currently in the trash. If you click "Activate," it will be removed
         from the trash.') }}
       {% elseif (data.status == 'newInTrash') %}
-        {{ __('That document has never been active for that locale. If you click "Activate," the current locale\'s content will be exported to it, and it will become available to edit as a draft.') }}
+        {{ __ns('apostrophe', 'That document has never been active for that locale. If you click "Activate," the current locale\'s content will be exported to it, and it will become available to edit as a draft.') }}
       {% endif %}
     </p>
   </div>

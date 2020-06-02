@@ -11,12 +11,12 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Submitted for ' + data.label) }}
+  {{ __ns('apostrophe', 'Submitted for ' + data.label) }}
 {%- endblock -%}
 
 {% block instructions %}
   <p>
-    {{ __('Click on any document to view it. Once there you can edit or commit it.') }}
+    {{ __ns('apostrophe', 'Click on any document to view it. Once there you can edit or commit it.') }}
   </p>
 {% endblock %}
 
@@ -26,11 +26,11 @@
       <table data-items class="apos-manage-table">
         <thead data-headings>
           <tr>
-            <th class="apos-manage-column apos-workflow-history-created-at">{{ __('Document') }}</th>
-            <th class="apos-manage-column">{{ __('Type') }}</th>
-            <th class="apos-manage-column">{{ __('Last Submitted By') }}</th>
-            <th class="apos-manage-column">{{ __('Last Submitted At') }}</th>
-            <th class="apos-manage-column">{{ __('Actions') }}</th>
+            <th class="apos-manage-column apos-workflow-history-created-at">{{ __ns('apostrophe', 'Document') }}</th>
+            <th class="apos-manage-column">{{ __ns('apostrophe', 'Type') }}</th>
+            <th class="apos-manage-column">{{ __ns('apostrophe', 'Last Submitted By') }}</th>
+            <th class="apos-manage-column">{{ __ns('apostrophe', 'Last Submitted At') }}</th>
+            <th class="apos-manage-column">{{ __ns('apostrophe', 'Actions') }}</th>
           </tr>
         </thead>
         <tbody data-list>
@@ -46,11 +46,11 @@
               <td>{{ doc.workflowSubmitted.when }}</td>
               <td>
                 {% if apos.utils.beginsWith(doc.slug, '/') %}
-                  <a href="{{ doc._url }}">{{ __('Edit') }}</a>
+                  <a href="{{ doc._url }}">{{ __ns('apostrophe', 'Edit') }}</a>
                 {% else %}
-                  <a href="#" data-apos-edit-{{ doc.type }}="{{ doc._id }}">{{ __('Edit') }}</a>
+                  <a href="#" data-apos-edit-{{ doc.type }}="{{ doc._id }}">{{ __ns('apostrophe', 'Edit') }}</a>
                 {% endif %}
-                <a href="#" data-apos-workflow-dismiss="{{ doc._id }}">{{ __('Dismiss') }}</a>
+                <a href="#" data-apos-workflow-dismiss="{{ doc._id }}">{{ __ns('apostrophe', 'Dismiss') }}</a>
               </td>
             </tr>
           {% endfor %}
