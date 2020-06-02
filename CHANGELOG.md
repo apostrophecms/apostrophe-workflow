@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.35.1
+
+* Namespace the i18n calls, so that the use of `objectNotation` with the `apostrophe-i18n` module does not break the permissions editor. Peer dependency formally set to apostrophe 2.107.0, but we recommend `npm update` to the latest update of the same major version for all Apostrophe modules when updating Apostrophe.
+
 ## 2.35.0
 
 * Added the `missingPrefixRedirectStatusCode` option. By default access to the root of a domain that has multiple locales distinguished by prefixes will redirect to the one specified by `defaultLocalesByHostname` with status code 302. You can set this to 301 for a permanent redirect. This is not recommended until you are very comfortable it is working properly.
