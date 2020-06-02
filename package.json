@@ -1,10 +1,35 @@
 {
+  "version": "2.35.0",
+  "scripts": {
+    "test": "mocha && eslint ."
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "name": "apostrophe-workflow",
   "author": {
     "name": "Apostrophe Technologies LLC"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apostrophecms/apostrophe-workflow.git"
+  },
+  "homepage": "https://github.com/apostrophecms/apostrophe-workflow#readme",
+  "keywords": [
+    "apostrophe",
+    "apostrophecms",
+    "apostrophe-cms",
+    "content management",
+    "content management system",
+    "cms",
+    "workflow",
+    "localization",
+    "editorial"
+  ],
   "bugs": {
     "url": "https://github.com/apostrophecms/apostrophe-workflow/issues"
   },
+  "deprecated": false,
+  "description": "Workflow, approvals, localization and internationalization for ApostropheCMS",
   "bundleDependencies": false,
   "peerDependencies": {
     "apostrophe": "^2.107.0"
@@ -22,8 +47,6 @@
     "qs": "^6.9.1",
     "request-promise": "^4.2.5"
   },
-  "deprecated": false,
-  "description": "Workflow, approvals, localization and internationalization for ApostropheCMS",
   "devDependencies": {
     "apostrophe": "^2.102.5",
     "apostrophe-override-options": "^2.2.0",
@@ -34,31 +57,5 @@
     "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
     "mocha": "^5.1.1"
-  },
-  "peerDependencies": {
-    "apostrophe": "^2.101.1"
-  },
-  "homepage": "https://github.com/apostrophecms/apostrophe-workflow#readme",
-  "keywords": [
-    "apostrophe",
-    "apostrophecms",
-    "apostrophe-cms",
-    "content management",
-    "content management system",
-    "cms",
-    "workflow",
-    "localization",
-    "editorial"
-  ],
-  "license": "MIT",
-  "main": "index.js",
-  "name": "apostrophe-workflow",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/apostrophecms/apostrophe-workflow.git"
-  },
-  "scripts": {
-    "test": "mocha && eslint ."
-  },
-  "version": "2.34.1"
+  }
 }
