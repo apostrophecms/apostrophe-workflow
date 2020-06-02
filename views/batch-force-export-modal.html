@@ -13,12 +13,12 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Forcing export of %s item(s) (%s)', data.ids.length, data.locale) }}
+  {{ __ns('apostrophe', 'Forcing export of %s item(s) (%s)', data.ids.length, data.locale) }}
 {%- endblock -%}
 
 {% block instructions %}
   <p>
-    {{ __('You are forcing an export, which will copy the current draft(s) verbatim to other locales. Select them below, then click Export. Selecting the %s locale may still be helpful to select sub-locales.', data.locale, data.locale) }}
+    {{ __ns('apostrophe', 'You are forcing an export, which will copy the current draft(s) verbatim to other locales. Select them below, then click Export. Selecting the %s locale may still be helpful to select sub-locales.', data.locale, data.locale) }}
   </p>
 {% endblock %}
 

@@ -13,12 +13,12 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Exporting a single widget from %s (%s)', data.doc.title, data.doc.workflowLocale) }}
+  {{ __ns('apostrophe', 'Exporting a single widget from %s (%s)', data.doc.title, data.doc.workflowLocale) }}
 {%- endblock -%}
 
 {% block instructions %}
   <p>
-    {{ __('To force an export of this widget to additional locales, select them below, then click Export. Selecting the %s locale may still be helpful to select sub-locales.', data.doc.workflowLocale, data.doc.workflowLocale) }}
+    {{ __ns('apostrophe', 'To force an export of this widget to additional locales, select them below, then click Export. Selecting the %s locale may still be helpful to select sub-locales.', data.doc.workflowLocale, data.doc.workflowLocale) }}
   </p>
 {% endblock %}
 

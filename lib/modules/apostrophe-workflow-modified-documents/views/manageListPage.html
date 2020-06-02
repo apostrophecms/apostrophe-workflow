@@ -9,18 +9,18 @@
     {% endif %}
     <td>{{ piece.type }}</td>
     <td>{{ piece.updatedAt | date('YYYY-MM-DD') }}<br />{{ piece.workflowLastEditor }}</td>
-    <td>{% if piece.workflowSubmitted %}{{ __('Yes') }}{% else %}{{ __('No') }}{% endif %}</td>
+    <td>{% if piece.workflowSubmitted %}{{ __ns('apostrophe', 'Yes') }}{% else %}{{ __ns('apostrophe', 'No') }}{% endif %}</td>
     <td>{{ piece.workflowLastCommitted.at | date('YYYY-MM-DD') }}<br />{{ piece.workflowLastCommitted.user.title }}</td>
     <td>
       {% if piece._edit %}
         {% if apos.utils.beginsWith(piece.slug, '/') %}
-          <a href="{{ piece._url }}">{{ __('Edit') }}</a>
+          <a href="{{ piece._url }}">{{ __ns('apostrophe', 'Edit') }}</a>
         {% else %}
-          <a href="#" data-apos-edit-{{ piece.type }}="{{ piece._id }}">{{ __('Edit') }}</a>
+          <a href="#" data-apos-edit-{{ piece.type }}="{{ piece._id }}">{{ __ns('apostrophe', 'Edit') }}</a>
         {% endif %}
         {% if apos.modules['apostrophe-workflow'].committable(piece) %}
-          <a href="#" data-apos-workflow-commit="{{ piece._id }}">{{ __('Commit') }}</a>
-          <a href="#" data-apos-workflow-revert-to-live="{{ piece._id }}">{{ __('Revert') }}</a>
+          <a href="#" data-apos-workflow-commit="{{ piece._id }}">{{ __ns('apostrophe', 'Commit') }}</a>
+          <a href="#" data-apos-workflow-revert-to-live="{{ piece._id }}">{{ __ns('apostrophe', 'Revert') }}</a>
         {% endif %}
       {% endif %}
     </td>

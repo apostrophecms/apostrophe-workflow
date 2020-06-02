@@ -31,6 +31,9 @@
   "deprecated": false,
   "description": "Workflow, approvals, localization and internationalization for ApostropheCMS",
   "bundleDependencies": false,
+  "peerDependencies": {
+    "apostrophe": "^2.107.0"
+  },
   "dependencies": {
     "@sailshq/lodash": "^3.10.3",
     "async": "^1.5.2",

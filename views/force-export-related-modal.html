@@ -13,12 +13,12 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Forcing export of documents related to %s (%s)', data.doc.title, data.doc.workflowLocale) }}
+  {{ __ns('apostrophe', 'Forcing export of documents related to %s (%s)', data.doc.title, data.doc.workflowLocale) }}
 {%- endblock -%}
 
 {% block instructions %}
   <p>
-    {{ __('You are forcing an export of documents related to this document, which will copy their drafts verbatim to other locales. Select locales below, and check the box if you wish to force export documents even if they already exist in the other locales.') }}
+    {{ __ns('apostrophe', 'You are forcing an export of documents related to this document, which will copy their drafts verbatim to other locales. Select locales below, and check the box if you wish to force export documents even if they already exist in the other locales.') }}
   </p>
   <div class="apos-workflow-export-option">
     {# Here for compatibility with the inherited logic, will be hidden by JS and always checked #}

@@ -13,21 +13,21 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('[%s of %s] Committing %s', data.index, data.total, data.doc.title or data.doc.slug) }}
+  {{ __ns('apostrophe', '[%s of %s] Committing %s', data.index, data.total, data.doc.title or data.doc.slug) }}
 {%- endblock -%}
 
 {% block instructions %}
   {% if not data.lead %}
     <p>
-      {{ __('This related item may also be visible on the page. Please consider it first so that your final commit is more complete.') }}
+      {{ __ns('apostrophe', 'This related item may also be visible on the page. Please consider it first so that your final commit is more complete.') }}
     </p>
     <p>
-      <a class="apos-workflow-shortcut" data-commit-all-related href="#">{{ __('Commit all like this') }}</a>
-      <a class="apos-workflow-shortcut" data-skip-all-related href="#">{{ __('Skip all like this') }}</a>
+      <a class="apos-workflow-shortcut" data-commit-all-related href="#">{{ __ns('apostrophe', 'Commit all like this') }}</a>
+      <a class="apos-workflow-shortcut" data-skip-all-related href="#">{{ __ns('apostrophe', 'Skip all like this') }}</a>
     </p>
   {% else %}
     <p>
-      {{ __('Click Commit to make these changes live.') }}
+      {{ __ns('apostrophe', 'Click Commit to make these changes live.') }}
     </p>
   {% endif %}
 {% endblock %}
@@ -35,7 +35,7 @@
 {%- block body -%}
   {% if data.modifiedFields.length %}
     <div class="apos-workflow-modified-fields">
-      <p>{{ __('Modified fields: %s', data.modifiedFields | join(', ')) }}</p>
+      <p>{{ __ns('apostrophe', 'Modified fields: %s', data.modifiedFields | join(', ')) }}</p>
       {% if data.doc.workflowMovedIsNew %}
         <p>The page was moved to a new location.</p>
       {% endif %}
