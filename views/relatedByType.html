@@ -1,10 +1,10 @@
 {% if not data.types.length %}
-  <h4>{{ __('There are no related documents.') }}</h4>
+  <h4>{{ __ns('apostrophe', 'There are no related documents.') }}</h4>
 {% else %}
-  <h4>{{ __('Only related documents of the types you choose below will be exported.') }}</h4>
+  <h4>{{ __ns('apostrophe', 'Only related documents of the types you choose below will be exported.') }}</h4>
   {% for type in data.types %}
     <ul>
-      <li><input type="checkbox" name="relatedTypes" value="{{ type }}" /> {{ __(data.labels[type]) }} ({{ data.counts[type] }})</li>
+      <li><input type="checkbox" name="relatedTypes" value="{{ type }}" /> {{ __ns('apostrophe', data.labels[type]) }} ({{ data.counts[type] }})</li>
     </ul>
   {% endfor %}
 {% endif %}

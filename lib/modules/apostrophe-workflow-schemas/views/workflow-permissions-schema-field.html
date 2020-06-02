@@ -8,7 +8,7 @@
       <div class="apos-workflow-permissions-label apos-text-small" data-apos-permission="{{ choice.value }}">
         <input class="apos-workflow-permissions-input" type="checkbox" name="{{ field.name }}" value="{{ choice.value }}" id="{{ field.name }}-{{ choice.value }}"/>
         <span class="apos-workflow-permissions--checkbox-indicator"></span>
-        <label for="{{ field.name }}-{{ choice.value }}" class="apos-workflow-permissions-label">{{ __(choice.label | d('')) }}</label>
+        <label for="{{ field.name }}-{{ choice.value }}" class="apos-workflow-permissions-label">{{ __ns('apostrophe', choice.label | d('')) }}</label>
         {% if not choice.exempt %}
           {{ localeTree.tree(
             field.name + 'Locales' + '[' + choice.value + ']', [

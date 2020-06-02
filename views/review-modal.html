@@ -17,19 +17,19 @@
 {%- endblock -%}
 
 {%- block label -%}
-  {{ __('Reviewing past commit to %s (%s)', data.doc.title or data.doc.slug, data.doc.workflowLocale) }}
+  {{ __ns('apostrophe', 'Reviewing past commit to %s (%s)', data.doc.title or data.doc.slug, data.doc.workflowLocale) }}
 {%- endblock -%}
 
 {% block instructions %}
   <p>
-    {{ __('Click Export to send these past changes to more locales.' if data.localized else 'Review the changes below.') }}
+    {{ __ns('apostrophe', 'Click Export to send these past changes to more locales.' if data.localized else 'Review the changes below.') }}
   </p>
 {% endblock %}
 
 {%- block body -%}
   {% if data.modifiedFields.length %}
     <div class="apos-workflow-modified-fields">
-      <p>{{ __('Modified fields: %s', data.modifiedFields | join(', ')) }}</p>
+      <p>{{ __ns('apostrophe', 'Modified fields: %s', data.modifiedFields | join(', ')) }}</p>
       <p class="apos-workflow-hint">Also see below for content edited in context.</p>
     </div>
   {% endif %}
