@@ -66,6 +66,11 @@ apos.define('apostrophe-workflow', {
         // content may no longer be committable
         self.updateWorkflowControls();
       });
+      apos.on('workflowModified', function() {
+        // Page refreshed, for instance after a change event,
+        // content may no longer be committable
+        self.updateWorkflowControls();
+      });
     };
 
     self.updateWorkflowControls = function() {
@@ -82,8 +87,28 @@ apos.define('apostrophe-workflow', {
 
         setClass($menu, 'apos-workflow-editable', result.modified.length || result.unmodified.length);
         setClass($menu, 'apos-workflow-modified', !!result.modified.length);
+
+        var submittableOnly = _.filter(unsubmitted, function(id) {
+          return !_.find(result.committable, function(cid) {
+            return id === cid;
+          });
+        });
+
+
         setClass($menu, 'apos-workflow-committable', !!result.committable.length);
-        setClass($menu, 'apos-workflow-unsubmitted', !!unsubmitted.length);
+
+        if (self.options.committersSeeSubmit) {
+          setClass($menu, 'apos-workflow-unsubmitted', !!unsubmitted.length);
+        } else {
+          if (submittableOnly.length) {
+            setClass($menu, 'apos-workflow-unsubmitted', true);
+            setClass($menu, 'apos-workflow-submit-irrelevant', false);
+          } else {
+            setClass($menu, 'apos-workflow-unsubmitted', false);
+            setClass($menu, 'apos-workflow-submit-irrelevant', true);
+          }
+        }
+
 
         // Show/hide the widget level force export buttons based on whether
         // their doc is committable (it's preexisting and we have permission

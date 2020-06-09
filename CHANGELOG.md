@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.36.0
+
+* UX improvement: users report that if they have permission to commit, the "submit" button does not make sense to them. They often think they must use both buttons, and it leads to user frustration. Now, the "submit" button is no longer shown to users by default, **unless there are modified documents they can submit for review but not commit themselves.** According to users this should be a big improvement, but if you prefer the legacy old behavior, you may set the `committersSeeSubmit` option to `true`.
+* For performance, the workflow module only checks to see if there are modified documents that need committing in certain situations. This is good, but some modules like `apostrophe-palette` modify documents via their own API routes, and the workflow UI does not "see" the change until the page is refreshed. The `apostrophe-workflow` module now recognizes the `workflowModified` event, which simply triggers a refresh of the on-page workflow UI, recognizing any changes that were made in your code. You can emit this event in browser-side code by calling: `apos.emit('workflowModified')`
+
 ## 2.35.0
 
 * Namespaced the i18n calls, so that the use of `objectNotation` with the `apostrophe-i18n` module does not break the permissions editor. Peer dependency formally set to apostrophe 2.107.0, but we recommend `npm update` to the latest update of the same major version for all Apostrophe modules when updating Apostrophe.
