@@ -50,6 +50,13 @@
       display: none;
     }
   }
+  &.apos-workflow-submit-hidden
+  {
+    // Extra specificity to avoid !important
+    [data-apos-workflow-submitted].apos-button--disabled {
+      display: none;
+    }
+  }
 }
 
 .apos-ui .apos-workflow-state
