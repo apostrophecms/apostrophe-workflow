@@ -102,10 +102,10 @@ apos.define('apostrophe-workflow', {
         } else {
           if (submittableOnly.length) {
             setClass($menu, 'apos-workflow-unsubmitted', true);
-            setClass($menu, 'apos-workflow-submit-irrelevant', false);
+            setClass($menu, 'apos-workflow-submit-hidden', false);
           } else {
             setClass($menu, 'apos-workflow-unsubmitted', false);
-            setClass($menu, 'apos-workflow-submit-irrelevant', true);
+            setClass($menu, 'apos-workflow-submit-hidden', true);
           }
         }
 
