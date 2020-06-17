@@ -86,29 +86,48 @@ apos.define('apostrophe-workflow', {
         var unsubmitted = _.difference(result.unsubmitted, result.uncommittedTrash);
 
         setClass($menu, 'apos-workflow-editable', result.modified.length || result.unmodified.length);
+        // Not currently in our CSS but others may be finding it useful
         setClass($menu, 'apos-workflow-modified', !!result.modified.length);
 
-        var submittableOnly = _.filter(unsubmitted, function(id) {
+        var unsubmittedOnly = _.filter(unsubmitted, function(id) {
           return !_.find(result.committable, function(cid) {
             return id === cid;
           });
         });
 
-
+        // Not currently in our CSS but others may be finding it useful
         setClass($menu, 'apos-workflow-committable', !!result.committable.length);
+
+        var uncommitted = _.filter(result.committable, function(id) {
+          return _.find(result.modified, function(mid) {
+            return id === mid;
+          });
+        });
+        
+        setClass($menu, 'apos-workflow-uncommitted', !!uncommitted.length);
+
+        // Considered submitted if it is modified and not submitted
+        var submitted = _.filter(result.modified, function(id) {
+          return !_.find(unsubmitted, function(uid) {
+            return id === uid;
+          });
+        });
+
+        // Considered "submitted only" if it is modified, not submitted, and
+        // not committable by this user
+        var submittedOnly = _.filter(submitted, function(id) {
+          return !_.find(result.committable, function(uid) {
+            return id === uid;
+          });
+        });
 
         if (self.options.committersSeeSubmit) {
           setClass($menu, 'apos-workflow-unsubmitted', !!unsubmitted.length);
+          setClass($menu, 'apos-workflow-submitted', !unsubmitted.length && submitted.length);
         } else {
-          if (submittableOnly.length) {
-            setClass($menu, 'apos-workflow-unsubmitted', true);
-            setClass($menu, 'apos-workflow-submit-hidden', false);
-          } else {
-            setClass($menu, 'apos-workflow-unsubmitted', false);
-            setClass($menu, 'apos-workflow-submit-hidden', true);
-          }
+          setClass($menu, 'apos-workflow-unsubmitted', !!unsubmittedOnly.length);
+          setClass($menu, 'apos-workflow-submitted', !unsubmittedOnly.length && submittedOnly.length);
         }
-
 
         // Show/hide the widget level force export buttons based on whether
         // their doc is committable (it's preexisting and we have permission
