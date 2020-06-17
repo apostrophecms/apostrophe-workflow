@@ -13,7 +13,7 @@
   // .apos-workflow-state is visible by default because we need
   // to get to draft mode to access admin bar functionality in
   // a way that isn't extremely difficult to debug
-  [data-apos-workflow-submit], [data-apos-workflow-commit], [data-apos-workflow-submitted],
+  [data-apos-workflow-submit], [data-apos-workflow-commit], [data-apos-workflow-submitted]
   {
     display: none;
   }
@@ -24,13 +24,23 @@
       display: inline-block;
     }
   }
-  &.apos-workflow-modified.apos-workflow-committable
+  &.apos-workflow-uncommitted
   {
     .apos-button--group
     {
       border: 2px solid;
     }
-    [data-apos-workflow-commit], [data-apos-workflow-submitted] {
+    [data-apos-workflow-commit] {
+      display: inline-block;
+    }
+  }
+  &.apos-workflow-submitted
+  {
+    .apos-button--group
+    {
+      border: 2px solid;
+    }
+    [data-apos-workflow-submitted] {
       display: inline-block;
     }
   }
@@ -43,18 +53,10 @@
     [data-apos-workflow-submit] {
       display: inline-block;
     }
-  }
-  &.apos-workflow-modified.apos-workflow-committable.apos-workflow-unsubmitted
-  {
-    [data-apos-workflow-submitted] {
-      display: none;
-    }
-  }
-  &.apos-workflow-submit-hidden
-  {
-    // Extra specificity to avoid !important
-    [data-apos-workflow-submitted].apos-button--disabled {
-      display: none;
+    &.apos-workflow-submitted {
+      [data-apos-workflow-submitted] {
+        display: none;
+      }
     }
   }
 }
