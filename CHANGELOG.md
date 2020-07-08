@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.37.0
+* `notSafeLiveList`, a list of items to be removed from the admin bar during preview mode, can now be added to from other `apostrophe-admin-bar` improvers
+
 ## 2.36.0
 
 * UX improvement: users report that if they have permission to commit, the "submit" button does not make sense to them. They often think they must use both buttons, and it leads to user frustration. Now, the "submit" button is no longer shown to users by default, **unless there are modified documents they can submit for review but not commit themselves.** According to users this should be a big improvement, but if you prefer the legacy old behavior, you may set the `committersSeeSubmit` option to `true`.
