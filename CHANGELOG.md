@@ -1,7 +1,7 @@
 # Changelog
 
 ## 2.37.0
-* `notSafeLiveList`, a list of items to be removed from the admin bar during preview mode, can now be added to from other `apostrophe-admin-bar` improvers
+* Adds `options.baseSafeLiveDenyList` to `apostrophe-admin-bar`, a list of items to be removed from the admin bar during preview/live mode. It can be added to from other `apostrophe-admin-bar` improvers by including an array of apostrophe-module names in `options.safeLiveDenyList`.
 
 ## 2.36.0
 
