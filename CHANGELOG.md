@@ -1,7 +1,12 @@
 # Changelog
 
 ## 2.37.0
-* Adds `options.baseSafeLiveDenyList` to `apostrophe-admin-bar`, a list of items to be removed from the admin bar during preview/live mode. It can be added to from other `apostrophe-admin-bar` improvers by including an array of apostrophe-module names in `options.safeLiveDenyList`.
+* Adds `options.removeWhenLive` to `apostrophe-admin-bar`, a list of items to be removed from the admin bar during preview/live mode. It can be added to from other `apostrophe-admin-bar` improvers like so:
+```js
+  beforeConstruct: function(self, options) {
+    options.removeWhenLive = [ 'some-module-name' ].concat(options.removeWhenLive || []);
+  },
+```
 
 ## 2.36.0
 
