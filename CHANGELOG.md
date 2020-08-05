@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.38.0
+
+* Adds the `apostrophe-workflow:replicate-locale` command line task, with `--from=locale1` and `--to=locale2` options, to drop the current contents of `locale2` and replace them with a copy of the contents of `locale1`. If you have already done work in the `to` locale, we recommend running `apostrophe-attachments:recompute-all-doc-references` afterwards, to ensure attachments do not lose track of whether it is time to disable access.
+
 ## 2.37.0
 * Adds `options.removeWhenLive` to `apostrophe-admin-bar`, a list of items to be removed from the admin bar during preview/live mode. It can be added to from other `apostrophe-admin-bar` improvers like so:
 ```js
