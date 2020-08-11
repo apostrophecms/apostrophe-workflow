@@ -113,6 +113,8 @@ locales (languages), starting out in the trash in other locales until they are m
 Our own clients have found this wastes a lot of database space. So, set `replicateAcrossLocales: false`
 as shown above. Users can still export documents between locales as you'll see later on.
 
+If you find this useful but need to occasionally make an exception and just completely copy a locale to another once, you can use the `apostrophe-workflow:replicate-locale` command line task, with `--from` and `--to` options, to do that on a one-time basis. If you have already done work in the `to` locale, we recommend running `apostrophe-attachments:recompute-all-doc-references` afterwards, to ensure attachments do not lose track of whether it is time to disable access.
+
 > Did you already start a large project with replicated documents? You can use the `apostrophe-workflow:dereplicate` command line task to remove documents from all other locales if they are outside the trash in only one locale. We recommend backing up your database first.
 
 ### Adding `parkedId` to your parked pages
