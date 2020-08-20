@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.38.1
+
+* Fixes an issue with `apostrophe-workflow:replicate-locale` where pages were not always replicated in page tree order, resulting in errors.
+
 ## 2.38.0
 
 * Adds the `apostrophe-workflow:replicate-locale` command line task, with `--from=locale1` and `--to=locale2` options, to drop the current contents of `locale2` and replace them with a copy of the contents of `locale1`. If you have already done work in the `to` locale, we recommend running `apostrophe-attachments:recompute-all-doc-references` afterwards, to ensure attachments do not lose track of whether it is time to disable access.
