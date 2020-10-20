@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.38.2 (2020-10-21)
+
+* Sets the new `forbiddenFields` option to an empty array.
+
 ## 2.38.1
 
 * Fixes an issue with `apostrophe-workflow:replicate-locale` where pages were not always replicated in page tree order, resulting in errors.
