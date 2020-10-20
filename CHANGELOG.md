@@ -2,7 +2,7 @@
 
 ## 2.38.2 (2020-10-21)
 
-* Sets the new `forbiddenFields` option to an empty array.
+* Sets the new `forbiddenFields` option for the Manage Workflow view, a "virtual" piece type which has the unusual property of viewing content of all types, to an empty array.
 
 ## 2.38.1
 
