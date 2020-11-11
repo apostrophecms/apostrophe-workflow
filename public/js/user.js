@@ -103,7 +103,7 @@ apos.define('apostrophe-workflow', {
             return id === mid;
           });
         });
-        
+
         setClass($menu, 'apos-workflow-uncommitted', !!uncommitted.length);
 
         // Considered submitted if it is modified and not submitted

@@ -1,6 +1,4 @@
 var assert = require('assert');
-var _ = require('@sailshq/lodash');
-var async = require('async');
 
 describe('Missing prefix redirect status code', function() {
 
@@ -158,10 +156,6 @@ describe('Missing prefix redirect status code', function() {
 
   function tryMiddleware(url, after) {
     return tryMiddlewareBody(url, {}, after);
-  }
-
-  function tryMiddlewareAdmin(url, after) {
-    return tryMiddlewareBody(url, { admin: true }, after);
   }
 
   function tryMiddlewareBody(url, options, after) {
