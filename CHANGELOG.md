@@ -1,9 +1,5 @@
 # Changelog
 
-## 2.38.3 (2020-11-11)
-
-* For compatibility with `apostrophe-personas` in the presence of TOTP authentication, run the middleware before the `apostrophe-login` module middleware.
-
 ## 2.38.2 (2020-10-21)
 
 * Sets the new `forbiddenFields` option for the Manage Workflow view, a "virtual" piece type which has the unusual property of viewing content of all types, to an empty array.
