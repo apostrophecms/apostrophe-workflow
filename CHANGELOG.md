@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.38.3 (2021-03-01)
+* Fixes page slug updated twice when committing a page move.
+
 ## 2.38.2 (2020-10-21)
 
 * Sets the new `forbiddenFields` option for the Manage Workflow view, a "virtual" piece type which has the unusual property of viewing content of all types, to an empty array.

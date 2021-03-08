@@ -1,5 +1,5 @@
 {
-  "version": "2.38.2",
+  "version": "2.38.3",
   "scripts": {
     "test": "mocha && eslint ."
   },
@@ -32,7 +32,7 @@
   "description": "Workflow, approvals, localization and internationalization for ApostropheCMS",
   "bundleDependencies": false,
   "peerDependencies": {
-    "apostrophe": "^2.107.0"
+    "apostrophe": "^2.116.1"
   },
   "dependencies": {
     "@sailshq/lodash": "^3.10.3",
