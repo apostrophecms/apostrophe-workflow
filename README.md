@@ -927,11 +927,11 @@ To avoid this behavior and move draft and live pages at the same time, you can p
 
 ```javascript
 'apostrophe-workflow': {
-  syncPagesMoves: true,
+  autoCommitPageMoves: true,
 }
 ```
 
-:warning: It won't commit it, it will just update properties linked to the pages tree like `path`, `rank`, `level` and `workflowMoved`. So the slug, for example, will be updated only when committing.
+:warning: This will only commit the new position in the tree of a moved page. It will not commit any other properties of the page, such as the `slug` or `title`.
 
 ### Previewing piece types without an index page
 

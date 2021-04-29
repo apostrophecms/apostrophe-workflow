@@ -1,7 +1,7 @@
 # Changelog
 
 ## 2.39.0 (2021-04-20)
-* Adds `syncPagesMoves` flag to move live pages at the same time than draft ones, without committing.
+* Adds `autoCommitPageMoves` flag to move live pages at the same time than draft ones, without committing.
 
 ## 2.38.3 (2021-03-01)
 * Fixes page slug updated twice when committing a page move.
