@@ -77,7 +77,7 @@ module.exports = {
     self.enableHarmonizeWorkflowGuidsByParkedIdTask();
     self.enableDiffDraftAndLiveTask();
     self.enableReplicateLocaleTask();
-    self.enableCleanPagesTreeTask();
+    self.enableSyncPagesTreeTask();
     self.pushAssets();
     self.addToAdminBar();
     self.apos.pages.addAfterContextMenu(self.menu);
