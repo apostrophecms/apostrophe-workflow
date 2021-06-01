@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.39.0 (2021-04-20)
+## 2.39.0 (2021-05-20)
 * Adds `autoCommitPageMoves` flag to commit only pages moves automatically.
 
 ## 2.38.3 (2021-03-01)
