@@ -77,6 +77,7 @@ module.exports = {
     self.enableHarmonizeWorkflowGuidsByParkedIdTask();
     self.enableDiffDraftAndLiveTask();
     self.enableReplicateLocaleTask();
+    self.enableSyncPagesTreeTask();
     self.pushAssets();
     self.addToAdminBar();
     self.apos.pages.addAfterContextMenu(self.menu);
@@ -86,6 +87,11 @@ module.exports = {
     self.composeApiCalls();
     self.addWorkflowModifiedMigration();
     self.addWorkflowLastCommittedMigration();
+
+    if (self.options.autoCommitPageMoves) {
+      self.addPagesTreeCleaningMigration();
+    }
+
     self.on('apostrophe-pages:beforeParkAll', 'updateHistoricalPrefixesPromisified', function() {
       return Promise.promisify(self.updateHistoricalPrefixes)();
     });

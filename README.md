@@ -65,6 +65,7 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
 - [Other developer concerns](#user-content-other-developer-concerns)
   * [Aliasing the module](#user-content-aliasing-the-module)
   * [Excluding certain types and properties from workflow](#excluding-certain-types-and-properties-from-workflow)
+  * [Managing the pages tree without workflow](#managing-the-pages-tree-without-workflow)
   * [Previewing piece types without an index page](#user-content-previewing-piece-types-without-an-index-page)
   * [Command line tasks and workflow](#user-content-command-line-tasks-and-workflow)
     + [Using the `-workflow-locale` option](#user-content-using-the-workflow-locale-option)
@@ -915,6 +916,22 @@ To exclude a property, write:
 ```
 
 **The property is excluded for all doc types.** Use a name that is unambiguous for such properties.
+
+### Managing the pages tree without workflow
+
+With the normal `apostrophe-workflow` behavior, when you move a page in the page tree modal, it only moves the draft one. Later, when committing, it will move the live one too. The draft document is moved relatively to a target (it can be `before`, `after` or `inside`), the live one is moved relatively to the live version of this target.
+
+In some cases, when moving too much nested pages without committing each one before, it can generate mismatches between draft and live pages trees and lead to confusion.
+
+To avoid this behavior and move draft and live pages at the same time, you can pass this flag to you workflow config:
+
+```javascript
+'apostrophe-workflow': {
+  autoCommitPageMoves: true,
+}
+```
+
+:warning: This will only commit the new position in the tree of a moved page. It will not commit any other properties of the page, such as the `slug` or `title`.
 
 ### Previewing piece types without an index page
 
