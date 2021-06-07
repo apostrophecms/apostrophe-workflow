@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.39.1 (2021-06-07)
+* Fixes duplicate key errors in sync page tree task. For live pages not already updated with the same path.
+
 ## 2.39.0 (2021-05-20)
 * Adds `autoCommitPageMoves` flag to commit only pages moves automatically.
 
