@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.39.2 (2021-06-21)
+* Get autoCommitPageMoves option from workflow module.
+
 ## 2.39.1 (2021-06-07)
 * Fixes duplicate key errors in sync page tree task. For live pages not already updated with the same path.
 
