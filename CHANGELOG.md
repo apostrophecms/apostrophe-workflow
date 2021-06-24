@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Adds CircleCI configuration file.
+* Documents Node 10 requirement. This was already enforced by the `yargs` dependency not supporting Node 8.
 
 ## 2.39.2 (2021-06-21)
 * Get autoCommitPageMoves option from workflow module.
