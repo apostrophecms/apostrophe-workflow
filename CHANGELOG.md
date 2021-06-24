@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.39.3 (2021-06-24)
+* Fix assembly crashing when creating new site.
+
 ## 2.39.2 (2021-06-21)
 * Get autoCommitPageMoves option from workflow module.
 
