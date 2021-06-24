@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Adds CircleCI configuration file.
+
 ## 2.39.2 (2021-06-21)
 * Get autoCommitPageMoves option from workflow module.
 
