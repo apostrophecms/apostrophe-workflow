@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 2.39.3 (2021-06-28)
 
-* Fix assembly crashing when creating new site or hanging on startup. A regression introduced in version 2.39.2.
+* Fix assembly crashing when creating new site or hanging on startup in the presence of headless. A regression introduced in version 2.39.2.
 * Adds CircleCI configuration file.
 * Documents Node 10 requirement. This was already enforced by the `yargs` dependency not supporting Node 8.
 
