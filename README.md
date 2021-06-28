@@ -86,11 +86,14 @@ We'll begin with the steps needed simply to add workflow to your project. Then w
 
 ## Before getting started
 
+**Note:** Apostrophe Workflow requires Node.js 10+.
+
 Start by installing apostrophe-workflow.
 
 ```
 npm install --save apostrophe-workflow
 ```
+
 
 Then configure the `apostrophe-workflow` module in `app.js` with the rest of your modules. We'll start with a simple configuration just providing workflow. We will also turn on the very handy "Manage Workflow" dialog box by turning on the `apostrophe-workflow-modified-documents` module, which comes bundled inside `apostrophe-workflow`. You do not have to separately install it.
 
