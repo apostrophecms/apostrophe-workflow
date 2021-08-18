@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+* When fetching the live version of a document for comparison, do so using the appropriate manager module, so that all cursor filters for that type are consulted. Thanks to Michelin for their support of this work.
+
 ## 2.39.3 (2021-06-28)
 
 * Fix assembly crashing when creating new site or hanging on startup in the presence of headless. A regression introduced in version 2.39.2.
