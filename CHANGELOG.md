@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.39.4 (2021-08-26)
+## 2.39.4 (2021-08-30)
 
 * When fetching the live version of a document for comparison, do so using the appropriate manager module, so that all cursor filters for that type are consulted. Thanks to Michelin for their support of this work.
 
