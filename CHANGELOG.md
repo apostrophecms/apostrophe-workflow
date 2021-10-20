@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+* To mitigate issues with joins not always populating, "Batch Force Export" now force-exports related documents before selected documents. However for data integrity reasons pages continue to be batch force exported in tree order, even if they are merely "related to" the documents directly selected.
+
 ## 2.39.4 (2021-08-30)
 
 * When fetching the live version of a document for comparison, do so using the appropriate manager module, so that all cursor filters for that type are consulted. Thanks to Michelin for their support of this work.
