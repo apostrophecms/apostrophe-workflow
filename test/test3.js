@@ -7,7 +7,7 @@ describe('Workflow Add Missing Locales Inheritance And Prefix Changes', function
 
   var existsIn = [ 'default', 'us' ];
 
-  this.timeout(5000);
+  this.timeout(20000);
 
   after(function(done) {
     require('apostrophe/test-lib/util').destroy(apos, function() {

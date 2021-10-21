@@ -3,7 +3,7 @@ var apos, apos2;
 var _ = require('@sailshq/lodash');
 
 describe('test global def', function() {
-  this.timeout(5000);
+  this.timeout(20000);
   after(function(done) {
     require('apostrophe/test-lib/util').destroy(apos, function() {
       require('apostrophe/test-lib/util').destroy(apos2, done);

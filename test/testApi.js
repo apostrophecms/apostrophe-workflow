@@ -4,7 +4,7 @@ var revertId;
 var _ = require('@sailshq/lodash');
 
 describe('Workflow API', function() {
-  this.timeout(5000);
+  this.timeout(20000);
   var apos;
 
   after(function(done) {
