@@ -1,0 +1,12 @@
+{
+  "//": "Must exist to satisfy checks, not really used",
+  "dependencies": {
+    "apostrophe": "*",
+    "apostrophe-workflow": "*",
+    "@sailshq/lodash": "*",
+    "bluebird": "*",
+    "async": "*",
+    "request-promise": "*",
+    "apostrophe-override-options": "*"
+  }
+}
