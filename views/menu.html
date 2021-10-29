@@ -12,18 +12,18 @@
 
 	<div class="apos-dropdown apos-dropdown--button apos-dropdown--up apos-workflow-state" data-apos-dropdown="up" data-apos-actionable="">
 		<a class="apos-button apos-workflow-state-toggle" data-apos-dropdown-button-label="" style="padding-right: 20px;">
-			<span class="apos-button-label">Mode: {{ workflowMode | capitalize }}</span>
+			<span class="apos-button-label">{{ __ns('apostrophe', 'Mode: %s', workflowMode | capitalize) }}</span>
 		</a>
 		<ul class="apos-dropdown-items" data-apos-dropdown-items="">
       {% if workflowMode == 'preview' %}
-        <li class="apos-dropdown-item" data-apos-workflow-mode="live">Live</li>
-        <li class="apos-dropdown-item" data-apos-workflow-mode="draft">Draft</li>
+        <li class="apos-dropdown-item" data-apos-workflow-mode="live">{{ __ns('apostrophe', 'Live') }}</li>
+        <li class="apos-dropdown-item" data-apos-workflow-mode="draft">{{ __ns('apostrophe', 'Draft') }}</li>
 			{% elseif workflowMode == 'draft' %}
-				<li class="apos-dropdown-item" data-apos-workflow-mode="live">Live</li>
-        <li class="apos-dropdown-item" data-apos-workflow-mode="preview">Preview</li>
+				<li class="apos-dropdown-item" data-apos-workflow-mode="live">{{ __ns('apostrophe', 'Live') }}</li>
+        <li class="apos-dropdown-item" data-apos-workflow-mode="preview">{{ __ns('apostrophe', 'Preview') }}</li>
 			{% else %}
-				<li class="apos-dropdown-item" data-apos-workflow-mode="draft">Draft</li>
-        <li class="apos-dropdown-item" data-apos-workflow-mode="preview">Preview</li>
+				<li class="apos-dropdown-item" data-apos-workflow-mode="draft">{{ __ns('apostrophe', 'Draft') }}</li>
+        <li class="apos-dropdown-item" data-apos-workflow-mode="preview">{{ __ns('apostrophe', 'Preview') }}</li>
 			{% endif %}
 		</ul>
   </div>
