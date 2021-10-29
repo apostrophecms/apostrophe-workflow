@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+* Proper localization of the workflow menu. Thanks to [Bohemica Studio](https://github.com/bohemicastudio).
+
 ## 2.39.5 (2021-10-21)
 
 * To mitigate issues with joins not always populating, "Batch Force Export" now force-exports related documents before selected documents. However for data integrity reasons pages continue to be batch force exported in tree order, even if they are merely "related to" the documents directly selected.
