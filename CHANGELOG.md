@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 2.39.6 (2021-11-??)
 
 * Proper localization of the workflow menu. Thanks to [Bohemica Studio](https://github.com/bohemicastudio).
 
