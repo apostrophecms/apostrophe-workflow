@@ -1,5 +1,5 @@
 {
-  "version": "2.39.5",
+  "version": "2.39.6",
   "scripts": {
     "test": "eslint . && mocha"
   },
