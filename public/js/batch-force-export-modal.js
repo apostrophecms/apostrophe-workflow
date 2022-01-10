@@ -69,5 +69,6 @@ apos.define('apostrophe-workflow-batch-force-export-modal', {
       self.options.body.relatedExisting = self.$el.find('[name="relatedExisting"]').prop('checked');
       return callback(null);
     };
+
   }
 });
