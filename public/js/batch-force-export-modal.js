@@ -63,13 +63,10 @@ apos.define('apostrophe-workflow-batch-force-export-modal', {
       self.options.body.locales = locales;
       self.options.body.related = related;
       self.options.body.relatedTypes = [];
-      self.options.body.countRelated = 0;
       self.$el.find('[name="relatedTypes"]:checked').each(function() {
         self.options.body.relatedTypes.push($(this).attr('value'));
-        self.options.body.countRelated += $(this).parent().data('count') || 0;
       });
       self.options.body.relatedExisting = self.$el.find('[name="relatedExisting"]').prop('checked');
-
       return callback(null);
     };
   }

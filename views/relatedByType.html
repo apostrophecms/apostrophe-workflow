@@ -4,7 +4,7 @@
   <h4>{{ __ns('apostrophe', 'Only related documents of the types you choose below will be exported.') }}</h4>
   {% for type in data.types %}
     <ul>
-      <li data-count={{ data.counts[type] }}>
+      <li>
         <input type="checkbox" name="relatedTypes" value="{{ type }}" />
         {{ __ns('apostrophe', data.labels[type]) }} ({{ data.counts[type] }})
       </li>
