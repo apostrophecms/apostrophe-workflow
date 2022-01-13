@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Fixes the workflow batch export progress bar, not taking related documents into account to compute the percentage.
+
 ## 2.39.6 (2021-11-15)
 
 * Proper localization of the workflow menu. Thanks to [Bohemica Studio](https://github.com/bohemicastudio).
