@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.39.7 (2022-01-21)
 
 * Fixes the workflow batch export progress bar, not taking related documents into account to compute the percentage.
 
