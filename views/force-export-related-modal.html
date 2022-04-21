@@ -24,7 +24,9 @@
     {# Here for compatibility with the inherited logic, will be hidden by JS and always checked #}
     <label for="related"><input type="checkbox" name="related">Also offer to force export related documents, such as images</label>
     {# Really in play #}
-    <label for="relatedExisting"><input type="checkbox" name="relatedExisting">Offer to force export related documents even if they already exist in the target locale</label>
+    {% if data.offerRelatedExisting %}
+      <label for="relatedExisting"><input type="checkbox" name="relatedExisting">Offer to force export related documents even if they already exist in the target locale</label>
+    {% endif %}
   </div>
 {% endblock %}
 

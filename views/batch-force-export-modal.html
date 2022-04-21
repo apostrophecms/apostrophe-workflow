@@ -25,7 +25,9 @@
 {%- block body -%}
 <div class="apos-workflow-export-option">
   <label for="related"><input type="checkbox" name="related">Also force export related documents, such as images</label>
-  <label for="relatedExisting"><input type="checkbox" name="relatedExisting">Include related documents even if they already exist in the target locale</label>
+  {% if data.offerRelatedExisting %}
+    <label for="relatedExisting"><input type="checkbox" name="relatedExisting">Offer to force export related documents even if they already exist in the target locale</label>
+  {% endif %}
   <div class="apos-workflow-export-related-types" data-related-types></div>
 </div>
 {# ajax populates me #}
