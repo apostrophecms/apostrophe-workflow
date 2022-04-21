@@ -35,7 +35,9 @@
 {%- block body -%}
 <div class="apos-workflow-export-option">
   <label for="related"><input type="checkbox" name="related">Also offer to force export related documents, such as images</label>
-  <label for="relatedExisting"><input type="checkbox" name="relatedExisting">Offer to force export related documents even if they already exist in the target locale</label>
+  {% if data.offerRelatedExisting %}
+    <label for="relatedExisting"><input type="checkbox" name="relatedExisting">Offer to force export related documents even if they already exist in the target locale</label>
+  {% endif %}
 </div>
 <div class="apos-workflow-export-locales">
   {{ localeTree.tree(

@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+`forceExportExistingRelatedDocuments`: by default, when force exporting, a choice is also offered to force export related documents even if they already exist in the target locale, overwriting the document in the target locale. If this option is explicitly set to `false`, this choice is not offered.
+
 ## 2.39.7 (2022-01-21)
 
 * Fixes the workflow batch export progress bar, not taking related documents into account to compute the percentage.
