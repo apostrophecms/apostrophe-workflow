@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 2.40.0 (2022-05-03)
 
 `forceExportExistingRelatedDocuments`: by default, when force exporting, a choice is also offered to force export related documents even if they already exist in the target locale, overwriting the document in the target locale. If this option is explicitly set to `false`, this choice is not offered.
 
