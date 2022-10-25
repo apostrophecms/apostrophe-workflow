@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.40.1 (2022-10-25)
+
+* Fixed a bug when workflow is combined with the blog module and a blog post is dated in the future. This caused problems when editing the blog post again.
+
 ## 2.40.0 (2022-05-03)
 
 `forceExportExistingRelatedDocuments`: by default, when force exporting, a choice is also offered to force export related documents even if they already exist in the target locale, overwriting the document in the target locale. If this option is explicitly set to `false`, this choice is not offered.
