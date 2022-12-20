@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Fixed vulnerability by removing `deep-get-set` package.
+
 ## 2.40.1 (2022-10-25)
 
 * Fixed a bug when workflow is combined with the blog module and a blog post is dated in the future. This caused problems when editing the blog post again.

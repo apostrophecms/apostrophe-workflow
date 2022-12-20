@@ -38,7 +38,6 @@
     "@sailshq/lodash": "^3.10.3",
     "async": "^1.5.2",
     "bluebird": "^3.7.2",
-    "deep-get-set": "^1.1.1",
     "eslint-config-apostrophe": "^2.0.2",
     "express-session": "^1.17.1",
     "json-diff": "^0.5.3",
