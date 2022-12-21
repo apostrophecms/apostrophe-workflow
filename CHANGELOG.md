@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-* Fixed vulnerability by removing `deep-get-set` package.
+* Fixed security scanner report by removing `deep-get-set` package. There was no actual vulnerability due to the way the package was used in Apostrophe.
 
 ## 2.40.1 (2022-10-25)
 
