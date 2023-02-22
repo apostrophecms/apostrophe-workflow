@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+- Removes `apostrophe` as a peer dependency.
+
 ## 2.40.2 (2022-12-21)
 
 * Fixed security scanner report by removing `deep-get-set` package. There was no actual vulnerability due to the way the package was used in Apostrophe.
