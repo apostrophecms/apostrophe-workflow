@@ -1,5 +1,10 @@
 # Changelog
 
+## UNRELEASED
+
+* Fix lack of error handling in the promise-based implementation of `setWorkflowModified`. With this change, bugs in overrides of
+`isModified` etc. should be easier to find.
+
 ## 2.40.3 (2023-03-06)
 
 * Removes `apostrophe` as a peer dependency.
